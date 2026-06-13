@@ -84,15 +84,18 @@ const handleLogin = async () => {
   isLoading.value = true
   error.value = ''
   
-  // Simulated authentication delay
-  setTimeout(() => {
+  // Authentication flow
+  try {
+    await auth.login(activeRole.value, email.value, password.value)
     isLoading.value = false
-    auth.login(activeRole.value, email.value)
     
     // Redirect logic
     const redirectPath = (route.query.redirect as string) || `/${activeRole.value}`
     router.push(redirectPath)
-  }, 800)
+  } catch (err: any) {
+    isLoading.value = false
+    error.value = err.response?.data?.message || 'Error de autenticación'
+  }
 }
 
 const handleRegister = async () => {
@@ -108,10 +111,11 @@ const handleRegister = async () => {
   isLoading.value = true
   error.value = ''
 
-  setTimeout(() => {
-    isLoading.value = false
+  try {
     // Log in with registered credentials and name
-    auth.login(activeRole.value, email.value, fullName.value)
+    // In a real app this would call an API register endpoint first
+    await auth.login(activeRole.value, email.value, password.value, fullName.value)
+    isLoading.value = false
 
     if (activeRole.value === 'familia' && studentPin.value) {
       auth.linkStudent(studentPin.value)
@@ -119,17 +123,20 @@ const handleRegister = async () => {
 
     const redirectPath = `/${activeRole.value}`
     router.push(redirectPath)
-  }, 800)
+  } catch (err: any) {
+    isLoading.value = false
+    error.value = err.response?.data?.message || 'Error en el registro'
+  }
 }
 
 const handleGoogleLogin = () => {
   isLoading.value = true
   error.value = ''
   
-  setTimeout(() => {
+  setTimeout(async () => {
     isLoading.value = false
     // Simulate successful Google auth for Marisela Torres (Family)
-    auth.login('familia', 'marisela.torres@gmail.com', 'Marisela Torres')
+    await auth.login('familia', 'marisela.torres@gmail.com', 'google_mock_pass', 'Marisela Torres')
     router.push('/familia')
   }, 1000)
 }

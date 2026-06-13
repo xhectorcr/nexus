@@ -1,5 +1,5 @@
 import { reactive, watch } from 'vue'
-
+import { api } from './api'
 export interface User {
   role: 'estudiante' | 'familia' | 'postulante'
   username: string
@@ -30,12 +30,30 @@ watch(() => state.user, (newUser) => {
   }
 }, { deep: true })
 
-export function login(role: 'estudiante' | 'familia' | 'postulante', username: string, customName?: string) {
+export async function login(role: 'estudiante' | 'familia' | 'postulante', username: string, password?: string, customName?: string) {
   let name = customName || ''
   let studentName = ''
   let careerSuggestion = ''
   let linkedStudentCode = ''
   let linkedStudentRole: 'estudiante' | 'postulante' | undefined = undefined
+
+  // Attempt real API authentication if a password is provided
+  if (password && password !== 'google_mock_pass') {
+    try {
+      const response = await api.post('/auth/login', { email: username, password })
+      const token = response.data.token
+      localStorage.setItem('nexus_jwt_token', token)
+      
+      // Update data with real backend info if available
+      username = response.data.email || username
+      if (response.data.nombre) {
+        name = `${response.data.nombre} ${response.data.apellido || ''}`.trim()
+      }
+    } catch (error) {
+      console.error('API Login failed:', error)
+      throw error // Re-throw to be caught by the frontend components
+    }
+  }
 
   if (!name) {
     if (role === 'estudiante') {

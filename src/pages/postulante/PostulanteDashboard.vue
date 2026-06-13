@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { markRaw } from 'vue'
+import { markRaw, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/lib/auth'
+import { api } from '@/lib/api'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -33,20 +34,64 @@ const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
 ]
 
-const mentors = [
-  { name: "Ana García", career: "Ingeniería de Sistemas", online: true },
-  { name: "Carlos Ruiz", career: "Administración", online: true },
-  { name: "María López", career: "Arquitectura", online: false },
-]
+const mentors = ref<{name: string, career: string, online: boolean}[]>([])
+const entries = ref<any[]>([])
 
-const stats = [
+const stats = ref([
   { label: "Laberinto completado", value: "40%", color: "#B50E30" },
-  { label: "Entradas en bitácora", value: "12", color: "#D4A017" },
-  { label: "Conversaciones", value: "5", color: "#1565C0" },
-  { label: "Nivel actual", value: "3", color: "#2E7D32" },
-]
+  { label: "Entradas en bitácora", value: "0", color: "#D4A017" },
+  { label: "Conversaciones", value: "0", color: "#1565C0" },
+  { label: "Experiencia (XP)", value: "0 XP", color: "#2E7D32" },
+])
 
-const entries = ["Proyecto de robótica", "Clase de programación", "Meta: aprender IA"]
+const fetchDashboardData = async () => {
+  try {
+    // For demo purposes, we assume postulant ID is 1
+    const postulantId = 1
+    
+    // Fetch Bitacoras
+    const bitacorasRes = await api.get(`/api/bitacoras/postulante/${postulantId}`)
+    entries.value = bitacorasRes.data.data || []
+    
+    // Fetch Conexiones P2P
+    const conexionesRes = await api.get(`/api/conexiones/postulante/${postulantId}`)
+    const conexiones = conexionesRes.data.data || []
+    
+    // Format them for the UI
+    mentors.value = conexiones.map((con: any) => ({
+      name: con.estudianteId === 2 ? 'Alejandro Lastra' : `Mentor #${con.estudianteId}`,
+      career: 'Ingeniería de Sistemas', // Mocked until user API is joined
+      online: con.estado === 'ACTIVA'
+    }))
+    
+    // If no data, provide fallbacks
+    if (mentors.value.length === 0) {
+      mentors.value = [
+        { name: "Ana García", career: "Ingeniería de Sistemas", online: true },
+        { name: "Carlos Ruiz", career: "Administración", online: true }
+      ]
+    }
+    
+    // Fetch XP from Perfil Inteligente
+    const perfilRes = await api.get(`/api/postulantes/${postulantId}`)
+    const perfilInteligente = perfilRes.data.data?.perfilInteligente
+    
+    stats.value[1].value = entries.value.length.toString()
+    stats.value[2].value = conexiones.length.toString()
+    if (perfilInteligente) {
+      stats.value[3].value = `${perfilInteligente.experienciaGlobal || 0} XP`
+    }
+    
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error)
+    // Fallbacks
+    entries.value = [{ titulo: "Proyecto de robótica" }, { titulo: "Clase de programación" }]
+  }
+}
+
+onMounted(() => {
+  fetchDashboardData()
+})
 </script>
 
 <template>
@@ -167,7 +212,7 @@ const entries = ["Proyecto de robótica", "Clase de programación", "Meta: apren
                 </Badge>
               </div>
 
-              <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26]">
+              <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26]" @click="router.push('/postulante/laberinto')">
                 Explorar laberinto
               </Button>
             </div>
@@ -213,8 +258,8 @@ const entries = ["Proyecto de robótica", "Clase de programación", "Meta: apren
                   :key="i"
                   class="p-3 rounded-lg bg-[#F1F1F1] hover:bg-[#D9D9D9] transition-colors cursor-pointer"
                 >
-                  <p class="text-sm font-medium text-[#1F1F1F]">{{ entry }}</p>
-                  <p class="text-xs text-[#5F6368] mt-1">Hace {{ i + 1 }} día{{ i > 0 ? 's' : '' }}</p>
+                  <p class="text-sm font-medium text-[#1F1F1F]">{{ entry.titulo || entry }}</p>
+                  <p class="text-xs text-[#5F6368] mt-1">{{ entry.fecha ? new Date(entry.fecha).toLocaleDateString() : 'Hace poco' }}</p>
                 </div>
               </TabsContent>
             </Tabs>

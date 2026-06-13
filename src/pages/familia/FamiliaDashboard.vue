@@ -20,7 +20,8 @@ import {
   UserCheck
 } from 'lucide-vue-next'
 import { useAuth } from '@/lib/auth'
-
+import { api } from '@/lib/api'
+import { onMounted } from 'vue'
 const auth = useAuth()
 
 // Accessibility: default to true for non-tech-savvy users
@@ -59,13 +60,48 @@ const studentMilestones = [
 ]
 
 // Applicant: Camila Ramos
-const applicantMilestones = [
+const applicantMilestones = ref([
   { title: "Paso 1: Test Vocacional Completado", completed: true, date: "12 Jun 2026", desc: "Camila completó la evaluación con 95% en Ingeniería de Sistemas." },
   { title: "Paso 2: Plan de Admisión UTP", completed: true, date: "13 Jun 2026", desc: "Se generó el plan de estudios adaptado a su perfil vocacional." },
   { title: "Paso 3: Envío de Documentos", completed: false, date: "Pendiente", desc: "Subir certificado de estudios de secundaria para evaluación preferencial." },
   { title: "Paso 4: Charla Informativa de Admisión", completed: false, date: "Pendiente", desc: "Charla interactiva en el campus sobre becas y financiamiento." },
   { title: "Paso 5: Matrícula e Ingreso", completed: false, date: "Pendiente", desc: "Formalización de ingreso a la Universidad Tecnológica del Perú." },
-]
+])
+
+const applicantProgress = ref(100)
+
+const fetchChildData = async () => {
+  try {
+    const childId = 1 // Mocked linked child ID
+    // Check real test status
+    const profileRes = await api.get(`/api/postulantes/${childId}`)
+    const profile = profileRes.data.data
+    
+    if (profile) {
+      applicantMilestones.value[0].completed = profile.cuestionarioCompletado
+      applicantProgress.value = profile.cuestionarioCompletado ? 100 : 20
+      
+      // Use AI translator to translate the last technical entry if they have one
+      if (profile.entradasBitacora && profile.entradasBitacora.length > 0) {
+        const lastTechnicalLog = profile.entradasBitacora[0].titulo
+        const translationRes = await api.get('/api/v1/ai/familia/traductor', {
+          params: { logroTecnico: lastTechnicalLog }
+        })
+        
+        // Add as a dynamic FAQ or milestone description
+        applicantMilestones.value[1].desc = `Traducción IA del último avance: ${translationRes.data}`
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching child data:', error)
+  }
+}
+
+onMounted(() => {
+  if (isApplicantLinked.value) {
+    fetchChildData()
+  }
+})
 
 // FAQs for Student (Alejandro)
 const studentFaqs = [
@@ -335,10 +371,10 @@ const sidebarItems = [
             <Card class="p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between items-center text-center bg-gradient-to-b from-slate-50 to-white">
               <span class="text-sm font-bold uppercase tracking-wider text-gray-500">Progreso Vocacional</span>
               <div class="my-4 text-center">
-                <div class="text-6xl font-black text-blue-600">100%</div>
-                <span class="text-xs font-bold text-emerald-600 block mt-1">✓ Test Vocacional Completado</span>
+                <div class="text-6xl font-black text-blue-600">{{ applicantProgress }}%</div>
+                <span class="text-xs font-bold text-emerald-600 block mt-1">✓ Test Vocacional {{ applicantProgress === 100 ? 'Completado' : 'Pendiente' }}</span>
               </div>
-              <Progress :value="100" class="h-3.5 w-full bg-blue-100" />
+              <Progress :value="applicantProgress" class="h-3.5 w-full bg-blue-100" />
               <span class="text-[11px] text-gray-500 font-bold mt-2">Siguiente paso: Presentación de certificado escolar</span>
             </Card>
           </div>

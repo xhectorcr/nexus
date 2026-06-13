@@ -18,6 +18,8 @@ import {
 } from 'lucide-vue-next'
 
 import { useAuth } from '@/lib/auth'
+import { api } from '@/lib/api'
+import { ref, onMounted } from 'vue'
 
 const auth = useAuth()
 
@@ -33,13 +35,38 @@ const stats = [
   { label: "Asistencia Global", value: "92%", icon: markRaw(TrendingUp), color: "#2E7D32" },
 ]
 
-const upcomingTasks = [
+const upcomingTasks = ref([
   { title: "Entrega de Proyecto Final", course: "Ingeniería de Software", date: "Mañana, 23:59", type: "Tarea", urgent: true },
   { title: "Práctica Calificada 3", course: "Cálculo II", date: "15 Jun, 10:00", type: "Examen", urgent: false },
   { title: "Foro de Discusión", course: "Ética Profesional", date: "16 Jun, 23:59", type: "Foro", urgent: false },
-]
+])
 
+const conexionesMentoria = ref<any[]>([])
 
+const fetchEstudianteData = async () => {
+  try {
+    const estudianteId = 2 // Mocked ID for Estudiante Alejandro
+    const conRes = await api.get(`/api/conexiones/estudiante/${estudianteId}`)
+    conexionesMentoria.value = conRes.data.data || []
+    
+    // Si tiene conexiones pendientes, las agregamos como tareas urgentes (Demo)
+    if (conexionesMentoria.value.length > 0) {
+      upcomingTasks.value.unshift({
+        title: `Mentiría solicitada por Postulante #${conexionesMentoria.value[0].postulanteId}`,
+        course: "Conexión P2P NEXUS",
+        date: "Lo antes posible",
+        type: "Mentoría",
+        urgent: true
+      })
+    }
+  } catch (e) {
+    console.error("Error fetching mentor connections", e)
+  }
+}
+
+onMounted(() => {
+  fetchEstudianteData()
+})
 </script>
 
 <template>
