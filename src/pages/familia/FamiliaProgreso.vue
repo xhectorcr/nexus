@@ -26,9 +26,9 @@ const auth = useAuth()
 const router = useRouter()
 
 onMounted(() => {
-  if (!auth.state.user?.linkedStudentCode) {
-    router.push('/familia')
-  }
+  // if (!auth.state.user?.linkedStudentCode) {
+  //   router.push('/familia')
+  // }
 })
 
 const vistaFacil = ref(true)
@@ -53,21 +53,20 @@ const hablar = (texto: string) => {
 }
 
 const moduleProgress = computed(() => {
-  const isPostulante = auth.state.user?.linkedStudentRole === 'postulante'
   return [
     { 
       name: "1. Autoconocimiento", 
       desc: "Ayuda a tu hijo a descubrir qué le gusta, qué valora y qué se le da bien.",
-      pct: isPostulante ? 100 : 80, 
+      pct: 80, 
       status: "completed", 
       color: "#2E7D32" 
     },
     { 
       name: "2. Intereses Profesionales", 
       desc: "Explora qué trabajos y profesiones del mundo real le llaman más la atención.",
-      pct: isPostulante ? 100 : 60, 
-      status: isPostulante ? "completed" : "in_progress", 
-      color: isPostulante ? "#2E7D32" : "#D4A017" 
+      pct: 60, 
+      status: "in_progress", 
+      color: "#D4A017" 
     },
     { 
       name: "3. Inteligencias Múltiples", 
@@ -79,23 +78,23 @@ const moduleProgress = computed(() => {
     { 
       name: "4. Personalidad y Aptitudes", 
       desc: "Analiza cómo se comporta y resuelve problemas en el día a día.",
-      pct: isPostulante ? 100 : 50, 
-      status: isPostulante ? "completed" : "in_progress", 
-      color: isPostulante ? "#2E7D32" : "#D4A017" 
+      pct: 50, 
+      status: "in_progress", 
+      color: "#D4A017" 
     },
     { 
       name: "5. Simulador de Carreras", 
       desc: "Permite a tu hijo 'probar' virtualmente cómo es un día de trabajo en cada profesión.",
-      pct: isPostulante ? 100 : 0, 
-      status: isPostulante ? "completed" : "pending", 
-      color: isPostulante ? "#2E7D32" : "#9ca3af" 
+      pct: 0, 
+      status: "pending", 
+      color: "#9ca3af" 
     },
     { 
       name: "6. Proyecto Final de Vocación", 
       desc: "El resumen de todo su camino donde elige su carrera definitiva.",
-      pct: isPostulante ? 100 : 20, 
-      status: isPostulante ? "completed" : "in_progress", 
-      color: isPostulante ? "#2E7D32" : "#D4A017" 
+      pct: 20, 
+      status: "in_progress", 
+      color: "#D4A017" 
     },
   ]
 })
@@ -107,25 +106,15 @@ const statusConfig: Record<string, any> = {
 }
 
 const stats = computed(() => {
-  const isPostulante = auth.state.user?.linkedStudentRole === 'postulante'
   return [
-    { label: "Horas dedicadas a estudiar", value: isPostulante ? "10 horas" : "8 horas y media", icon: markRaw(Clock), color: "#1565C0" },
-    { label: "Temas completados", value: isPostulante ? "6 de 6 listos" : "2 de 6 listos", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-    { label: "Tareas para hacer hoy", value: isPostulante ? "Ninguna" : "5 pendientes", icon: markRaw(Target), color: "#F9A825" },
-    { label: "Calificación promedio", value: isPostulante ? "9.5 (Sobresaliente)" : "8.4 (Muy buena)", icon: markRaw(Star), color: "#D4A017" },
+    { label: "Horas dedicadas a estudiar", value: "8 horas y media", icon: markRaw(Clock), color: "#1565C0" },
+    { label: "Temas completados", value: "2 de 6 listos", icon: markRaw(CheckCircle2), color: "#2E7D32" },
+    { label: "Tareas para hacer hoy", value: "5 pendientes", icon: markRaw(Target), color: "#F9A825" },
+    { label: "Calificación promedio", value: "8.4 (Muy buena)", icon: markRaw(Star), color: "#D4A017" },
   ]
 })
 
 const timeline = computed(() => {
-  const isPostulante = auth.state.user?.linkedStudentRole === 'postulante'
-  if (isPostulante) {
-    return [
-      { event: "Completó la elección final de carrera", time: "hace 1 hora", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-      { event: "Completó la simulación de carrera", time: "hace 3 horas", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-      { event: "Ganó la medalla 'Vocación Definida'", time: "hace 4 horas", icon: markRaw(Star), color: "#D4A017" },
-      { event: "Completó el test de personalidad", time: "ayer", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-    ]
-  }
   return [
     { event: "Completó el test de Intereses Profesionales", time: "hace 2 horas", icon: markRaw(CheckCircle2), color: "#2E7D32" },
     { event: "Vio el video explicativo de Personalidad", time: "hace 5 horas", icon: markRaw(Clock), color: "#1565C0" },

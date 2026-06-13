@@ -46,8 +46,7 @@ const hablar = (texto: string) => {
 }
 
 // Voice Synthesis Helper
-const isApplicantLinked = computed(() => auth.state.user?.linkedStudentRole === 'postulante')
-const isStudentLinked = computed(() => !isApplicantLinked.value)
+const isAnyLinked = computed(() => !!auth.state.user?.linkedStudentCode)
 
 // Student: Alejandro Lastra Torres
 const studentMilestones = [
@@ -56,15 +55,6 @@ const studentMilestones = [
   { title: "Paso 3: Test de Fortalezas", completed: true, date: "5 Jun 2026", desc: "Identificó sus talentos en lógica y matemáticas." },
   { title: "Paso 4: Charla con tutor vocacional", completed: false, date: "Pendiente", desc: "Conversará 15 minutos en videollamada para resolver dudas." },
   { title: "Paso 5: Elección de su carrera", completed: false, date: "Pendiente", desc: "Decidirá la carrera final para iniciar su postulación." },
-]
-
-// Applicant: Camila Ramos
-const applicantMilestones = [
-  { title: "Paso 1: Test Vocacional Completado", completed: true, date: "12 Jun 2026", desc: "Camila completó la evaluación con 95% en Ingeniería de Sistemas." },
-  { title: "Paso 2: Plan de Admisión UTP", completed: true, date: "13 Jun 2026", desc: "Se generó el plan de estudios adaptado a su perfil vocacional." },
-  { title: "Paso 3: Envío de Documentos", completed: false, date: "Pendiente", desc: "Subir certificado de estudios de secundaria para evaluación preferencial." },
-  { title: "Paso 4: Charla Informativa de Admisión", completed: false, date: "Pendiente", desc: "Charla interactiva en el campus sobre becas y financiamiento." },
-  { title: "Paso 5: Matrícula e Ingreso", completed: false, date: "Pendiente", desc: "Formalización de ingreso a la Universidad Tecnológica del Perú." },
 ]
 
 // FAQs for Student (Alejandro)
@@ -86,29 +76,10 @@ const studentFaqs = [
   }
 ]
 
-// FAQs for Applicant (Camila)
-const applicantFaqs = [
-  {
-    q: "¿Cómo le fue a Camila en su Test Vocacional?",
-    a: "¡Muy bien! NEXUS IA analizó sus respuestas y determinó un 95% de afinidad con la carrera de Ingeniería de Sistemas por sus habilidades de resolución lógica.",
-    voiceText: "A Camila le fue excelente. El sistema inteligente calculó noventa y cinco por ciento de afinidad con Ingeniería de Sistemas."
-  },
-  {
-    q: "¿Cuál es el siguiente paso para su ingreso?",
-    a: "Debe enviar su certificado de estudios escolares de secundaria para validar su ingreso directo por vía preferencial a la UTP.",
-    voiceText: "El siguiente paso es enviar su certificado de estudios escolares para asegurar su ingreso preferencial."
-  },
-  {
-    q: "¿Qué beneficios tiene por dar el test vocacional?",
-    a: "Tiene acceso prioritario a charlas de admisión, visitas guiadas al laboratorio de computación y asesoría de becas UTP.",
-    voiceText: "Tiene acceso preferencial a charlas en el campus y visitas guiadas a laboratorios de computación."
-  }
-]
-
 const selectedFaq = ref<number | null>(null)
 
-const toggleFaq = (index: number, isApp: boolean) => {
-  const list = isApp ? applicantFaqs : studentFaqs
+const toggleFaq = (index: number) => {
+  const list = studentFaqs
   if (selectedFaq.value === index) {
     selectedFaq.value = null
   } else {
@@ -206,7 +177,7 @@ const sidebarItems = [
               <h2 class="font-black text-gray-900 leading-none" :class="vistaFacil ? 'text-2xl' : 'text-xl'">
                 {{ auth.state.user?.studentName || 'Alejandro Lastra Torres' }} 
                 <Badge class="ml-2 bg-amber-100 text-amber-800 border-amber-200 font-extrabold text-[10px] uppercase">
-                  {{ isStudentLinked ? 'Estudiante UTP' : 'Postulante / Admisión' }}
+                  Estudiante UTP
                 </Badge>
               </h2>
             </div>
@@ -214,9 +185,9 @@ const sidebarItems = [
         </div>
 
         <!-- ============================================== -->
-        <!-- SUB-CASO B1: EL ALUMNO ES ESTUDIANTE (ALEJANDRO) -->
+        <!-- DETALLE DEL ALUMNO ESTUDIANTE -->
         <!-- ============================================== -->
-        <div v-if="isStudentLinked" class="space-y-6">
+        <div class="space-y-6">
           <div class="grid md:grid-cols-[1.5fr_1fr] gap-6">
             <!-- Semáforo de Estado Simplificado -->
             <Card class="border-2 border-emerald-300 bg-emerald-50/30 p-6 rounded-2xl shadow-sm space-y-4">
@@ -244,7 +215,9 @@ const sidebarItems = [
                 <div class="text-6xl font-black text-emerald-600">68%</div>
               </div>
               <Progress :value="68" class="h-3.5 w-full bg-emerald-100" />
-              <span class="text-xs text-gray-500 font-bold mt-2">Faltan solo 2 pasos para completar el ciclo académico</span>
+              <p class="text-xs text-gray-500 mt-4">
+                Si no conoces el código, puedes usar: <strong>NEX-ALE-2026</strong>.
+              </p>
             </Card>
           </div>
 
@@ -293,108 +266,13 @@ const sidebarItems = [
                 :key="i"
                 class="border rounded-xl cursor-pointer hover:border-amber-400 hover:bg-amber-50/10 transition-all overflow-hidden"
                 :class="selectedFaq === i ? 'border-amber-500 bg-amber-50/20' : 'border-gray-200'"
-                @click="toggleFaq(i, false)"
+                @click="toggleFaq(i)"
               >
                 <div class="p-4 flex items-center justify-between font-bold text-gray-800" :class="vistaFacil ? 'text-lg' : 'text-sm'">
                   <span>{{ faq.q }}</span>
                   <ChevronDown class="w-4 h-4" />
                 </div>
                 <div v-if="selectedFaq === i" class="px-4 pb-4 border-t border-amber-100 pt-2 bg-white text-gray-700 leading-relaxed" :class="vistaFacil ? 'text-base' : 'text-sm'">
-                  {{ faq.a }}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- SUB-CASO B2: EL ALUMNO ES POSTULANTE (CAMILA) -->
-        <!-- ============================================== -->
-        <div v-if="isApplicantLinked" class="space-y-6">
-          <div class="grid md:grid-cols-[1.5fr_1fr] gap-6">
-            <!-- Semáforo de Estado para Admisión -->
-            <Card class="border-2 border-blue-300 bg-blue-50/30 p-6 rounded-2xl shadow-sm space-y-4">
-              <div class="flex items-center gap-2.5">
-                <span class="w-4 h-4 rounded-full bg-blue-500 animate-pulse"></span>
-                <span class="text-sm font-extrabold text-blue-800 uppercase tracking-wider">Admisión: Proceso Iniciado</span>
-              </div>
-              <h2 class="font-black text-gray-900 leading-tight" :class="vistaFacil ? 'text-3xl' : 'text-2xl'">
-                Camila completó su Test Vocacional
-              </h2>
-              <p class="text-gray-700 leading-relaxed" :class="vistaFacil ? 'text-lg' : 'text-base'">
-                El sistema de Inteligencia Artificial evaluó el perfil de Camila Ramos y recomendó la carrera de **Ingeniería de Sistemas** con **95% de afinidad**. Está en la fase de recopilación de requisitos de ingreso directo.
-              </p>
-              <div class="pt-2">
-                <Badge class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-3 py-1 rounded-full text-xs">
-                  Afinidad UTP: Ingeniería de Sistemas (95%)
-                </Badge>
-              </div>
-            </Card>
-
-            <!-- Detalle de Progreso Vocacional -->
-            <Card class="p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between items-center text-center bg-gradient-to-b from-slate-50 to-white">
-              <span class="text-sm font-bold uppercase tracking-wider text-gray-500">Progreso Vocacional</span>
-              <div class="my-4 text-center">
-                <div class="text-6xl font-black text-blue-600">100%</div>
-                <span class="text-xs font-bold text-emerald-600 block mt-1">✓ Test Vocacional Completado</span>
-              </div>
-              <Progress :value="100" class="h-3.5 w-full bg-blue-100" />
-              <span class="text-[11px] text-gray-500 font-bold mt-2">Siguiente paso: Presentación de certificado escolar</span>
-            </Card>
-          </div>
-
-          <!-- Milestones de Admisión -->
-          <Card class="border-gray-200 shadow-sm">
-            <CardHeader class="p-5 border-b border-gray-100">
-              <CardTitle class="font-extrabold text-gray-900 flex items-center gap-2" :class="vistaFacil ? 'text-xl' : 'text-lg'">
-                <TrendingUp class="w-5 h-5 text-blue-600" />
-                Camino de Admisión y Vocación de Camila
-              </CardTitle>
-              <CardDescription :class="vistaFacil ? 'text-base' : 'text-sm'">
-                Muestra los pasos requeridos para que Camila complete su ingreso y matrícula en la UTP.
-              </CardDescription>
-            </CardHeader>
-            <CardContent class="p-5 space-y-4">
-              <div class="relative pl-6 border-l-2 border-gray-200 space-y-4 ml-3">
-                <div v-for="(m, idx) in applicantMilestones" :key="idx" class="relative">
-                  <span class="absolute -left-[35px] top-1 w-6 h-6 rounded-full flex items-center justify-center border-2 font-bold text-xs"
-                    :class="m.completed ? 'bg-blue-600 border-blue-100 text-white' : 'bg-white border-gray-300 text-gray-400'">
-                    <CheckCircle2 v-if="m.completed" class="w-4 h-4 fill-white text-blue-600" />
-                    <span v-else>•</span>
-                  </span>
-                  <div class="p-4 rounded-xl border" :class="m.completed ? 'border-blue-200 bg-blue-50/10' : 'border-gray-100 bg-gray-50/30 opacity-75'">
-                    <h4 class="font-bold text-gray-900" :class="vistaFacil ? 'text-lg' : 'text-base'">{{ m.title }}</h4>
-                    <p class="text-gray-600 text-xs sm:text-sm mt-0.5">{{ m.desc }}</p>
-                    <Badge class="mt-2 text-[10px] font-bold" :class="m.completed ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'">
-                      {{ m.completed ? 'Listo' : 'Próximamente' }}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- FAQs del Postulante -->
-          <Card class="border-gray-200 shadow-sm">
-            <CardHeader class="p-5 border-b border-gray-100 bg-blue-50/10">
-              <CardTitle class="font-extrabold text-gray-900 flex items-center gap-2" :class="vistaFacil ? 'text-xl' : 'text-lg'">
-                <HelpCircle class="w-5 h-5 text-blue-600" />
-                Preguntas frecuentes de Admisión de Camila
-              </CardTitle>
-            </CardHeader>
-            <CardContent class="p-5 space-y-3">
-              <div 
-                v-for="(faq, i) in applicantFaqs" 
-                :key="i"
-                class="border rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/10 transition-all overflow-hidden"
-                :class="selectedFaq === i ? 'border-blue-500 bg-blue-50/20' : 'border-gray-200'"
-                @click="toggleFaq(i, true)"
-              >
-                <div class="p-4 flex items-center justify-between font-bold text-gray-800" :class="vistaFacil ? 'text-lg' : 'text-sm'">
-                  <span>{{ faq.q }}</span>
-                  <ChevronDown class="w-4 h-4" />
-                </div>
-                <div v-if="selectedFaq === i" class="px-4 pb-4 border-t border-blue-100 pt-2 bg-white text-gray-700 leading-relaxed" :class="vistaFacil ? 'text-base' : 'text-sm'">
                   {{ faq.a }}
                 </div>
               </div>

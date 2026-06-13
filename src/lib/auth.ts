@@ -91,14 +91,6 @@ export function linkStudent(code: string): boolean {
       localStorage.setItem('nexus_linked_student_code', cleanCode)
       return true
     }
-  } else if (cleanCode === 'NEX-CAM-2026') {
-    if (state.user && state.user.role === 'familia') {
-      state.user.linkedStudentCode = cleanCode
-      state.user.studentName = 'Camila Ramos'
-      state.user.linkedStudentRole = 'postulante'
-      localStorage.setItem('nexus_linked_student_code', cleanCode)
-      return true
-    }
   }
   return false
 }
