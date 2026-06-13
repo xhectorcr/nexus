@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { markRaw } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuth } from '@/lib/auth'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,7 +15,6 @@ import {
   Gamepad2,
   BookOpen,
   MessageCircle,
-  Trophy,
   Sparkles,
   ArrowRight,
   Brain,
@@ -23,8 +24,10 @@ import {
   Plus,
   Send,
   Circle,
-  Map as MapIcon,
 } from 'lucide-vue-next'
+
+const router = useRouter()
+const auth = useAuth()
 
 const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
@@ -57,24 +60,65 @@ const entries = ["Proyecto de robótica", "Clase de programación", "Meta: apren
     moduleColor="#B50E30"
   >
     <div class="space-y-6">
-      <!-- Hero Section -->
-      <Card class="bg-gradient-to-br from-[#B50E30] to-[#8F0B26] border-0 text-white overflow-hidden relative">
+      <!-- Hero Section (Test NOT completed) -->
+      <Card v-if="!auth.state.user?.careerSuggestion" class="bg-gradient-to-br from-[#B50E30] to-[#8F0B26] border-0 text-white overflow-hidden relative">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
         <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24" />
-        <CardHeader class="relative z-10">
-          <div class="flex items-center gap-2 mb-2">
-            <Sparkles class="w-5 h-5" />
-            <span class="text-sm font-medium">Comenzar mi viaje</span>
+        <CardHeader class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <Sparkles class="w-5 h-5" />
+              <span class="text-sm font-medium">Comenzar mi viaje</span>
+            </div>
+            <CardTitle class="text-3xl">Descubre tu verdadera vocación</CardTitle>
+            <CardDescription class="text-white/90 mt-1">
+              Explora tus intereses, desarrolla tu perfil y conecta con mentores
+            </CardDescription>
           </div>
-          <CardTitle class="text-3xl">Descubre tu verdadera vocación</CardTitle>
-          <CardDescription class="text-white/90">
-            Explora tus intereses, desarrolla tu perfil y conecta con mentores
-          </CardDescription>
+          <div class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0">
+            <span class="text-[10px] uppercase font-bold text-red-200 tracking-wider">Código de Vinculación Familiar</span>
+            <span class="font-mono font-black text-white text-lg tracking-widest">NEX-CAM-2026</span>
+          </div>
         </CardHeader>
         <CardContent class="relative z-10">
-          <Button size="lg" class="bg-white text-[#B50E30] hover:bg-white/90">
+          <Button size="lg" class="bg-white text-[#B50E30] hover:bg-white/90" @click="router.push('/postulante/test')">
             Comenzar evaluación
             <ArrowRight class="w-5 h-5 ml-2" />
+          </Button>
+        </CardContent>
+      </Card>
+
+      <!-- Hero Section (Test COMPLETED) -->
+      <Card v-else class="bg-gradient-to-br from-blue-900 via-[#1565C0] to-indigo-900 border-0 text-white overflow-hidden relative shadow-lg">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-xl" />
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24 blur-xl" />
+        <CardHeader class="relative z-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-2">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <Badge class="bg-green-500 text-white border-0 font-bold px-2.5 py-0.5 text-[11px] rounded-full">
+                Test Completado
+              </Badge>
+              <span class="text-xs text-blue-200 font-semibold">Recomendación NEXUS IA</span>
+            </div>
+            <CardTitle class="text-3xl sm:text-4xl font-extrabold flex flex-wrap items-center gap-2 leading-tight">
+              ¡Hola, {{ auth.state.user?.name.split(' ')[0] || 'Camila' }}! Tu carrera ideal es:
+              <span class="text-yellow-300 underline underline-offset-4 decoration-yellow-400/50">{{ auth.state.user.careerSuggestion }}</span>
+            </CardTitle>
+            <CardDescription class="text-blue-100 text-sm max-w-2xl mt-2 leading-relaxed">
+              Tu perfil destaca por aptitudes lógicas y organizacionales avanzadas. Ya puedes acceder a la malla curricular de tu carrera y coordinar una visita guiada al campus de la UTP.
+            </CardDescription>
+          </div>
+          <div class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0">
+            <span class="text-[10px] uppercase font-bold text-blue-200 tracking-wider">Código de Vinculación Familiar</span>
+            <span class="font-mono font-black text-white text-lg tracking-widest">NEX-CAM-2026</span>
+          </div>
+        </CardHeader>
+        <CardContent class="relative z-10 flex flex-wrap gap-3 pt-4">
+          <Button class="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold rounded-xl px-5 h-11 shadow-sm">
+            Ver Plan de Estudios UTP
+          </Button>
+          <Button variant="outline" class="text-white border-white/20 hover:bg-white/10 font-bold rounded-xl h-11 px-5" @click="router.push('/postulante/test')">
+            Volver a dar el test
           </Button>
         </CardContent>
       </Card>

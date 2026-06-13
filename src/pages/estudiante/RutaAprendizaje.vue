@@ -9,8 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Home,
   Map as MapIcon,
-  BookOpen,
-  Trophy,
   Star,
   Lock,
   CheckCircle2,
@@ -28,6 +26,9 @@ import {
   TrendingUp,
 } from 'lucide-vue-next'
 import ModuleDetail from '@/components/ruta/ModuleDetail.vue'
+import { useAuth } from '@/lib/auth'
+
+const auth = useAuth()
 
 const modules = [
   {
@@ -193,7 +194,7 @@ const totalProgress = 72 / 6
               </div>
               <div class="flex-1 text-white">
                 <p class="text-white/70 text-xs">Bienvenido de vuelta</p>
-                <h2 class="font-semibold text-lg leading-tight">Alejandro Lastra</h2>
+                <h2 class="font-semibold text-lg leading-tight">{{ auth.state.user?.name || 'Alejandro Lastra' }}</h2>
                 <div class="flex items-center gap-1.5 mt-1">
                   <GraduationCap class="w-3.5 h-3.5 text-[#D4A017]" />
                   <span class="text-[#D4A017] text-xs font-medium">Ingeniería de Sistemas - V Ciclo</span>

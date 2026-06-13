@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, markRaw } from 'vue'
+import { ref, markRaw, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import {
   Home,
   TrendingUp,
-  FileText,
   CheckCircle2,
   Clock,
   Target,
@@ -16,13 +16,20 @@ import {
   Calendar,
   Bell,
   Star,
-  ChevronRight,
   Volume2,
   VolumeX,
-  Sparkles,
-  HelpCircle,
-  AlertCircle
+  Sparkles
 } from 'lucide-vue-next'
+
+import { useAuth } from '@/lib/auth'
+const auth = useAuth()
+const router = useRouter()
+
+onMounted(() => {
+  if (!auth.state.user?.linkedStudentCode) {
+    router.push('/familia')
+  }
+})
 
 const vistaFacil = ref(true)
 const reproduciendoText = ref('')
@@ -45,50 +52,53 @@ const hablar = (texto: string) => {
   }
 }
 
-const moduleProgress = [
-  { 
-    name: "1. Autoconocimiento", 
-    desc: "Ayuda a tu hijo a descubrir qué le gusta, qué valora y qué se le da bien.",
-    pct: 80, 
-    status: "completed", 
-    color: "#2E7D32" 
-  },
-  { 
-    name: "2. Intereses Profesionales", 
-    desc: "Explora qué trabajos y profesiones del mundo real le llaman más la atención.",
-    pct: 60, 
-    status: "in_progress", 
-    color: "#D4A017" 
-  },
-  { 
-    name: "3. Inteligencias Múltiples", 
-    desc: "Prueba para saber en qué destaca (números, palabras, arte, lógica, etc.).",
-    pct: 100, 
-    status: "completed", 
-    color: "#2E7D32" 
-  },
-  { 
-    name: "4. Personalidad y Aptitudes", 
-    desc: "Analiza cómo se comporta y resuelve problemas en el día a día.",
-    pct: 50, 
-    status: "in_progress", 
-    color: "#D4A017" 
-  },
-  { 
-    name: "5. Simulador de Carreras", 
-    desc: "Permite a tu hijo 'probar' virtualmente cómo es un día de trabajo en cada profesión.",
-    pct: 0, 
-    status: "pending", 
-    color: "#9ca3af" 
-  },
-  { 
-    name: "6. Proyecto Final de Vocación", 
-    desc: "El resumen de todo su camino donde elige su carrera definitiva.",
-    pct: 20, 
-    status: "in_progress", 
-    color: "#D4A017" 
-  },
-]
+const moduleProgress = computed(() => {
+  const isPostulante = auth.state.user?.linkedStudentRole === 'postulante'
+  return [
+    { 
+      name: "1. Autoconocimiento", 
+      desc: "Ayuda a tu hijo a descubrir qué le gusta, qué valora y qué se le da bien.",
+      pct: isPostulante ? 100 : 80, 
+      status: "completed", 
+      color: "#2E7D32" 
+    },
+    { 
+      name: "2. Intereses Profesionales", 
+      desc: "Explora qué trabajos y profesiones del mundo real le llaman más la atención.",
+      pct: isPostulante ? 100 : 60, 
+      status: isPostulante ? "completed" : "in_progress", 
+      color: isPostulante ? "#2E7D32" : "#D4A017" 
+    },
+    { 
+      name: "3. Inteligencias Múltiples", 
+      desc: "Prueba para saber en qué destaca (números, palabras, arte, lógica, etc.).",
+      pct: 100, 
+      status: "completed", 
+      color: "#2E7D32" 
+    },
+    { 
+      name: "4. Personalidad y Aptitudes", 
+      desc: "Analiza cómo se comporta y resuelve problemas en el día a día.",
+      pct: isPostulante ? 100 : 50, 
+      status: isPostulante ? "completed" : "in_progress", 
+      color: isPostulante ? "#2E7D32" : "#D4A017" 
+    },
+    { 
+      name: "5. Simulador de Carreras", 
+      desc: "Permite a tu hijo 'probar' virtualmente cómo es un día de trabajo en cada profesión.",
+      pct: isPostulante ? 100 : 0, 
+      status: isPostulante ? "completed" : "pending", 
+      color: isPostulante ? "#2E7D32" : "#9ca3af" 
+    },
+    { 
+      name: "6. Proyecto Final de Vocación", 
+      desc: "El resumen de todo su camino donde elige su carrera definitiva.",
+      pct: isPostulante ? 100 : 20, 
+      status: isPostulante ? "completed" : "in_progress", 
+      color: isPostulante ? "#2E7D32" : "#D4A017" 
+    },
+  ]
+})
 
 const statusConfig: Record<string, any> = {
   completed: { label: "¡Terminado!", bg: "bg-emerald-100", text: "text-emerald-800 font-bold", dot: "#2E7D32" },
@@ -96,28 +106,46 @@ const statusConfig: Record<string, any> = {
   pending: { label: "Por empezar", bg: "bg-gray-100", text: "text-gray-600", dot: "#9ca3af" },
 }
 
-const stats = [
-  { label: "Horas dedicadas a estudiar", value: "8 horas y media", icon: markRaw(Clock), color: "#1565C0" },
-  { label: "Temas completados", value: "2 de 6 listos", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-  { label: "Tareas para hacer hoy", value: "5 pendientes", icon: markRaw(Target), color: "#F9A825" },
-  { label: "Calificación promedio", value: "8.4 (Muy buena)", icon: markRaw(Star), color: "#D4A017" },
-]
+const stats = computed(() => {
+  const isPostulante = auth.state.user?.linkedStudentRole === 'postulante'
+  return [
+    { label: "Horas dedicadas a estudiar", value: isPostulante ? "10 horas" : "8 horas y media", icon: markRaw(Clock), color: "#1565C0" },
+    { label: "Temas completados", value: isPostulante ? "6 de 6 listos" : "2 de 6 listos", icon: markRaw(CheckCircle2), color: "#2E7D32" },
+    { label: "Tareas para hacer hoy", value: isPostulante ? "Ninguna" : "5 pendientes", icon: markRaw(Target), color: "#F9A825" },
+    { label: "Calificación promedio", value: isPostulante ? "9.5 (Sobresaliente)" : "8.4 (Muy buena)", icon: markRaw(Star), color: "#D4A017" },
+  ]
+})
 
-const timeline = [
-  { event: "Completó el test de Intereses Profesionales", time: "hace 2 horas", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-  { event: "Vio el video explicativo de Personalidad", time: "hace 5 horas", icon: markRaw(Clock), color: "#1565C0" },
-  { event: "Ganó la medalla virtual 'Explorador'", time: "ayer", icon: markRaw(Star), color: "#D4A017" },
-  { event: "Completó el tema de Inteligencias Múltiples", time: "hace 3 días", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-]
+const timeline = computed(() => {
+  const isPostulante = auth.state.user?.linkedStudentRole === 'postulante'
+  if (isPostulante) {
+    return [
+      { event: "Completó la elección final de carrera", time: "hace 1 hora", icon: markRaw(CheckCircle2), color: "#2E7D32" },
+      { event: "Completó la simulación de carrera", time: "hace 3 horas", icon: markRaw(CheckCircle2), color: "#2E7D32" },
+      { event: "Ganó la medalla 'Vocación Definida'", time: "hace 4 horas", icon: markRaw(Star), color: "#D4A017" },
+      { event: "Completó el test de personalidad", time: "ayer", icon: markRaw(CheckCircle2), color: "#2E7D32" },
+    ]
+  }
+  return [
+    { event: "Completó el test de Intereses Profesionales", time: "hace 2 horas", icon: markRaw(CheckCircle2), color: "#2E7D32" },
+    { event: "Vio el video explicativo de Personalidad", time: "hace 5 horas", icon: markRaw(Clock), color: "#1565C0" },
+    { event: "Ganó la medalla virtual 'Explorador'", time: "ayer", icon: markRaw(Star), color: "#D4A017" },
+    { event: "Completó el tema de Inteligencias Múltiples", time: "hace 3 días", icon: markRaw(CheckCircle2), color: "#2E7D32" },
+  ]
+})
 
 const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/familia" },
   { icon: markRaw(TrendingUp), label: "Progreso de tu hijo", href: "/familia/progreso" },
 ]
 
-const overallPct = Math.round(moduleProgress.reduce((s, m) => s + m.pct, 0) / moduleProgress.length)
+const overallPct = computed(() => {
+  return Math.round(moduleProgress.value.reduce((s, m) => s + m.pct, 0) / moduleProgress.value.length)
+})
 
-const textoExplicacionIA = "Hola. Te explico el avance de Alejandro en palabras sencillas: Él va muy bien. Ya completó dos temas completos de su ruta vocacional y está avanzando en otros tres. Destaca mucho en lógica y tecnología, por eso el sistema le sugiere considerar Ingeniería de Sistemas. Su racha de doce días seguidos de estudio demuestra que es constante. No te preocupes por los temas pendientes, son normales en su camino y aún tiene tiempo suficiente."
+const studentNameShort = computed(() => auth.state.user?.studentName ? auth.state.user.studentName.split(' ')[0] : 'Alejandro')
+const careerName = computed(() => auth.state.user?.careerSuggestion || 'Ingeniería de Sistemas')
+const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${studentNameShort.value} en palabras sencillas: Va muy bien. Ya completó los temas vocacionales principales de su ruta. Destaca en resolución de problemas, por lo que el sistema inteligente sugiere la carrera de ${careerName.value}. Sigue apoyando a tu hijo/a en esta etapa.`)
 </script>
 
 <template>
@@ -179,7 +207,7 @@ const textoExplicacionIA = "Hola. Te explico el avance de Alejandro en palabras 
               Explicación Sencilla de NEXUS Inteligencia Artificial
             </h3>
             <p class="text-gray-800 leading-relaxed font-medium" :class="vistaFacil ? 'text-lg' : 'text-base'">
-              "¡Hola! Te explico el avance de Alejandro en palabras sencillas: Él <strong>va muy bien</strong>. Ya completó 2 temas completos de su ruta vocacional y está avanzando activamente en otros 3. Destaca mucho en lógica y tecnología, por eso el sistema le sugiere considerar <strong>Ingeniería de Sistemas</strong>. Su racha de 12 días seguidos de estudio demuestra que es constante. No te preocupes por los temas pendientes, son normales en su camino y aún tiene tiempo suficiente."
+              "{{ textoExplicacionIA }}"
             </p>
             <div class="flex flex-wrap items-center gap-3 pt-2">
               <Button 
@@ -212,9 +240,9 @@ const textoExplicacionIA = "Hola. Te explico el avance de Alejandro en palabras 
               </Avatar>
               <div class="text-white space-y-1">
                 <span class="text-white/70 text-xs font-semibold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded">Hijo Registrado</span>
-                <h1 class="text-2xl font-black">Alejandro Lastra Torres</h1>
+                <h1 class="text-2xl font-black">{{ auth.state.user?.studentName || 'Alejandro Lastra Torres' }}</h1>
                 <p class="text-sm font-semibold text-white/90">
-                  Carrera recomendada por IA: <span class="bg-white text-[#D4A017] px-2 py-0.5 rounded ml-1 font-extrabold text-xs">Ingeniería de Sistemas</span>
+                  Carrera recomendada por IA: <span class="bg-white text-[#D4A017] px-2 py-0.5 rounded ml-1 font-extrabold text-xs">{{ auth.state.user?.careerSuggestion || 'Ingeniería de Sistemas' }}</span>
                 </p>
               </div>
             </div>

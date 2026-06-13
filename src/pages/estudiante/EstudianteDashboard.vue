@@ -17,6 +17,10 @@ import {
   Award
 } from 'lucide-vue-next'
 
+import { useAuth } from '@/lib/auth'
+
+const auth = useAuth()
+
 const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/estudiante" },
   { icon: markRaw(MapIcon), label: "Ruta de Aprendizaje", href: "/estudiante/ruta" },
@@ -53,11 +57,17 @@ const upcomingTasks = [
       <Card class="bg-gradient-to-br from-[#B50E30] to-[#8F0B26] border-0 text-white overflow-hidden relative">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
         <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24" />
-        <CardHeader class="relative z-10">
-          <CardTitle class="text-3xl">¡Hola de nuevo, Estudiante!</CardTitle>
-          <CardDescription class="text-white/90">
-            Tienes 1 tarea importante pendiente para mañana. Mantén el buen ritmo.
-          </CardDescription>
+        <CardHeader class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <CardTitle class="text-3xl">¡Hola de nuevo, {{ auth.state.user?.name ? auth.state.user.name.split(' ')[0] : 'Estudiante' }}!</CardTitle>
+            <CardDescription class="text-white/90 mt-1">
+              Tienes 1 tarea importante pendiente para mañana. Mantén el buen ritmo.
+            </CardDescription>
+          </div>
+          <div class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0">
+            <span class="text-[10px] uppercase font-bold text-red-200 tracking-wider">Código de Vinculación Familiar</span>
+            <span class="font-mono font-black text-white text-lg tracking-widest">NEX-ALE-2026</span>
+          </div>
         </CardHeader>
         <CardContent class="relative z-10 flex gap-4">
           <Button class="bg-white text-[#B50E30] hover:bg-white/90">

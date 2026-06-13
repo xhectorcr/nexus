@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
@@ -51,6 +52,13 @@ const props = withDefaults(defineProps<{
 
 const sidebarOpen = ref(true)
 const route = useRoute()
+const router = useRouter()
+const auth = useAuth()
+
+const handleLogout = () => {
+  auth.logout()
+  router.push('/')
+}
 
 const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor} 0%, ${props.moduleColor}DD 100%)`)
 </script>
@@ -179,26 +187,26 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
                 <Button variant="ghost" class="flex items-center gap-2 px-2">
                   <Avatar class="w-8 h-8">
                     <AvatarImage src="" />
-                    <AvatarFallback :style="{ backgroundColor: moduleColor }" class="text-white">
-                      U
+                    <AvatarFallback :style="{ backgroundColor: moduleColor }" class="text-white font-bold">
+                      {{ auth.state.user?.name ? auth.state.user.name[0] : 'U' }}
                     </AvatarFallback>
                   </Avatar>
-                  <span class="text-sm font-medium hidden md:block">Usuario</span>
+                  <span class="text-sm font-medium hidden md:block">{{ auth.state.user?.name || 'Usuario' }}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem @click="router.push('/')" class="cursor-pointer">
                   <Home class="w-4 h-4 mr-2" />
-                  Inicio
+                  Página Inicio
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem class="cursor-pointer">
                   <Settings class="w-4 h-4 mr-2" />
                   Configuración
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem @click="handleLogout" class="cursor-pointer text-red-600 focus:text-red-700">
                   <LogOut class="w-4 h-4 mr-2" />
                   Cerrar Sesión
                 </DropdownMenuItem>

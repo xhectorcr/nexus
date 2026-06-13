@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { GraduationCap, Users, Sparkles, ArrowRight } from 'lucide-vue-next'
+
+const router = useRouter()
 </script>
 
 <template>
@@ -18,7 +20,8 @@ import { GraduationCap, Users, Sparkles, ArrowRight } from 'lucide-vue-next'
         </div>
         <nav class="flex items-center gap-4">
           <Button variant="ghost">Sobre nosotros</Button>
-          <Button variant="ghost">Contacto</Button>
+          <Button variant="ghost" @click="router.push('/login')">Iniciar Sesión</Button>
+          <Button class="bg-[#B50E30] hover:bg-[#8F0B26] text-white" @click="router.push('/register')">Registrarse</Button>
         </nav>
       </div>
     </header>
@@ -41,12 +44,12 @@ import { GraduationCap, Users, Sparkles, ArrowRight } from 'lucide-vue-next'
           a través de inteligencia artificial y experiencias personalizadas.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" class="bg-[#B50E30] hover:bg-[#8F0B26] text-white">
+          <Button size="lg" class="bg-[#B50E30] hover:bg-[#8F0B26] text-white" @click="router.push('/register')">
             Comenzar ahora
             <ArrowRight class="w-5 h-5 ml-2" />
           </Button>
-          <Button size="lg" variant="outline">
-            Ver demo
+          <Button size="lg" variant="outline" @click="router.push('/login')">
+            Ya tengo cuenta
           </Button>
         </div>
       </div>
