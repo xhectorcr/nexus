@@ -111,20 +111,15 @@ export async function loginWithGoogle(
       idToken: credential,
     });
 
-    console.log("Google response:", response.data);
+    const userData = response.data.data;
 
-    const jwtToken = response.data.token;
+    const jwtToken = userData.token;
     localStorage.setItem("nexus_jwt_token", jwtToken);
-
-    const fullName =
-      response.data.name ||
-      `${response.data.nombre || ""} ${response.data.apellido || ""}`.trim() ||
-      response.data.email;
 
     state.user = {
       role: role as any,
-      username: response.data.email,
-      name: fullName,
+      username: userData.email,
+      name: `${userData.nombre} ${userData.apellido || ""}`.trim(),
     };
 
     return state.user;
