@@ -114,8 +114,7 @@ const stats = [
     title="NEXUS UTP+"
     subtitle="Intermediario inteligente impulsado por IA"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/' },
-      { label: 'UTP+' },
+      { label: 'Inicio' }
     ]"
     moduleColor="#1565C0"
   >

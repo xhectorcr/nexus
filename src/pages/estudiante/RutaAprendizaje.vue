@@ -32,8 +32,8 @@ import ModuleDetail from '@/components/ruta/ModuleDetail.vue'
 const modules = [
   {
     id: 1,
-    title: "Autoconocimiento y Exploración Vocacional",
-    description: "Descúbrete a ti mismo y tus fortalezas únicas",
+    title: "Fundamentos de Programación",
+    description: "Lógica básica y estructuras de control",
     icon: Heart,
     color: "#B50E30",
     status: "available",
@@ -47,8 +47,8 @@ const modules = [
   },
   {
     id: 2,
-    title: "Inteligencias Múltiples",
-    description: "Identifica tu tipo de inteligencia dominante",
+    title: "Algoritmos y Estructuras de Datos",
+    description: "Optimización y manejo eficiente de información",
     icon: Brain,
     color: "#1565C0",
     status: "locked",
@@ -62,8 +62,8 @@ const modules = [
   },
   {
     id: 3,
-    title: "Intereses Profesionales",
-    description: "Mapea tus pasiones hacia oportunidades reales",
+    title: "Arquitectura de Computadoras",
+    description: "Entiende el hardware y sistemas operativos",
     icon: Target,
     color: "#B50E30",
     status: "locked",
@@ -77,8 +77,8 @@ const modules = [
   },
   {
     id: 4,
-    title: "Personalidad y Aptitudes",
-    description: "Test MBTI adaptado al contexto universitario peruano",
+    title: "Bases de Datos Relacionales",
+    description: "Diseño y modelado de datos con SQL",
     icon: Zap,
     color: "#D4A017",
     status: "locked",
@@ -92,8 +92,8 @@ const modules = [
   },
   {
     id: 5,
-    title: "Simulador de Carreras",
-    description: "Vive un día como profesional de diferentes campos",
+    title: "Ingeniería de Software",
+    description: "Metodologías ágiles y ciclo de vida del software",
     icon: Gamepad2,
     color: "#1565C0",
     status: "locked",
@@ -107,8 +107,8 @@ const modules = [
   },
   {
     id: 6,
-    title: "Proyecto Final de Vocación",
-    description: "Consolida tu decisión con un plan de vida universitario",
+    title: "Desarrollo Web Full-Stack",
+    description: "Construcción de aplicaciones web modernas",
     icon: Star,
     color: "#B50E30",
     status: "locked",
@@ -142,12 +142,11 @@ const totalProgress = 72 / 6
   <DashboardLayout
     v-if="selectedModule"
     :sidebarItems="sidebarItems"
-    title="NEXUS Postulante"
+    title="NEXUS Estudiante"
     subtitle="Ruta de Aprendizaje"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/' },
-      { label: 'Postulante', href: '/postulante' },
-      { label: 'Ruta de Aprendizaje', href: '/ruta' },
+      { label: 'Inicio', href: '/estudiante' },
+      { label: 'Ruta de Aprendizaje', href: '/estudiante/ruta' },
       { label: selectedModule.title },
     ]"
     moduleColor="#B50E30"
@@ -168,11 +167,10 @@ const totalProgress = 72 / 6
   <DashboardLayout
     v-else
     :sidebarItems="sidebarItems"
-    title="NEXUS Postulante"
+    title="NEXUS Estudiante"
     subtitle="Tu ruta personalizada hacia la vocación perfecta"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/' },
-      { label: 'Postulante', href: '/postulante' },
+      { label: 'Inicio', href: '/estudiante' },
       { label: 'Ruta de Aprendizaje' },
     ]"
     moduleColor="#B50E30"
@@ -197,8 +195,8 @@ const totalProgress = 72 / 6
                 <p class="text-white/70 text-xs">Bienvenido de vuelta</p>
                 <h2 class="font-semibold text-lg leading-tight">Alejandro Lastra</h2>
                 <div class="flex items-center gap-1.5 mt-1">
-                  <Zap class="w-3.5 h-3.5 text-[#D4A017]" />
-                  <span class="text-[#D4A017] text-xs font-medium">IA sugiere: Ingeniería de Sistemas</span>
+                  <GraduationCap class="w-3.5 h-3.5 text-[#D4A017]" />
+                  <span class="text-[#D4A017] text-xs font-medium">Ingeniería de Sistemas - V Ciclo</span>
                 </div>
               </div>
               <div class="text-right text-white">
@@ -246,132 +244,136 @@ const totalProgress = 72 / 6
         </Card>
 
         <!-- Path Map -->
-        <Card class="border border-border overflow-hidden">
-          <CardHeader class="pb-3 pt-5 px-5">
+        <Card class="border-0 overflow-hidden bg-[#121826] text-white shadow-xl">
+          <CardHeader class="pb-3 pt-5 px-5 border-b border-white/10 relative z-10 bg-[#121826]">
             <div class="flex items-center justify-between">
               <div>
-                <CardTitle class="flex items-center gap-2">
+                <CardTitle class="flex items-center gap-2 text-white">
                   <MapIcon class="w-5 h-5 text-[#B50E30]" />
-                  Ruta de Aprendizaje Vocacional
+                  Ruta de Aprendizaje Académico
                 </CardTitle>
-                <p class="text-sm text-muted-foreground mt-0.5">Completa cada módulo para desbloquear el siguiente</p>
+                <p class="text-sm text-white/50 mt-0.5 font-mono">Completa cada módulo para desbloquear el siguiente</p>
               </div>
-              <Badge variant="outline" class="text-[#B50E30] border-[#B50E30]/30">
+              <Badge variant="outline" class="text-white border-white/20 bg-white/5">
                 1 / 6 módulos
               </Badge>
             </div>
           </CardHeader>
-          <CardContent class="px-5 pb-6">
-            <div class="relative min-h-[700px]">
-              <!-- Background dots grid -->
+          <CardContent class="px-0 pb-0 bg-[#121826]">
+            <div class="relative min-h-[800px] w-full overflow-hidden">
+              <!-- Background grid (optional cyber look) -->
               <div
-                class="absolute inset-0 rounded-xl"
-                style="background-image: radial-gradient(circle, #D9D9D9 1px, transparent 1px); background-size: 28px 28px;"
+                class="absolute inset-0"
+                style="background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 30px 30px;"
               />
 
-              <!-- Path SVG -->
-              <svg
-                class="absolute inset-0 w-full h-full"
-                viewBox="0 0 400 700"
-                preserveAspectRatio="none"
-                style="z-index: 1;"
-              >
-                <path
-                  d="M 80 80 C 80 130, 200 130, 200 180 C 200 230, 320 230, 320 280 C 320 330, 200 330, 200 380 C 200 430, 80 430, 80 480 C 80 530, 200 530, 200 580 C 200 620, 320 620, 320 650"
-                  fill="none"
-                  stroke="#e5e7eb"
-                  stroke-width="6"
-                  stroke-dasharray="0"
-                />
-                <path
-                  d="M 80 80 C 80 130, 200 130, 200 180"
-                  fill="none"
-                  stroke="#B50E30"
-                  stroke-width="6"
+              <!-- Path Lines SVG -->
+              <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+                <defs>
+                  <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="4" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                  <linearGradient id="line-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#EF4444" />
+                    <stop offset="100%" stop-color="#991B1B" />
+                  </linearGradient>
+                </defs>
+                <line
+                  v-for="i in modules.length - 1"
+                  :key="'line-'+i"
+                  :x1="((i - 1) % 2 === 0) ? '35%' : '65%'"
+                  :y1="`${100 * ((i - 1) + 0.5) / modules.length}%`"
+                  :x2="(i % 2 === 0) ? '35%' : '65%'"
+                  :y2="`${100 * (i + 0.5) / modules.length}%`"
+                  :stroke="modules[i-1].status === 'available' && modules[i].status === 'available' ? '#EF4444' : (modules[i-1].status === 'available' ? '#991B1B' : '#374151')"
+                  stroke-width="3"
+                  :stroke-dasharray="modules[i-1].status === 'available' && modules[i].status === 'available' ? '8 6' : '0'"
+                  :class="modules[i-1].status === 'available' && modules[i].status === 'available' ? 'animate-[dash_2s_linear_infinite]' : ''"
                   stroke-linecap="round"
                 />
-                <circle v-for="(d, i) in [{ cx: 80, cy: 80 }, { cx: 320, cy: 280 }, { cx: 80, cy: 480 }, { cx: 320, cy: 650 }]" :key="i" :cx="d.cx" :cy="d.cy" r="4" fill="#D9D9D9" />
               </svg>
 
-              <!-- Module Cards -->
-              <div class="relative z-10 space-y-12 py-2">
-                <div v-for="(mod, idx) in modules" :key="mod.id" :class="`flex ${idx % 2 === 0 ? 'justify-start' : 'justify-end'} relative`">
+              <!-- Modules -->
+              <div class="relative z-10 w-full h-full flex flex-col justify-between py-12" :style="{ minHeight: `${modules.length * 150}px` }">
+                <div v-for="(mod, idx) in modules" :key="mod.id" class="flex-1 flex items-center relative w-full">
                   <div
-                    class="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-white shadow z-20"
+                    class="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group"
+                    :class="mod.status === 'available' ? 'cursor-pointer' : 'cursor-not-allowed'"
                     :style="{
-                      left: idx % 2 === 0 ? 'calc(50% - 8px)' : undefined,
-                      right: idx % 2 === 0 ? undefined : 'calc(50% - 8px)',
-                      backgroundColor: mod.status === 'available' ? mod.color : '#9ca3af',
+                      left: idx % 2 === 0 ? '35%' : '65%',
+                      top: '50%'
                     }"
-                  />
-
-                  <div
-                    :class="`w-[45%] transition-all duration-200 ${
-                      mod.status === 'available' ? 'hover:scale-[1.02] cursor-pointer' : 'opacity-60 cursor-not-allowed'
-                    }`"
                     @click="mod.status === 'available' && (selectedModule = mod)"
                   >
+                    <!-- Current Module Indicator -->
+                    <div v-if="mod.status === 'available' && mod.progress > 0 && mod.progress < 100" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#EF4444] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-red-500/30 whitespace-nowrap z-30 tracking-wide uppercase transition-transform group-hover:-translate-y-2">
+                      Continuar Ruta
+                      <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#EF4444]"></div>
+                    </div>
+
+                    <!-- Isometric Platform SVG -->
+                    <div class="relative z-20">
+                      <svg width="150" height="120" viewBox="0 0 150 120" class="drop-shadow-2xl overflow-visible">
+                        <g>
+                          <!-- Base Shadow -->
+                          <ellipse cx="75" cy="100" rx="45" ry="15" fill="black" fill-opacity="0.5" class="transition-transform duration-500 group-hover:scale-90 opacity-60" />
+                          
+                          <!-- Lower Base Platform (Fixed) -->
+                          <g class="transform translate-y-6">
+                            <polygon points="75,30 135,60 75,90 15,60" fill="#1F2937" />
+                            <polygon points="15,60 75,90 75,100 15,70" fill="#111827" />
+                            <polygon points="75,90 135,60 135,70 75,100" fill="#030712" />
+                            <polygon points="75,30 135,60 75,90 15,60" fill="none" stroke="#374151" stroke-width="1" />
+                          </g>
+
+                          <!-- Connecting Beam (if available) -->
+                          <polygon v-if="mod.status === 'available'" points="65,40 85,40 85,90 65,90" fill="#EF4444" opacity="0.15" filter="url(#glow-red)" />
+                          <polygon v-if="mod.status === 'available'" points="70,40 80,40 80,90 70,90" fill="#EF4444" opacity="0.3" />
+
+                          <!-- Floating Top Layer (Animates on hover) -->
+                          <g :class="`transition-all duration-500 ease-out ${mod.status === 'available' ? 'group-hover:-translate-y-4' : 'opacity-60'}`">
+                            <!-- Top Face -->
+                            <polygon points="75,10 135,40 75,70 15,40" :fill="mod.status === 'available' ? '#EF4444' : '#4B5563'" />
+                            <polygon points="75,10 135,40 75,70 15,40" fill="white" fill-opacity="0.1" />
+                            <!-- Inner Diamond Pattern -->
+                            <polygon v-if="mod.status === 'available'" points="75,22 120,44 75,66 30,44" fill="none" stroke="#FECACA" stroke-width="1.5" opacity="0.6" />
+                            <polygon v-if="mod.status === 'available'" points="75,30 105,45 75,60 45,45" :fill="'#B91C1C'" opacity="0.4" />
+                            
+                            <!-- Left Face -->
+                            <polygon points="15,40 75,70 75,80 15,50" :fill="mod.status === 'available' ? '#DC2626' : '#374151'" />
+                            <polygon points="15,40 75,70 75,80 15,50" fill="black" fill-opacity="0.2" />
+                            
+                            <!-- Right Face -->
+                            <polygon points="75,70 135,40 135,50 75,80" :fill="mod.status === 'available' ? '#B91C1C' : '#1F2937'" />
+                            <polygon points="75,70 135,40 135,50 75,80" fill="black" fill-opacity="0.4" />
+                            
+                            <!-- Top Edge Highlights -->
+                            <polyline v-if="mod.status === 'available'" points="15,40 75,70 135,40" fill="none" stroke="#FECACA" stroke-width="2" opacity="0.9" />
+                          </g>
+                        </g>
+                      </svg>
+                    </div>
+
+                    <!-- Text Label next to the node -->
                     <div
-                      class="rounded-2xl border bg-card shadow-sm overflow-hidden"
-                      :style="{
-                        borderColor: mod.status === 'available' ? `${mod.color}40` : '#e5e7eb',
-                        boxShadow: mod.status === 'available' ? `0 4px 20px ${mod.color}18` : undefined,
-                      }"
+                      class="absolute whitespace-nowrap top-[45%] -translate-y-1/2 transition-transform duration-500"
+                      :class="[
+                        idx % 2 === 0 ? 'left-[100%] ml-2 text-left' : 'right-[100%] mr-2 text-right',
+                        mod.status === 'available' ? 'group-hover:-translate-y-4' : ''
+                      ]"
                     >
-                      <!-- Top accent strip -->
-                      <div class="h-1" :style="{ backgroundColor: mod.status === 'available' ? mod.color : '#e5e7eb' }" />
-
-                      <div class="p-4">
-                        <div class="flex items-start justify-between mb-3">
-                          <div
-                            class="w-10 h-10 rounded-xl flex items-center justify-center"
-                            :style="{ backgroundColor: mod.status === 'available' ? `${mod.color}15` : '#f3f4f6' }"
-                          >
-                            <component :is="mod.icon" class="w-5 h-5" :style="{ color: mod.status === 'available' ? mod.color : '#9ca3af' }" />
-                          </div>
-                          <div v-if="mod.status !== 'available'" class="bg-gray-100 rounded-lg p-1.5">
-                            <Lock class="w-3.5 h-3.5 text-gray-400" />
-                          </div>
-                          <Badge v-if="mod.status === 'available' && mod.progress > 0" class="text-xs border-0" :style="{ backgroundColor: `${mod.color}15`, color: mod.color }">
-                            {{ mod.progress }}%
-                          </Badge>
-                        </div>
-
-                        <div class="mb-1 flex items-center gap-1.5">
-                          <span class="text-xs text-muted-foreground">#{{ idx + 1 }}</span>
-                        </div>
-                        <h3 :class="`text-sm font-semibold leading-tight mb-1 ${mod.status !== 'available' ? 'text-muted-foreground' : ''}`">
-                          {{ mod.title }}
-                        </h3>
-                        <p class="text-xs text-muted-foreground leading-relaxed">
-                          {{ mod.status === 'available' ? mod.description : 'Completa el módulo anterior para desbloquear este contenido.' }}
-                        </p>
-
-                        <template v-if="mod.status === 'available'">
-                          <div v-if="mod.progress > 0" class="mt-3 mb-2">
-                            <Progress :value="mod.progress" class="h-1.5" />
-                          </div>
-                          <div class="flex items-center justify-between mt-3">
-                            <div class="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Clock class="w-3 h-3" />
-                              {{ mod.duration }}
-                            </div>
-                            <Button
-                              size="sm"
-                              class="h-7 text-xs px-3 text-white"
-                              :style="{ backgroundColor: mod.color }"
-                            >
-                              {{ mod.progress > 0 ? "Continuar" : "Comenzar" }}
-                              <ChevronRight class="w-3 h-3 ml-0.5" />
-                            </Button>
-                          </div>
-                        </template>
-
-                        <div v-else class="flex items-center gap-1 mt-3">
-                          <Lightbulb class="w-3 h-3 text-muted-foreground" />
-                          <span class="text-xs text-muted-foreground">{{ mod.duration }} · {{ mod.activities }} actividades</span>
-                        </div>
-                      </div>
+                      <p class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider">Módulo {{ idx + 1 }}</p>
+                      <h3 :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status === 'available' ? 'text-white drop-shadow-md' : 'text-gray-500'}`">
+                        {{ mod.title }}
+                      </h3>
+                      <p v-if="mod.status === 'available'" class="text-[11px] mt-1.5 flex items-center font-medium" :class="idx % 2 === 0 ? 'justify-start text-[#EF4444]' : 'justify-end text-[#EF4444]'">
+                        <component :is="mod.icon" class="w-3.5 h-3.5 mr-1" />
+                        {{ mod.progress }}% completado
+                      </p>
+                      <p v-else class="text-[11px] text-gray-500 mt-1.5 flex items-center font-medium" :class="idx % 2 === 0 ? 'justify-start' : 'justify-end'">
+                        <Lock class="w-3 h-3 mr-1" /> Bloqueado
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -392,7 +394,7 @@ const totalProgress = 72 / 6
               </div>
               <div>
                 <p class="text-xs text-muted-foreground">Continuar donde lo dejaste</p>
-                <p class="text-sm font-semibold">Autoconocimiento</p>
+                <p class="text-sm font-semibold">Fundamentos de Programación</p>
               </div>
             </div>
             <div class="mb-3">
@@ -463,8 +465,8 @@ const totalProgress = 72 / 6
                 <Target class="w-4 h-4 text-white" />
               </div>
               <div>
-                <p class="text-xs text-[#D4A017] font-semibold uppercase tracking-wide">Próximo objetivo</p>
-                <p class="text-sm font-medium mt-0.5">Completar el Minijuego de Autoconocimiento</p>
+                <p class="text-xs text-muted-foreground">Completado ayer</p>
+                <p class="text-sm font-medium mt-0.5">Completar el Laboratorio de Programación</p>
                 <p class="text-xs text-muted-foreground mt-1">+50 XP al completar</p>
               </div>
             </div>

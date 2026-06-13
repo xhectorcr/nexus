@@ -52,8 +52,7 @@ const entries = ["Proyecto de robótica", "Clase de programación", "Meta: apren
     title="NEXUS Postulante"
     subtitle="Descubre tu verdadera vocación con inteligencia artificial"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/' },
-      { label: 'Postulante' }
+      { label: 'Inicio' }
     ]"
     moduleColor="#B50E30"
   >

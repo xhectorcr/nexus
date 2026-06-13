@@ -149,8 +149,7 @@ const stats = [
     title="Portal para Padres"
     subtitle="Acompaña a tu hijo en la elección de su carrera profesional de forma fácil"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/' },
-      { label: 'Familia' },
+      { label: 'Inicio' }
     ]"
     moduleColor="#D4A017"
   >

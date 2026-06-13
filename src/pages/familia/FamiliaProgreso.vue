@@ -126,8 +126,7 @@ const textoExplicacionIA = "Hola. Te explico el avance de Alejandro en palabras 
     title="Notas y Progreso"
     subtitle="Mira en detalle lo que tu hijo ha avanzado en NEXUS"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/' },
-      { label: 'Familia', href: '/familia' },
+      { label: 'Inicio', href: '/familia' },
       { label: 'Progreso' },
     ]"
     moduleColor="#D4A017"
