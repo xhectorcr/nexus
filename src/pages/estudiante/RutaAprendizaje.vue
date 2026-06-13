@@ -31,98 +31,7 @@ import { api } from '@/lib/api'
 
 const auth = useAuth()
 
-const modules = [
-  {
-    id: 1,
-    title: "Completaste el Test Vocacional",
-    description: "Evaluación inicial completada con éxito.",
-    icon: CheckCircle2,
-    color: "#2E7D32",
-    status: "available",
-    progress: 100,
-    duration: "10 min",
-    activities: 1,
-    completedActivities: 1,
-    xp: 50,
-    badge: "Iniciador",
-    position: { x: 10, side: "left" },
-  },
-  {
-    id: 2,
-    title: "Calculando siguiente paso...",
-    description: "La IA de Nexus está evaluando tu Perfil Inteligente",
-    icon: Brain,
-    color: "#1565C0",
-    status: "available",
-    progress: 0,
-    duration: "IA",
-    activities: 1,
-    completedActivities: 0,
-    xp: 0,
-    badge: "Pensador",
-    position: { x: 55, side: "right" },
-  },
-  {
-    id: 3,
-    title: "Arquitectura de Computadoras",
-    description: "Entiende el hardware y sistemas operativos",
-    icon: Target,
-    color: "#B50E30",
-    status: "locked",
-    progress: 0,
-    duration: "2 horas",
-    activities: 5,
-    completedActivities: 0,
-    xp: 180,
-    badge: "Visionario",
-    position: { x: 10, side: "left" },
-  },
-  {
-    id: 4,
-    title: "Bases de Datos Relacionales",
-    description: "Diseño y modelado de datos con SQL",
-    icon: Zap,
-    color: "#D4A017",
-    status: "locked",
-    progress: 0,
-    duration: "3 horas",
-    activities: 6,
-    completedActivities: 0,
-    xp: 220,
-    badge: "Estratega",
-    position: { x: 55, side: "right" },
-  },
-  {
-    id: 5,
-    title: "Ingeniería de Software",
-    description: "Metodologías ágiles y ciclo de vida del software",
-    icon: Gamepad2,
-    color: "#1565C0",
-    status: "locked",
-    progress: 0,
-    duration: "4 horas",
-    activities: 7,
-    completedActivities: 0,
-    xp: 300,
-    badge: "Simulador",
-    position: { x: 10, side: "left" },
-  },
-  {
-    id: 6,
-    title: "Desarrollo Web Full-Stack",
-    description: "Construcción de aplicaciones web modernas",
-    icon: Star,
-    color: "#B50E30",
-    status: "locked",
-    progress: 0,
-    duration: "5 horas",
-    activities: 8,
-    completedActivities: 0,
-    xp: 500,
-    badge: "Vocation Master",
-    position: { x: 55, side: "right" },
-  },
-]
+const modules = ref<any[]>([])
 
 const badges = [
   { name: "Explorador", icon: "🧭", earned: true },
@@ -139,25 +48,62 @@ const sidebarItems = [
 const selectedModule = ref<any>(null)
 const totalProgress = ref(20)
 const nextNodeRef = ref<any>(null)
+const isGenerating = ref(false)
 
 const fetchNextIntelligentNode = async () => {
   try {
     const postulanteId = 1 // Mock ID
-    const res = await api.get(`/api/v1/ai/ruta/siguiente-nodo`, { params: { postulanteId } })
-    if (res.data && res.data.data) {
-      const nodoIA = res.data.data
-      nextNodeRef.value = nodoIA
-      
-      // Update visual map (Node 2)
-      modules[1].title = nodoIA.tituloNodo
-      modules[1].description = nodoIA.descripcionExperiencia
-      modules[1].xp = nodoIA.xpRecompensa || 30
-      
-      if (nodoIA.tipoRecomendado === 'FORO') modules[1].icon = Gamepad2
-      if (nodoIA.tipoRecomendado === 'MENTORIA') modules[1].icon = Star
+    // Get Current Journey
+    try {
+      const journeyRes = await api.get(`/api/journeys/postulante/${postulanteId}/activo`)
+      if (journeyRes.data && journeyRes.data.success) {
+        const journey = journeyRes.data.data
+        totalProgress.value = journey.porcentajeProgreso || 0
+        
+        // Map nodes to UI modules
+        modules.value = journey.nodos.map((nodo: any, i: number) => {
+          let color = "#1565C0"
+          let icon = Target
+          if (nodo.tipo === 'FORO') { color = "#D4A017"; icon = MapIcon }
+          if (nodo.tipo === 'LABERINTO') { color = "#B50E30"; icon = Gamepad2 }
+          if (nodo.tipo === 'MENTORIA') { color = "#2E7D32"; icon = Star }
+          
+          return {
+            id: nodo.id,
+            title: nodo.titulo,
+            description: nodo.descripcion,
+            icon,
+            color,
+            status: nodo.estado === 'COMPLETADO' ? 'completed' : (nodo.estado === 'PENDIENTE' && (i===0 || journey.nodos[i-1].estado === 'COMPLETADO') ? 'available' : 'locked'),
+            progress: nodo.estado === 'COMPLETADO' ? 100 : 0,
+            xp: nodo.xp
+          }
+        })
+      }
+    } catch (e) {
+      console.error("No se encontro un journey activo, debes generar uno con IA.")
+      modules.value = [] // Empty UI until generation
     }
   } catch (error) {
     console.error("No se pudo obtener el nodo de la IA", error)
+  }
+}
+
+const generarNuevaRutaCompleta = async () => {
+  try {
+    isGenerating.value = true
+    const postulanteId = 1 // Mock ID
+    const res = await api.post(`/api/v1/ai/ruta/generar-completa?postulanteId=${postulanteId}`)
+    if (res.data && res.data.success) {
+      // Reload the page or fetch new nodes
+      alert("¡Ruta completa generada exitosamente con IA!")
+      await fetchNextIntelligentNode()
+    }
+  } catch (error) {
+    console.error("Error generando ruta completa", error)
+    alert("Ocurrió un error generando la ruta.")
+  } finally {
+    isGenerating.value = false
   }
 }
 
@@ -207,21 +153,21 @@ onMounted(() => {
       <!-- Left: Map + Modules -->
       <div class="space-y-4">
         <!-- Student Header Card -->
-        <Card class="border-0 overflow-hidden" style="background: linear-gradient(135deg, #B50E30 0%, #8F0B26 60%, #1565C0 100%)">
+        <Card class="overflow-hidden border-0" style="background: linear-gradient(135deg, #B50E30 0%, #8F0B26 60%, #1565C0 100%)">
           <CardContent class="p-5">
             <div class="flex items-center gap-4">
               <div class="relative">
                 <Avatar class="w-16 h-16 ring-2 ring-white/40">
                   <AvatarImage src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop" />
-                  <AvatarFallback class="bg-white/20 text-white">AL</AvatarFallback>
+                  <AvatarFallback class="text-white bg-white/20">AL</AvatarFallback>
                 </Avatar>
                 <div class="absolute -bottom-1 -right-1 bg-[#D4A017] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   Nv.3
                 </div>
               </div>
               <div class="flex-1 text-white">
-                <p class="text-white/70 text-xs">Bienvenido de vuelta</p>
-                <h2 class="font-semibold text-lg leading-tight">{{ auth.state.user?.name || 'Alejandro Lastra' }}</h2>
+                <p class="text-xs text-white/70">Bienvenido de vuelta</p>
+                <h2 class="text-lg font-semibold leading-tight">{{ auth.state.user?.name || 'Alejandro Lastra' }}</h2>
                 <div class="flex items-center gap-1.5 mt-1">
                   <GraduationCap class="w-3.5 h-3.5 text-[#D4A017]" />
                   <span class="text-[#D4A017] text-xs font-medium">Ingeniería de Sistemas - V Ciclo</span>
@@ -229,7 +175,7 @@ onMounted(() => {
               </div>
               <div class="text-right text-white">
                 <div class="text-2xl font-bold">72%</div>
-                <div class="text-white/60 text-xs">completado</div>
+                <div class="text-xs text-white/60">completado</div>
                 <div class="flex items-center justify-end gap-1 mt-1.5">
                   <Flame class="w-3.5 h-3.5 text-orange-400" />
                   <span class="text-xs text-orange-300">12 días seguidos</span>
@@ -242,9 +188,9 @@ onMounted(() => {
                 <span>Progreso General</span>
                 <span>{{ Math.round(totalProgress) }}% total</span>
               </div>
-              <div class="w-full bg-white/20 rounded-full h-2">
+              <div class="w-full h-2 rounded-full bg-white/20">
                 <div
-                  class="h-2 rounded-full transition-all duration-700"
+                  class="h-2 transition-all duration-700 rounded-full"
                   :style="{ width: `${totalProgress}%`, background: 'linear-gradient(90deg, #D4A017, #F0C040)' }"
                 />
               </div>
@@ -262,7 +208,7 @@ onMounted(() => {
                 {{ b.icon }}
               </div>
               <div class="ml-auto">
-                <Badge class="bg-white/20 text-white border-0 text-xs">
+                <Badge class="text-xs text-white border-0 bg-white/20">
                   <TrendingUp class="w-3 h-3 mr-1" />
                   450 XP
                 </Badge>
@@ -282,9 +228,22 @@ onMounted(() => {
                 </CardTitle>
                 <p class="text-sm text-white/50 mt-0.5 font-mono">El siguiente nodo es dinámico y se adapta a tu perfil actual.</p>
               </div>
-              <Badge variant="outline" class="text-white border-white/20 bg-white/5">
-                1 / 6 módulos
-              </Badge>
+              <div class="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  class="text-white border-white/20 bg-white/5 hover:bg-white/10"
+                  @click="generarNuevaRutaCompleta"
+                  :disabled="isGenerating"
+                >
+                  <Sparkles v-if="!isGenerating" class="w-4 h-4 mr-2 text-yellow-400" />
+                  <span v-if="isGenerating">Calculando con NEXUS...</span>
+                  <span v-else>Generar Nueva Ruta IA</span>
+                </Button>
+                <Badge variant="outline" class="text-white border-white/20 bg-white/5">
+                  1 / 6 módulos
+                </Badge>
+              </div>
             </div>
           </CardHeader>
           <CardContent class="px-0 pb-0 bg-[#121826]">
@@ -296,7 +255,7 @@ onMounted(() => {
               />
 
               <!-- Path Lines SVG -->
-              <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+              <svg v-if="modules.length > 1" class="absolute inset-0 z-0 w-full h-full pointer-events-none">
                 <defs>
                   <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="4" result="blur" />
@@ -323,10 +282,10 @@ onMounted(() => {
               </svg>
 
               <!-- Modules -->
-              <div class="relative z-10 w-full h-full flex flex-col justify-between py-12" :style="{ minHeight: `${modules.length * 150}px` }">
-                <div v-for="(mod, idx) in modules" :key="mod.id" class="flex-1 flex items-center relative w-full">
+              <div class="relative z-10 flex flex-col justify-between w-full h-full py-12" :style="{ minHeight: `${modules.length * 150}px` }">
+                <div v-for="(mod, idx) in modules" :key="mod.id" class="relative flex items-center flex-1 w-full">
                   <div
-                    class="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group"
+                    class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2 group"
                     :class="mod.status === 'available' ? 'cursor-pointer' : 'cursor-not-allowed'"
                     :style="{
                       left: idx % 2 === 0 ? '35%' : '65%',
@@ -342,7 +301,7 @@ onMounted(() => {
 
                     <!-- Isometric Platform SVG -->
                     <div class="relative z-20">
-                      <svg width="150" height="120" viewBox="0 0 150 120" class="drop-shadow-2xl overflow-visible">
+                      <svg width="150" height="120" viewBox="0 0 150 120" class="overflow-visible drop-shadow-2xl">
                         <g>
                           <!-- Base Shadow -->
                           <ellipse cx="75" cy="100" rx="45" ry="15" fill="black" fill-opacity="0.5" class="transition-transform duration-500 group-hover:scale-90 opacity-60" />
@@ -426,7 +385,7 @@ onMounted(() => {
               </div>
             </div>
             <div class="mb-3">
-              <p class="text-xs text-muted-foreground italic line-clamp-3">
+              <p class="text-xs italic text-muted-foreground line-clamp-3">
                 {{ nextNodeRef ? nextNodeRef.justificacionIA : 'NEXUS está evaluando tu Perfil Inteligente...' }}
               </p>
             </div>
@@ -439,15 +398,15 @@ onMounted(() => {
 
         <!-- Stats -->
         <Card>
-          <CardContent class="p-4 grid grid-cols-2 gap-3">
+          <CardContent class="grid grid-cols-2 gap-3 p-4">
             <div v-for="s in [
               { label: 'Horas estudiadas', value: '8.5h', icon: Clock, color: '#1565C0' },
               { label: 'Módulos completados', value: '1', icon: CheckCircle2, color: '#2E7D32' },
               { label: 'Actividades pendientes', value: '2', icon: Circle, color: '#F9A825' },
               { label: 'Promedio evaluaciones', value: '8.4', icon: Star, color: '#D4A017' },
-            ]" :key="s.label" class="bg-secondary/50 rounded-xl p-3">
+            ]" :key="s.label" class="p-3 bg-secondary/50 rounded-xl">
               <component :is="s.icon" class="w-4 h-4 mb-1.5" :style="{ color: s.color }" />
-              <div class="font-bold text-lg leading-none">{{ s.value }}</div>
+              <div class="text-lg font-bold leading-none">{{ s.value }}</div>
               <div class="text-xs text-muted-foreground mt-0.5 leading-tight">{{ s.label }}</div>
             </div>
           </CardContent>
@@ -455,13 +414,13 @@ onMounted(() => {
 
         <!-- Module Overview -->
         <Card>
-          <CardHeader class="pb-2 pt-4 px-4">
+          <CardHeader class="px-4 pt-4 pb-2">
             <CardTitle class="text-sm">Estado de Módulos</CardTitle>
           </CardHeader>
           <CardContent class="px-4 pb-4 space-y-2">
             <div v-for="m in modules" :key="m.id" class="flex items-center gap-2.5">
               <div
-                class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full"
                 :style="{ background: m.status === 'available' ? m.color : '#e5e7eb' }"
               >
                 <CheckCircle2 v-if="m.status === 'available'" class="w-3.5 h-3.5 text-white" />
@@ -476,7 +435,7 @@ onMounted(() => {
                   />
                 </div>
               </div>
-              <span class="text-xs text-muted-foreground flex-shrink-0">
+              <span class="flex-shrink-0 text-xs text-muted-foreground">
                 {{ m.status === 'available' ? `${m.progress}%` : '—' }}
               </span>
             </div>
@@ -493,7 +452,7 @@ onMounted(() => {
               <div>
                 <p class="text-xs text-muted-foreground">Completado ayer</p>
                 <p class="text-sm font-medium mt-0.5">Completar el Laboratorio de Programación</p>
-                <p class="text-xs text-muted-foreground mt-1">+50 XP al completar</p>
+                <p class="mt-1 text-xs text-muted-foreground">+50 XP al completar</p>
               </div>
             </div>
           </CardContent>
@@ -501,7 +460,7 @@ onMounted(() => {
 
         <!-- Estimated completion -->
         <Card>
-          <CardContent class="p-4 flex items-center gap-3">
+          <CardContent class="flex items-center gap-3 p-4">
             <div class="w-8 h-8 bg-[#1565C0]/10 rounded-lg flex items-center justify-center">
               <Award class="w-4 h-4 text-[#1565C0]" />
             </div>
