@@ -17,8 +17,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Clear session if token is invalid or expired
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Clear session if token is invalid, expired, or user not authorized
       localStorage.removeItem('nexus_jwt_token');
       localStorage.removeItem('nexus_auth_user');
       window.location.href = '/login';

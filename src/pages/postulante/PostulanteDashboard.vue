@@ -49,20 +49,29 @@ const fetchDashboardData = async () => {
     // For demo purposes, we assume postulant ID is 1
     const postulantId = 1
     
-    // Fetch Bitacoras
-    const bitacorasRes = await api.get(`/api/bitacoras/postulante/${postulantId}`)
-    entries.value = bitacorasRes.data.data || []
-    
-    // Fetch Conexiones P2P
-    const conexionesRes = await api.get(`/api/conexiones/postulante/${postulantId}`)
-    const conexiones = conexionesRes.data.data || []
-    
-    // Format them for the UI
-    mentors.value = conexiones.map((con: any) => ({
-      name: con.estudianteId === 2 ? 'Alejandro Lastra' : `Mentor #${con.estudianteId}`,
-      career: 'Ingeniería de Sistemas', // Mocked until user API is joined
-      online: con.estado === 'ACTIVA'
-    }))
+    const dashboardRes = await api.get(`/api/dashboard/postulante/${postulantId}`)
+    const dashboard = dashboardRes.data.data
+
+    if (dashboard) {
+      // Set stats from dashboard.progress and dashboard.perfil
+      stats.value[1].value = "0" // Mocked until bitacoras are included in dashboard or fetched separately
+      stats.value[3].value = `${dashboard.progress?.xp || 0} XP`
+      
+      // Update other details if necessary
+      // For connections, we'd need to either fetch them separately or add to BFF. Let's fetch separately for now
+      try {
+        const conexionesRes = await api.get(`/api/conexiones/postulante/${postulantId}`)
+        const conexiones = conexionesRes.data.data || []
+        mentors.value = conexiones.map((con: any) => ({
+          name: con.estudianteId === 2 ? 'Alejandro Lastra' : `Mentor #${con.estudianteId}`,
+          career: 'Ingeniería de Sistemas',
+          online: con.estado === 'ACTIVA'
+        }))
+        stats.value[2].value = conexiones.length.toString()
+      } catch (e) {
+        console.warn("Could not fetch connections", e)
+      }
+    }
     
     // If no data, provide fallbacks
     if (mentors.value.length === 0) {
@@ -71,17 +80,6 @@ const fetchDashboardData = async () => {
         { name: "Carlos Ruiz", career: "Administración", online: true }
       ]
     }
-    
-    // Fetch XP from Perfil Inteligente
-    const perfilRes = await api.get(`/api/postulantes/${postulantId}`)
-    const perfilInteligente = perfilRes.data.data?.perfilInteligente
-    
-    stats.value[1].value = entries.value.length.toString()
-    stats.value[2].value = conexiones.length.toString()
-    if (perfilInteligente) {
-      stats.value[3].value = `${perfilInteligente.experienciaGlobal || 0} XP`
-    }
-    
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
     // Fallbacks

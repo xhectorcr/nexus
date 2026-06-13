@@ -31,98 +31,7 @@ import { api } from '@/lib/api'
 
 const auth = useAuth()
 
-const modules = [
-  {
-    id: 1,
-    title: "Completaste el Test Vocacional",
-    description: "Evaluación inicial completada con éxito.",
-    icon: CheckCircle2,
-    color: "#2E7D32",
-    status: "available",
-    progress: 100,
-    duration: "10 min",
-    activities: 1,
-    completedActivities: 1,
-    xp: 50,
-    badge: "Iniciador",
-    position: { x: 10, side: "left" },
-  },
-  {
-    id: 2,
-    title: "Calculando siguiente paso...",
-    description: "La IA de Nexus está evaluando tu Perfil Inteligente",
-    icon: Brain,
-    color: "#1565C0",
-    status: "available",
-    progress: 0,
-    duration: "IA",
-    activities: 1,
-    completedActivities: 0,
-    xp: 0,
-    badge: "Pensador",
-    position: { x: 55, side: "right" },
-  },
-  {
-    id: 3,
-    title: "Arquitectura de Computadoras",
-    description: "Entiende el hardware y sistemas operativos",
-    icon: Target,
-    color: "#B50E30",
-    status: "locked",
-    progress: 0,
-    duration: "2 horas",
-    activities: 5,
-    completedActivities: 0,
-    xp: 180,
-    badge: "Visionario",
-    position: { x: 10, side: "left" },
-  },
-  {
-    id: 4,
-    title: "Bases de Datos Relacionales",
-    description: "Diseño y modelado de datos con SQL",
-    icon: Zap,
-    color: "#D4A017",
-    status: "locked",
-    progress: 0,
-    duration: "3 horas",
-    activities: 6,
-    completedActivities: 0,
-    xp: 220,
-    badge: "Estratega",
-    position: { x: 55, side: "right" },
-  },
-  {
-    id: 5,
-    title: "Ingeniería de Software",
-    description: "Metodologías ágiles y ciclo de vida del software",
-    icon: Gamepad2,
-    color: "#1565C0",
-    status: "locked",
-    progress: 0,
-    duration: "4 horas",
-    activities: 7,
-    completedActivities: 0,
-    xp: 300,
-    badge: "Simulador",
-    position: { x: 10, side: "left" },
-  },
-  {
-    id: 6,
-    title: "Desarrollo Web Full-Stack",
-    description: "Construcción de aplicaciones web modernas",
-    icon: Star,
-    color: "#B50E30",
-    status: "locked",
-    progress: 0,
-    duration: "5 horas",
-    activities: 8,
-    completedActivities: 0,
-    xp: 500,
-    badge: "Vocation Master",
-    position: { x: 55, side: "right" },
-  },
-]
+const modules = ref<any[]>([])
 
 const badges = [
   { name: "Explorador", icon: "🧭", earned: true },
@@ -139,25 +48,62 @@ const sidebarItems = [
 const selectedModule = ref<any>(null)
 const totalProgress = ref(20)
 const nextNodeRef = ref<any>(null)
+const isGenerating = ref(false)
 
 const fetchNextIntelligentNode = async () => {
   try {
     const postulanteId = 1 // Mock ID
-    const res = await api.get(`/api/v1/ai/ruta/siguiente-nodo`, { params: { postulanteId } })
-    if (res.data && res.data.data) {
-      const nodoIA = res.data.data
-      nextNodeRef.value = nodoIA
-      
-      // Update visual map (Node 2)
-      modules[1].title = nodoIA.tituloNodo
-      modules[1].description = nodoIA.descripcionExperiencia
-      modules[1].xp = nodoIA.xpRecompensa || 30
-      
-      if (nodoIA.tipoRecomendado === 'FORO') modules[1].icon = Gamepad2
-      if (nodoIA.tipoRecomendado === 'MENTORIA') modules[1].icon = Star
+    // Get Current Journey
+    try {
+      const journeyRes = await api.get(`/api/journey/postulante/${postulanteId}/current`)
+      if (journeyRes.data && journeyRes.data.success) {
+        const journey = journeyRes.data.data
+        totalProgress.value = journey.porcentajeProgreso || 0
+        
+        // Map nodes to UI modules
+        modules.value = journey.nodos.map((nodo: any, i: number) => {
+          let color = "#1565C0"
+          let icon = Target
+          if (nodo.tipo === 'FORO') { color = "#D4A017"; icon = MapIcon }
+          if (nodo.tipo === 'LABERINTO') { color = "#B50E30"; icon = Gamepad2 }
+          if (nodo.tipo === 'MENTORIA') { color = "#2E7D32"; icon = Star }
+          
+          return {
+            id: nodo.id,
+            title: nodo.titulo,
+            description: nodo.descripcion,
+            icon,
+            color,
+            status: nodo.estado === 'COMPLETADO' ? 'completed' : (nodo.estado === 'PENDIENTE' && (i===0 || journey.nodos[i-1].estado === 'COMPLETADO') ? 'available' : 'locked'),
+            progress: nodo.estado === 'COMPLETADO' ? 100 : 0,
+            xp: nodo.xp
+          }
+        })
+      }
+    } catch (e) {
+      console.error("No se encontro un journey activo, debes generar uno con IA.")
+      modules.value = [] // Empty UI until generation
     }
   } catch (error) {
     console.error("No se pudo obtener el nodo de la IA", error)
+  }
+}
+
+const generarNuevaRutaCompleta = async () => {
+  try {
+    isGenerating.value = true
+    const postulanteId = 1 // Mock ID
+    const res = await api.post(`/api/v1/ai/ruta/generar-completa?postulanteId=${postulanteId}`)
+    if (res.data && res.data.success) {
+      // Reload the page or fetch new nodes
+      alert("¡Ruta completa generada exitosamente con IA!")
+      await fetchNextIntelligentNode()
+    }
+  } catch (error) {
+    console.error("Error generando ruta completa", error)
+    alert("Ocurrió un error generando la ruta.")
+  } finally {
+    isGenerating.value = false
   }
 }
 
@@ -282,9 +228,22 @@ onMounted(() => {
                 </CardTitle>
                 <p class="text-sm text-white/50 mt-0.5 font-mono">El siguiente nodo es dinámico y se adapta a tu perfil actual.</p>
               </div>
-              <Badge variant="outline" class="text-white border-white/20 bg-white/5">
-                1 / 6 módulos
-              </Badge>
+              <div class="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  class="text-white border-white/20 bg-white/5 hover:bg-white/10"
+                  @click="generarNuevaRutaCompleta"
+                  :disabled="isGenerating"
+                >
+                  <Sparkles v-if="!isGenerating" class="w-4 h-4 mr-2 text-yellow-400" />
+                  <span v-if="isGenerating">Calculando con NEXUS...</span>
+                  <span v-else>Generar Nueva Ruta IA</span>
+                </Button>
+                <Badge variant="outline" class="text-white border-white/20 bg-white/5">
+                  1 / 6 módulos
+                </Badge>
+              </div>
             </div>
           </CardHeader>
           <CardContent class="px-0 pb-0 bg-[#121826]">
@@ -296,7 +255,7 @@ onMounted(() => {
               />
 
               <!-- Path Lines SVG -->
-              <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+              <svg v-if="modules.length > 1" class="absolute inset-0 w-full h-full pointer-events-none z-0">
                 <defs>
                   <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="4" result="blur" />

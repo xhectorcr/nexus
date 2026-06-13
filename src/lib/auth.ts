@@ -41,13 +41,18 @@ export async function login(role: 'estudiante' | 'familia' | 'postulante', usern
   if (password && password !== 'google_mock_pass') {
     try {
       const response = await api.post('/auth/login', { email: username, password })
-      const token = response.data.token
-      localStorage.setItem('nexus_jwt_token', token)
+      const token = response.data.data?.token
+      if (token) {
+        localStorage.setItem('nexus_jwt_token', token)
+      }
       
       // Update data with real backend info if available
-      username = response.data.email || username
-      if (response.data.nombre) {
-        name = `${response.data.nombre} ${response.data.apellido || ''}`.trim()
+      const backendUser = response.data.data?.usuario
+      if (backendUser) {
+        username = backendUser.email || username
+        if (backendUser.nombre) {
+          name = `${backendUser.nombre} ${backendUser.apellido || ''}`.trim()
+        }
       }
     } catch (error) {
       console.error('API Login failed:', error)

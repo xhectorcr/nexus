@@ -45,14 +45,14 @@ const isLoading = ref(false)
 // Set default credentials helper
 const updateDefaultCredentials = (role: 'estudiante' | 'familia' | 'postulante') => {
   if (role === 'estudiante') {
-    email.value = 'estudiante@nexus.edu.pe'
-    password.value = 'nexus2026'
+    email.value = 'ana@nexus.com'
+    password.value = '123456'
   } else if (role === 'familia') {
-    email.value = 'familia@nexus.edu.pe'
-    password.value = 'nexus2026'
+    email.value = 'roberto@nexus.com'
+    password.value = '123456'
   } else if (role === 'postulante') {
-    email.value = 'postulante@nexus.edu.pe'
-    password.value = 'nexus2026'
+    email.value = 'carlos@nexus.com'
+    password.value = '123456'
   }
 }
 
