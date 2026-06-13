@@ -25,10 +25,6 @@ import {
 
 const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/utp-plus" },
-  { icon: markRaw(GraduationCap), label: "Perfil de Carrera" },
-  { icon: markRaw(Network), label: "Matchmaking IA" },
-  { icon: markRaw(Brain), label: "Análisis Bitácora" },
-  { icon: markRaw(Sparkles), label: "Recomendaciones" },
 ]
 
 const careers = [

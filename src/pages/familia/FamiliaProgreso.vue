@@ -53,9 +53,6 @@ const timeline = [
 const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/familia" },
   { icon: markRaw(TrendingUp), label: "Progreso de tu hijo", href: "/familia/progreso" },
-  { icon: markRaw(FileText), label: "Recursos" },
-  { icon: markRaw(MessageSquare), label: "Foro" },
-  { icon: markRaw(Heart), label: "Bienestar" },
 ]
 
 const overallPct = Math.round(moduleProgress.reduce((s, m) => s + m.pct, 0) / moduleProgress.length)

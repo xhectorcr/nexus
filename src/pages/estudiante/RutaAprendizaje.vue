@@ -130,11 +130,8 @@ const badges = [
 ]
 
 const sidebarItems = [
-  { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
-  { icon: markRaw(MapIcon), label: "Ruta de Aprendizaje", href: "/ruta" },
-  { icon: markRaw(BookOpen), label: "Bitácora Digital" },
-  { icon: markRaw(Trophy), label: "Logros" },
-  { icon: markRaw(Gamepad2), label: "Laberinto Vocacional" },
+  { icon: markRaw(Home), label: "Inicio", href: "/estudiante" },
+  { icon: markRaw(MapIcon), label: "Ruta de Aprendizaje", href: "/estudiante/ruta" },
 ]
 
 const selectedModule = ref<any>(null)

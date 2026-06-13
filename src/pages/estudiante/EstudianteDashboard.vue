@@ -7,8 +7,6 @@ import { Home, BookOpen, Map as MapIcon, GraduationCap } from 'lucide-vue-next'
 const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/estudiante" },
   { icon: markRaw(MapIcon), label: "Ruta de Aprendizaje", href: "/estudiante/ruta" },
-  { icon: markRaw(BookOpen), label: "Mis Cursos" },
-  { icon: markRaw(GraduationCap), label: "Logros" },
 ]
 </script>
 
@@ -21,10 +19,10 @@ const sidebarItems = [
       { label: 'Inicio', href: '/' },
       { label: 'Estudiante' }
     ]"
-    moduleColor="#1565C0"
+    moduleColor="#B50E30"
   >
     <div class="space-y-6">
-      <Card class="bg-gradient-to-br from-[#1565C0] to-[#0D47A1] border-0 text-white overflow-hidden relative">
+      <Card class="bg-gradient-to-br from-[#B50E30] to-[#8F0B26] border-0 text-white overflow-hidden relative">
         <CardHeader class="relative z-10">
           <CardTitle class="text-3xl">Bienvenido, Estudiante</CardTitle>
           <CardDescription class="text-white/90">
