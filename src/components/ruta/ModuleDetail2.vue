@@ -86,16 +86,29 @@ onMounted(async () => {
   }
 });
 
-// Mecánica 2: Lectura/Video (Barra de Energía Gamificada)
-const investigationSummary = ref("");
-const energyLevel = computed(() => {
-  const len = investigationSummary.value.trim().length;
-  if (len === 0) return { percent: 0, emoji: '😴', label: 'Esperando', color: 'bg-slate-300' };
-  if (len < 20) return { percent: len * 2, emoji: '🐣', label: 'Iniciando', color: 'bg-blue-400' };
-  if (len < 50) return { percent: len * 2, emoji: '🚶', label: 'Avanzando', color: 'bg-amber-400' };
-  if (len < 100) return { percent: Math.min(100, len), emoji: '🚀', label: 'Explorador', color: 'bg-emerald-400' };
-  return { percent: 100, emoji: '🧠', label: 'Sabio', color: 'bg-purple-500' };
-});
+// Mecánica 2: Lectura/Video (Trivia de Conocimiento Interactiva)
+const triviaOptions = [
+  { text: "Evitar hacer preguntas para no parecer inexperto", isCorrect: false },
+  { text: "Identificar el problema central y proponer soluciones iterativas", isCorrect: true },
+  { text: "Dejar que la IA resuelva todo sin entender el código", isCorrect: false },
+  { text: "Abandonar el proyecto al encontrar el primer bug", isCorrect: false },
+];
+const triviaSelected = ref<any>(null);
+const triviaStatus = ref<'idle'|'error'|'correct'>('idle');
+const shakeTriviaError = ref(false);
+
+const selectTrivia = (opt: any) => {
+  if (props.module.status === 'completed' || triviaStatus.value === 'correct') return;
+  
+  triviaSelected.value = opt;
+  if (opt.isCorrect) {
+    triviaStatus.value = 'correct';
+  } else {
+    triviaStatus.value = 'error';
+    shakeTriviaError.value = true;
+    setTimeout(() => { shakeTriviaError.value = false; }, 500);
+  }
+};
 
 // Mecánica 3: Quiz (Rompecabezas de Priorización)
 const puzzleSteps = [
@@ -140,12 +153,12 @@ const isSequenceCorrect = computed(() => {
 // Mecánica 1c: Wizard State para Entrevista
 const wizardStep = ref(0);
 const wizardQuestions = [
-  { key: 'intereses', title: 'Tus Intereses y Pasatiempos', placeholder: 'Ej. Tecnología, negocios, arte...', icon: Star },
-  { key: 'inteligenciasMultiples', title: 'Tus Inteligencias Múltiples', placeholder: 'Ej. Lógico-matemática, espacial...', icon: BrainCircuit },
-  { key: 'inteligenciaEmocional', title: 'Tu Inteligencia Emocional', placeholder: 'Ej. Alta empatía, capacidad de resolución...', icon: ListChecks },
-  { key: 'personalidad', title: 'Tu Personalidad General', placeholder: 'Ej. Introvertido, analítico, detallista...', icon: PenTool },
-  { key: 'razonamientoAbstracto', title: 'Tu Razonamiento Abstracto', placeholder: 'Ej. Facilidad para encontrar patrones...', icon: PlayCircle },
-  { key: 'perseverancia', title: 'Tu Nivel de Perseverancia', placeholder: 'Ej. Muy constante en metas a largo plazo...', icon: Trophy }
+  { key: 'intereses', title: 'Tus Intereses y Pasatiempos', type: 'select', options: ['Tecnología y Datos', 'Negocios y Liderazgo', 'Arte y Diseño', 'Ciencias de la Salud', 'Ingeniería y Construcción', 'Ciencias Sociales y Letras'], icon: Star },
+  { key: 'inteligenciasMultiples', title: 'Tu Inteligencia Principal', type: 'select', options: ['Lógico-Matemática', 'Lingüística-Verbal', 'Visual-Espacial', 'Interpersonal', 'Intrapersonal'], icon: BrainCircuit },
+  { key: 'inteligenciaEmocional', title: '¿Cómo manejas el estrés?', type: 'select', options: ['Me organizo mejor', 'Busco ayuda de mi equipo', 'Me frustro un poco pero sigo', 'Me tomo un descanso y vuelvo a intentarlo'], icon: ListChecks },
+  { key: 'personalidad', title: 'Tu Personalidad General', type: 'select', options: ['Introvertido y Analítico', 'Extrovertido y Sociable', 'Detallista y Perfeccionista', 'Creativo y Espontáneo', 'Pragmático y Directo'], icon: PenTool },
+  { key: 'razonamientoAbstracto', title: 'Para encontrar patrones ocultos...', type: 'select', options: ['Se me hace muy fácil', 'Solo si me concentro mucho', 'Me cuesta un poco', 'Prefiero cosas concretas'], icon: PlayCircle },
+  { key: 'perseverancia', title: 'Tu mayor reto superado', type: 'textarea', placeholder: 'Describe un momento difícil y cómo lo lograste (Ej. un proyecto complicado, aprobar una materia...)', icon: Trophy }
 ];
 
 const nextWizardStep = () => {
@@ -163,17 +176,17 @@ const canSubmit = computed(() => {
     return isSequenceCorrect.value;
   }
   if (moduleType.value === "LECTURA" || moduleType.value === "VIDEO") {
-    return investigationSummary.value.trim().length >= 50;
+    return triviaStatus.value === 'correct';
   }
   
   if (isFirstBitacora.value) {
     const f = informeForm.value;
-    return f.intereses.trim().length > 10 &&
-           f.inteligenciasMultiples.trim().length > 10 &&
-           f.inteligenciaEmocional.trim().length > 10 &&
-           f.personalidad.trim().length > 10 &&
-           f.razonamientoAbstracto.trim().length > 10 &&
-           f.perseverancia.trim().length > 10;
+    return !!f.intereses && 
+           !!f.inteligenciasMultiples && 
+           !!f.inteligenciaEmocional && 
+           !!f.personalidad && 
+           !!f.razonamientoAbstracto && 
+           f.perseverancia.trim().length >= 10;
   }
 
   // Por defecto (Bitácora, Foro, etc.) normal
@@ -220,10 +233,10 @@ const completarModulo = async () => {
   <div
     class="relative max-w-5xl mx-auto space-y-6 duration-500 animate-in fade-in slide-in-from-bottom-4"
   >
-    <!-- PANTALLA ÉPICA DE MISIÓN COMPLETADA -->
+    <!-- PANTALLA ÉPICA DE MISIÓN COMPLETADA (Ajustada al Card) -->
     <div
       v-if="showSuccess"
-      class="fixed inset-0 z-[100] flex flex-col items-center justify-center text-white duration-500 bg-[#0B1120]/95 backdrop-blur-md animate-in fade-in zoom-in-95"
+      class="absolute inset-0 z-50 flex flex-col items-center justify-center text-white duration-500 bg-[#0B1120]/95 backdrop-blur-md rounded-2xl animate-in fade-in zoom-in-95"
     >
       <div
         class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"
@@ -317,12 +330,12 @@ const completarModulo = async () => {
     <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
       <!-- Panel de Trabajo Central -->
       <Card
-        class="relative overflow-hidden bg-white border shadow-xl border-slate-200 md:col-span-2"
+        class="relative overflow-hidden bg-[#0B1120] text-white border shadow-xl border-blue-500/20 md:col-span-2"
       >
         <!-- HEADER DINÁMICO -->
-        <CardHeader class="px-8 py-5 border-b bg-slate-50/80">
+        <CardHeader class="px-8 py-5 border-b border-blue-500/20 bg-blue-900/10">
           <CardTitle
-            class="flex items-center gap-2 text-xl font-black text-slate-800"
+            class="flex items-center gap-2 text-xl font-black text-white"
           >
             <MousePointerClick
               v-if="moduleType === 'QUIZ' || moduleType === 'DESAFIO'"
@@ -342,7 +355,7 @@ const completarModulo = async () => {
                   : "Registro de Bitácora"
             }}
           </CardTitle>
-          <CardDescription class="text-sm font-medium text-slate-500">
+          <CardDescription class="text-sm font-medium text-blue-200/70">
             {{
               moduleType === "QUIZ"
                 ? "Selecciona la opción que más resuene contigo."
@@ -361,7 +374,7 @@ const completarModulo = async () => {
             v-if="moduleType === 'QUIZ' || moduleType === 'DESAFIO'"
             class="space-y-6"
           >
-            <div class="p-5 text-sm font-medium text-purple-800 border bg-purple-50 border-purple-200 rounded-xl">
+            <div class="p-5 text-sm font-medium text-purple-300 border bg-purple-900/20 border-purple-500/30 rounded-xl">
               Rompecabezas Estratégico: Ordena los siguientes pasos en la secuencia lógica correcta haciendo clic sobre ellos.
             </div>
 
@@ -369,42 +382,42 @@ const completarModulo = async () => {
             <div 
               class="flex flex-col gap-2 p-4 border-2 border-dashed rounded-xl transition-all"
               :class="[
-                shakeError ? 'border-red-400 bg-red-50/50 animate-[shake_0.5s_ease-in-out]' : 
-                isSequenceCorrect ? 'border-emerald-500 bg-emerald-50/50' : 
-                'border-slate-300 bg-slate-50/50'
+                shakeError ? 'border-red-500/50 bg-red-900/20 animate-[shake_0.5s_ease-in-out]' : 
+                isSequenceCorrect ? 'border-emerald-500/50 bg-emerald-900/20' : 
+                'border-slate-700 bg-slate-800/30'
               ]"
             >
-              <div v-if="selectedSequence.length === 0" class="py-4 text-center text-slate-400 font-medium">
+              <div v-if="selectedSequence.length === 0" class="py-4 text-center text-slate-500 font-medium">
                 Haz clic en las opciones de abajo para armar la secuencia aquí
               </div>
               <div 
                 v-for="(id, index) in selectedSequence" 
                 :key="'slot-'+id"
                 @click="toggleStep(id)"
-                class="flex items-center p-3 bg-white border border-slate-200 rounded-lg shadow-sm cursor-pointer hover:border-red-300 group transition-all"
+                class="flex items-center p-3 bg-slate-800/80 border border-slate-600 rounded-lg shadow-sm cursor-pointer hover:border-red-400 group transition-all"
               >
-                <div class="flex items-center justify-center w-6 h-6 mr-3 text-xs font-bold text-white bg-blue-500 rounded-full shrink-0">
+                <div class="flex items-center justify-center w-6 h-6 mr-3 text-xs font-bold text-white bg-blue-600 rounded-full shrink-0">
                   {{ index + 1 }}
                 </div>
-                <span class="font-medium text-slate-700 flex-1">{{ puzzleSteps.find(s => s.id === id)?.text }}</span>
-                <span class="text-xs text-red-500 opacity-0 group-hover:opacity-100 font-bold transition-opacity">Quitar</span>
+                <span class="font-medium text-slate-200 flex-1">{{ puzzleSteps.find(s => s.id === id)?.text }}</span>
+                <span class="text-xs text-red-400 opacity-0 group-hover:opacity-100 font-bold transition-opacity">Quitar</span>
               </div>
-              <div v-if="shakeError" class="text-center text-xs font-bold text-red-500 mt-2">
+              <div v-if="shakeError" class="text-center text-xs font-bold text-red-400 mt-2">
                 ¡Secuencia incorrecta! Revisa la lógica e intenta de nuevo.
               </div>
             </div>
 
             <!-- Opciones disponibles -->
             <div class="grid gap-3" v-if="selectedSequence.length < 4">
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Opciones Disponibles:</label>
+              <label class="text-xs font-bold text-blue-300/70 uppercase tracking-widest">Opciones Disponibles:</label>
               <button
                 v-for="step in shuffledSteps.filter(s => !selectedSequence.includes(s.id))"
                 :key="step.id"
                 @click="toggleStep(step.id)"
-                class="flex items-center w-full p-4 text-left transition-all border-2 rounded-xl border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 hover:-translate-y-1 hover:shadow-md"
+                class="flex items-center w-full p-4 text-left transition-all border-2 rounded-xl border-slate-700 bg-slate-800/50 hover:border-blue-500/50 hover:bg-blue-900/20 hover:-translate-y-1 hover:shadow-md"
                 :disabled="module.status === 'completed'"
               >
-                <span class="font-medium text-slate-700">{{ step.text }}</span>
+                <span class="font-medium text-slate-200">{{ step.text }}</span>
               </button>
             </div>
           </div>
@@ -417,46 +430,40 @@ const completarModulo = async () => {
             class="space-y-6"
           >
             <div
-              class="p-5 text-sm font-medium text-blue-800 border border-blue-100 bg-blue-50 rounded-xl"
+              class="p-5 text-sm font-medium text-blue-300 border border-blue-500/30 bg-blue-900/20 rounded-xl"
             >
-              Investiga por tu cuenta sobre el tema de esta etapa y escribe un breve resumen de tus descubrimientos.
+              Simulador de Decisiones: Selecciona la respuesta correcta al siguiente escenario de tu ruta.
             </div>
             
-            <div class="relative bg-white border border-slate-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-transparent transition-all shadow-sm">
-              <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <label class="text-sm font-bold text-slate-700">Barra de Energía Cognitiva</label>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-slate-500">{{ energyLevel.label }}</span>
-                  <span class="text-xl">{{ energyLevel.emoji }}</span>
-                </div>
-              </div>
+            <div class="p-6 bg-slate-900/50 border border-slate-700 rounded-2xl relative overflow-hidden">
+              <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]"></div>
+              <h4 class="text-lg font-bold text-white mb-6 relative z-10">¿Cuál es el principal objetivo en esta fase de tu desarrollo profesional?</h4>
               
-              <!-- Progress bar -->
-              <div class="h-1.5 w-full bg-slate-100">
-                <div class="h-full transition-all duration-300 ease-out" :class="energyLevel.color" :style="{ width: `${energyLevel.percent}%` }"></div>
+              <div class="grid gap-3 relative z-10" :class="{ 'animate-[shake_0.5s_ease-in-out]': shakeTriviaError }">
+                <button
+                  v-for="(opt, idx) in triviaOptions"
+                  :key="idx"
+                  @click="selectTrivia(opt)"
+                  class="flex items-center w-full p-4 text-left transition-all border-2 rounded-xl hover:-translate-y-0.5"
+                  :class="[
+                    triviaSelected === opt 
+                      ? (triviaStatus === 'correct' ? 'border-emerald-500 bg-emerald-500/10' : triviaStatus === 'error' ? 'border-red-500 bg-red-500/10' : 'border-blue-500 bg-blue-500/10')
+                      : 'border-slate-700 bg-slate-800/50 hover:border-blue-500/50 hover:bg-blue-900/20'
+                  ]"
+                  :disabled="module.status === 'completed' || triviaStatus === 'correct'"
+                >
+                  <div class="w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center font-bold text-sm shrink-0 transition-colors" :class="triviaSelected === opt && triviaStatus === 'correct' ? 'border-emerald-500 text-emerald-400 bg-emerald-500/20' : 'border-slate-600 text-slate-400'">
+                    {{ String.fromCharCode(65 + idx) }}
+                  </div>
+                  <span class="font-medium text-slate-200">{{ opt.text }}</span>
+                </button>
               </div>
 
-              <textarea
-                v-model="investigationSummary"
-                rows="5"
-                :disabled="module.status === 'completed'"
-                placeholder="Escribe lo que descubriste en tu investigación..."
-                class="w-full p-4 text-sm outline-none resize-none bg-transparent disabled:opacity-60"
-              ></textarea>
-              
-              <div class="absolute bottom-4 right-4 flex items-center gap-2">
-                <div 
-                  v-if="investigationSummary.trim().length > 0 && investigationSummary.trim().length < 50" 
-                  class="text-[10px] font-bold text-red-500"
-                >
-                  Faltan {{ 50 - investigationSummary.trim().length }} caracteres
-                </div>
-                <div 
-                  v-if="investigationSummary.trim().length >= 50" 
-                  class="text-emerald-500 flex items-center gap-1 text-xs font-bold animate-in zoom-in"
-                >
-                  ¡Energía Mínima Alcanzada! <CheckCircle2 class="w-4 h-4" />
-                </div>
+              <div v-if="triviaStatus === 'error'" class="text-center text-xs font-bold text-red-400 mt-5 relative z-10">
+                Decisión subóptima. Analiza las variables y vuelve a intentarlo.
+              </div>
+              <div v-if="triviaStatus === 'correct'" class="text-center text-sm font-bold text-emerald-400 mt-5 flex items-center justify-center gap-2 relative z-10 animate-in fade-in zoom-in-95">
+                <CheckCircle2 class="w-5 h-5" /> ¡Decisión correcta! Has validado tu conocimiento.
               </div>
             </div>
           </div>
@@ -468,39 +475,52 @@ const completarModulo = async () => {
             
             <!-- Vista 1: Solo en el primer nodo (Entrevista Interactiva) -->
             <template v-if="isFirstBitacora">
-              <div class="p-4 text-sm font-medium text-purple-800 border bg-purple-50 border-purple-200 rounded-xl flex items-center justify-between">
+              <div class="p-4 text-sm font-medium text-purple-300 border bg-purple-900/20 border-purple-500/30 rounded-xl flex items-center justify-between">
                 <div>
                   <h4 class="font-bold text-base mb-1">Entrevista Vocacional con NEXUS</h4>
                   <p class="opacity-80">Completa esta sesión para ayudar a la IA a personalizar tu viaje.</p>
                 </div>
-                <div class="font-black text-2xl text-purple-300">
+                <div class="font-black text-2xl text-purple-400">
                   {{ wizardStep + 1 }}/6
                 </div>
               </div>
 
               <!-- Carrusel / Wizard -->
-              <div class="relative bg-white border border-slate-200 rounded-2xl shadow-sm p-6 overflow-hidden">
+              <div class="relative bg-slate-900/50 border border-slate-700 rounded-2xl shadow-sm p-6 overflow-hidden">
                 <!-- Progreso -->
                 <div class="absolute top-0 left-0 h-1 bg-purple-500 transition-all duration-500 ease-out" :style="{ width: `${((wizardStep + 1) / 6) * 100}%` }"></div>
                 
                 <div class="animate-in slide-in-from-right-4 fade-in duration-300" :key="wizardStep">
                   <div class="flex items-center gap-3 mb-6">
-                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                    <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
                       <component :is="wizardQuestions[wizardStep].icon" class="w-5 h-5" />
                     </div>
-                    <h3 class="text-lg font-black text-slate-800">{{ wizardQuestions[wizardStep].title }}</h3>
+                    <h3 class="text-lg font-black text-white">{{ wizardQuestions[wizardStep].title }}</h3>
+                  </div>
+                  <div v-if="wizardQuestions[wizardStep].type === 'select'" class="grid gap-3">
+                    <button
+                      v-for="opt in wizardQuestions[wizardStep].options"
+                      :key="opt"
+                      @click="informeForm[wizardQuestions[wizardStep].key as keyof typeof informeForm] = opt"
+                      class="flex items-center w-full p-4 text-left transition-all border-2 rounded-xl border-slate-700 bg-slate-800/50 hover:border-purple-500/50 hover:bg-purple-900/20 hover:-translate-y-0.5"
+                      :class="informeForm[wizardQuestions[wizardStep].key as keyof typeof informeForm] === opt ? 'border-purple-500 bg-purple-500/20 shadow-md ring-2 ring-purple-500/20' : ''"
+                      :disabled="module.status === 'completed' || isAiChecking"
+                    >
+                      <span class="font-medium text-slate-200" :class="informeForm[wizardQuestions[wizardStep].key as keyof typeof informeForm] === opt ? 'text-purple-300' : ''">{{ opt }}</span>
+                    </button>
                   </div>
                   
                   <textarea 
+                    v-else
                     v-model="informeForm[wizardQuestions[wizardStep].key as keyof typeof informeForm]"
                     :disabled="module.status === 'completed' || isAiChecking"
                     :placeholder="wizardQuestions[wizardStep].placeholder"
                     rows="4"
-                    class="w-full p-4 text-sm transition-all border outline-none rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-60 resize-none"
+                    class="w-full p-4 text-sm transition-all border outline-none rounded-xl border-slate-700 bg-slate-800/50 text-slate-200 focus:bg-slate-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-60 resize-none"
                   ></textarea>
                 </div>
 
-                <div class="flex items-center justify-between mt-6 pt-6 border-t border-slate-100">
+                <div class="flex items-center justify-between mt-6 pt-6 border-t border-slate-700">
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -514,7 +534,7 @@ const completarModulo = async () => {
                     size="sm" 
                     @click="nextWizardStep" 
                     v-if="wizardStep < 5"
-                    :disabled="informeForm[wizardQuestions[wizardStep].key as keyof typeof informeForm].trim().length < 10"
+                    :disabled="wizardQuestions[wizardStep].type === 'select' ? !informeForm[wizardQuestions[wizardStep].key as keyof typeof informeForm] : informeForm[wizardQuestions[wizardStep].key as keyof typeof informeForm].trim().length < 10"
                     class="font-bold bg-purple-600 hover:bg-purple-700 text-white"
                   >
                     Siguiente Pregunta
@@ -530,7 +550,7 @@ const completarModulo = async () => {
             <template v-else>
               <div class="flex items-center justify-between">
                 <label
-                  class="flex items-center gap-2 text-sm font-black text-slate-800"
+                  class="flex items-center gap-2 text-sm font-black text-white"
                 >
                   Tu Reflexión Personal:
                 </label>
@@ -538,11 +558,11 @@ const completarModulo = async () => {
                   v-if="module.status !== 'completed'"
                   class="flex items-center gap-2"
                 >
-                  <span class="text-[10px] font-bold text-slate-500 uppercase"
+                  <span class="text-[10px] font-bold text-slate-400 uppercase"
                     >Calidad:</span
                   >
                   <div
-                    class="flex w-24 h-2 overflow-hidden rounded-full bg-slate-100"
+                    class="flex w-24 h-2 overflow-hidden rounded-full bg-slate-800"
                   >
                     <div
                       class="h-full transition-all duration-300"
@@ -557,12 +577,12 @@ const completarModulo = async () => {
                 </div>
               </div>
 
-              <div class="relative">
+              <div class="relative mt-4">
                 <textarea
                   v-model="reflexion"
                   rows="6"
                   :disabled="module.status === 'completed' || isAiChecking"
-                  class="w-full p-5 text-sm font-medium transition-all border outline-none resize-none rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-slate-400 disabled:opacity-60 disabled:bg-slate-100"
+                  class="w-full p-5 text-sm font-medium transition-all border outline-none resize-none rounded-2xl border-slate-700 bg-slate-900/50 text-slate-200 focus:bg-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-slate-500 disabled:opacity-60 disabled:bg-slate-800"
                   placeholder="Escribe aquí tus conclusiones... No se aceptan respuestas de una sola palabra."
                 ></textarea>
               </div>

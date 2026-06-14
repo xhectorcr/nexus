@@ -163,6 +163,8 @@ const saveProfile = async () => {
       informeForm.value,
     );
 
+    await loadData(); // Recargar datos para asegurar sincronización con el backend
+
     message.value = {
       type: "success",
       text: "Datos actualizados exitosamente.",
