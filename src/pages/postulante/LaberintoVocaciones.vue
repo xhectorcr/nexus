@@ -1,117 +1,149 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import DashboardLayout from '@/layouts/DashboardLayout.vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useRouter } from 'vue-router'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import DashboardLayout from '@/layouts/DashboardLayout.vue'
+import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 import {
-  Home,
-  Map as MapIcon,
-  Star,
-  Lock,
-  CheckCircle2,
-  PlayCircle,
-  Brain,
-  Target,
-  Heart,
-  Gamepad2,
   ArrowLeft,
-  Flame,
-  TrendingUp,
-  Lightbulb,
   BookOpen,
+  Brain,
+  CheckCircle2,
+  Flame,
+  Gamepad2,
+  Heart,
+  Home,
+  Lightbulb,
+  Lock,
   MessageCircle,
+  PlayCircle,
+  Target,
+  TrendingUp
 } from 'lucide-vue-next'
+import { computed, markRaw, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
-
 const router = useRouter()
 const auth = useAuth()
 
 const sidebarItems = computed(() => [
-  { icon: Home, label: t('nav.home'), href: "/postulante" },
-  { icon: Brain, label: t('nav.vocational_tests'), href: "/postulante/test" },
-  { icon: Gamepad2, label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
-  { icon: BookOpen, label: t('postulante.digital_log'), href: "/postulante/bitacora" },
-  { icon: MessageCircle, label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
+  { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
+  { icon: markRaw(Brain), label: t('nav.vocational_tests'), href: "/postulante/test" },
+  { icon: markRaw(Gamepad2), label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
+  { icon: markRaw(BookOpen), label: t('postulante.digital_log'), href: "/postulante/bitacora" },
+  { icon: markRaw(MessageCircle), label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
 ])
 
-const modules = computed(() => [
-  {
-    id: 1,
-    title: t('laberinto.modules.m1_t'),
-    description: t('laberinto.modules.m1_d'),
-    icon: Brain,
-    color: "#2563EB",
-    status: "available",
-    progress: 100,
-    xp: 50,
-    badge: "Explorador",
-    position: { x: 10, side: "left" },
-  },
-  {
-    id: 2,
-    title: t('laberinto.modules.m2_t'),
-    description: t('laberinto.modules.m2_d'),
-    icon: Lightbulb,
-    color: "#3B82F6",
-    status: "available",
-    progress: 0,
-    xp: 100,
-    badge: "Pensador",
-    position: { x: 55, side: "right" },
-  },
-  {
-    id: 3,
-    title: t('laberinto.modules.m3_t'),
-    description: t('laberinto.modules.m3_d'),
-    icon: Heart,
-    color: "#0EA5E9",
-    status: "locked",
-    progress: 0,
-    xp: 150,
-    badge: "Empático",
-    position: { x: 10, side: "left" },
-  },
-  {
-    id: 4,
-    title: t('laberinto.modules.m4_t'),
-    description: t('laberinto.modules.m4_d'),
-    icon: Gamepad2,
-    color: "#0284C7",
-    status: "locked",
-    progress: 0,
-    xp: 200,
-    badge: "Estratega",
-    position: { x: 55, side: "right" },
-  },
-  {
-    id: 5,
-    title: t('laberinto.modules.m5_t'),
-    description: t('laberinto.modules.m5_d'),
-    icon: Target,
-    color: "#4F46E5",
-    status: "locked",
-    progress: 0,
-    xp: 500,
-    badge: "Vocación Encontrada",
-    position: { x: 10, side: "left" },
-  },
-])
+const modules = ref<any[]>([])
+const selectedModule = ref<any>(null)
+const totalProgress = ref(0)
+const userXP = ref(0)
+const userLevel = ref(1)
+const userStreak = ref(0)
+const isLoading = ref(true)
 
 const badges = computed(() => [
-  { name: t('laberinto.badges.b1'), icon: "🔍", earned: true },
-  { name: t('laberinto.badges.b2'), icon: "🔥", earned: true },
-  { name: t('laberinto.badges.b3'), icon: "🧠", earned: false },
+  { name: t('laberinto.badges.b1') || "Explorador", icon: "🔍", earned: userXP.value >= 10 },
+  { name: t('laberinto.badges.b2') || "Constante", icon: "🔥", earned: userStreak.value >= 2 },
+  { name: t('laberinto.badges.b3') || "Pensador", icon: "🧠", earned: userXP.value >= 100 },
 ])
 
-const totalProgress = ref(20)
-const selectedModule = ref<any>(null)
+const currentModuleIndex = computed(() => {
+  return modules.value.findIndex((m) => m.status === "available" || m.status === "in_progress");
+});
+
+const activeModule = computed(() => {
+  const index = currentModuleIndex.value;
+  return index !== -1 ? modules.value[index] : null;
+});
+
+const loadJourneyData = async () => {
+  try {
+    isLoading.value = true;
+    const usuarioId = auth.state.user?.id || 1;
+    let postulanteId = usuarioId;
+
+    try {
+      const profRes = await api.get(`/api/postulantes/by-usuario/${usuarioId}`);
+      if (profRes.data?.data?.id) postulanteId = profRes.data.data.id;
+    } catch (e) {
+      console.warn("No se pudo obtener el perfil de postulante, usando fallback ID", e);
+    }
+
+    try {
+      const journeyRes = await api.get(`/api/journeys/postulante/${postulanteId}/activo`);
+      
+      if (journeyRes.data && journeyRes.data.success) {
+        const journey = journeyRes.data.data;
+        let xpCounter = 0;
+        let completedCount = 0;
+
+        modules.value = journey.nodos.map((nodo: any, i: number) => {
+          // Asignación de colores e iconos estilo Postulante (Azules)
+          let color = "#2563EB"; // Azul base
+          let icon = Brain;
+          
+          if (nodo.tipo === "FORO") { color = "#3B82F6"; icon = MessageCircle; }
+          if (nodo.tipo === "LABERINTO" || nodo.tipo === "QUIZ" || nodo.tipo === "DESAFIO") { color = "#0EA5E9"; icon = Gamepad2; }
+          if (nodo.tipo === "MENTORIA" || nodo.tipo === "EVENTO") { color = "#0284C7"; icon = Target; }
+          if (nodo.tipo === "LECTURA") { color = "#4F46E5"; icon = BookOpen; }
+
+          const isCompleted = nodo.estado === "COMPLETADO";
+          const isInProgress = nodo.estado === "EN_PROGRESO";
+          const isAvailable = isInProgress || (nodo.estado === "PENDIENTE" && (i === 0 || journey.nodos[i - 1].estado === "COMPLETADO"));
+
+          if (isCompleted) {
+            xpCounter += nodo.xp || 0;
+            completedCount++;
+          }
+
+          return {
+            id: nodo.id,
+            title: nodo.titulo,
+            description: nodo.descripcion,
+            icon: markRaw(icon),
+            color,
+            status: isCompleted ? "completed" : (isAvailable ? (isInProgress ? "in_progress" : "available") : "locked"),
+            progress: isCompleted ? 100 : (isInProgress ? 50 : 0),
+            xp: nodo.xp || 10,
+          };
+        });
+
+        userXP.value = xpCounter;
+        userLevel.value = Math.floor(xpCounter / 100) + 1;
+        userStreak.value = Math.max(1, completedCount);
+        totalProgress.value = Math.round((completedCount / journey.nodos.length) * 100) || 0;
+      }
+    } catch (e) {
+      console.error("No se encontró un journey activo, usando datos de MOCK.");
+      // FALLBACK MOCK PARA EL POSTULANTE
+      totalProgress.value = 20;
+      userXP.value = 50;
+      userLevel.value = 1;
+      userStreak.value = 2;
+      
+      modules.value = [
+        { id: 1, title: t('laberinto.modules.m1_t') || 'Módulo 1', description: t('laberinto.modules.m1_d') || 'Desc 1', icon: markRaw(Brain), color: "#2563EB", status: "completed", progress: 100, xp: 50 },
+        { id: 2, title: t('laberinto.modules.m2_t') || 'Módulo 2', description: t('laberinto.modules.m2_d') || 'Desc 2', icon: markRaw(Lightbulb), color: "#3B82F6", status: "in_progress", progress: 50, xp: 100 },
+        { id: 3, title: t('laberinto.modules.m3_t') || 'Módulo 3', description: t('laberinto.modules.m3_d') || 'Desc 3', icon: markRaw(Heart), color: "#0EA5E9", status: "locked", progress: 0, xp: 150 },
+        { id: 4, title: t('laberinto.modules.m4_t') || 'Módulo 4', description: t('laberinto.modules.m4_d') || 'Desc 4', icon: markRaw(Gamepad2), color: "#0284C7", status: "locked", progress: 0, xp: 200 },
+        { id: 5, title: t('laberinto.modules.m5_t') || 'Módulo 5', description: t('laberinto.modules.m5_d') || 'Desc 5', icon: markRaw(Target), color: "#4F46E5", status: "locked", progress: 0, xp: 500 },
+      ];
+    }
+  } catch (error) {
+    console.error("Error cargando los datos", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadJourneyData();
+});
 </script>
 
 <template>
@@ -136,109 +168,103 @@ const selectedModule = ref<any>(null)
       </Button>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
-      <!-- Left: Map + Modules -->
+    <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6" v-if="!isLoading">
       <div class="space-y-4">
-        <!-- Student Header Card -->
-        <Card class="border-0 overflow-hidden" style="background: linear-gradient(135deg, #082065 0%, #0D47A1 60%, #1A237E 100%)">
+        <Card class="overflow-hidden border-0" style="background: linear-gradient(135deg, #082065 0%, #0D47A1 60%, #1A237E 100%)">
           <CardContent class="p-5">
             <div class="flex items-center gap-4">
               <div class="relative">
-                <Avatar class="w-16 h-16 ring-2 ring-white/40">
+                <Avatar class="w-16 h-16 shadow-xl ring-2 ring-white/40">
                   <AvatarImage src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop" />
-                  <AvatarFallback class="bg-white/20 text-white">CP</AvatarFallback>
+                  <AvatarFallback class="text-white bg-white/20">CP</AvatarFallback>
                 </Avatar>
-                <div class="absolute -bottom-1 -right-1 bg-[#0EA5E9] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                  Nv.1
+                <div class="absolute -bottom-1 -right-1 bg-[#0EA5E9] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg border border-blue-400">
+                  Nv.{{ userLevel }}
                 </div>
               </div>
               <div class="flex-1 text-white">
-                <p class="text-white/70 text-xs">{{ $t('laberinto.explorer_role') }}</p>
-                <h2 class="font-semibold text-lg leading-tight">{{ auth.state.user?.name || 'Camila Postulante' }}</h2>
-                <div class="flex items-center gap-1.5 mt-1">
+                <p class="text-xs font-bold tracking-wider uppercase text-white/70">{{ $t('laberinto.explorer_role') || 'Postulante' }}</p>
+                <h2 class="text-lg font-semibold leading-tight">{{ auth.state.user?.name || 'Camila Postulante' }}</h2>
+                <div class="flex items-center gap-1.5 mt-1 bg-white/10 w-fit px-2 py-0.5 rounded backdrop-blur-sm">
                   <Target class="w-3.5 h-3.5 text-[#38BDF8]" />
-                  <span class="text-[#38BDF8] text-xs font-medium">{{ $t('laberinto.searching_path') }}</span>
+                  <span class="text-[#38BDF8] text-xs font-medium">{{ $t('laberinto.searching_path') || 'Descubriendo Vocación' }}</span>
                 </div>
               </div>
-              <div class="text-right text-white">
-                <div class="text-2xl font-bold">20%</div>
-                <div class="text-white/60 text-xs">{{ $t('laberinto.completed') }}</div>
+              <div class="p-3 text-right text-white border bg-black/20 rounded-xl border-white/10 backdrop-blur-sm">
+                <div class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200">{{ Math.round(totalProgress) }}%</div>
+                <div class="text-white/60 text-[10px] font-bold uppercase tracking-wider">{{ $t('laberinto.completed') || 'Completado' }}</div>
                 <div class="flex items-center justify-end gap-1 mt-1.5">
-                  <Flame class="w-3.5 h-3.5 text-[#60A5FA]" />
-                  <span class="text-[#93C5FD] text-xs">{{ $t('laberinto.streak_days', { days: 2 }) }}</span>
+                  <Flame class="w-3.5 h-3.5 text-[#60A5FA] animate-pulse" />
+                  <span class="text-[#93C5FD] text-xs font-bold">{{ $t('laberinto.streak_days', { days: userStreak }) || `${userStreak} días racha` }}</span>
                 </div>
               </div>
             </div>
 
             <div class="mt-4">
-              <div class="flex justify-between text-xs text-white/70 mb-1.5">
-                <span>{{ $t('laberinto.general_progress') }}</span>
-                <span>{{ Math.round(totalProgress) }}% {{ $t('laberinto.total') }}</span>
+              <div class="flex justify-between text-xs text-white/70 mb-1.5 font-bold uppercase tracking-wider">
+                <span>{{ $t('laberinto.general_progress') || 'Progreso General' }}</span>
+                <span>{{ Math.round(totalProgress) }}% {{ $t('laberinto.total') || 'Total' }}</span>
               </div>
-              <div class="w-full bg-white/20 rounded-full h-2">
+              <div class="w-full h-2 border rounded-full shadow-inner bg-black/30 border-white/5">
                 <div
-                  class="h-2 rounded-full transition-all duration-700"
+                  class="relative h-full transition-all duration-1000 ease-out rounded-full"
                   :style="{ width: `${totalProgress}%`, background: 'linear-gradient(90deg, #0EA5E9, #38BDF8)' }"
-                />
+                >
+                   <div class="absolute inset-0 bg-white/20 animate-[pulse_2s_ease-in-out_infinite]"></div>
+                </div>
               </div>
             </div>
 
-            <div class="flex gap-2 mt-3">
+            <div class="flex gap-2 pt-4 mt-4 border-t border-white/10">
               <div
                 v-for="b in badges"
                 :key="b.name"
                 :title="b.name"
-                :class="`text-lg w-8 h-8 flex items-center justify-center rounded-full ${
-                  b.earned ? 'bg-white/20' : 'bg-white/5 grayscale opacity-40'
+                :class="`text-lg w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 ${
+                  b.earned ? 'bg-white/20 border border-white/20 shadow-lg' : 'bg-black/20 border border-white/5 grayscale opacity-40'
                 }`"
               >
                 {{ b.icon }}
               </div>
               <div class="ml-auto">
-                <Badge class="bg-white/20 text-white border-0 text-xs">
+                <Badge class="text-xs text-white border-0 shadow-lg bg-gradient-to-r from-blue-500 to-blue-600 shadow-blue-900/50">
                   <TrendingUp class="w-3 h-3 mr-1" />
-                  50 XP
+                  {{ userXP }} XP
                 </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <!-- Path Map -->
-        <Card class="border-0 overflow-hidden bg-[#121826] text-white shadow-xl">
-          <CardHeader class="pb-3 pt-5 px-5 border-b border-white/10 relative z-10 bg-[#121826]">
+        <Card class="border-0 overflow-hidden bg-[#0B1120] text-white shadow-xl">
+          <CardHeader class="pb-3 pt-5 px-5 border-b border-white/10 relative z-10 bg-[#0B1120]">
             <div class="flex items-center justify-between">
               <div>
                 <CardTitle class="flex items-center gap-2 text-white">
                   <Gamepad2 class="w-5 h-5 text-[#3B82F6]" />
-                  {{ $t('laberinto.title') }}
+                  {{ $t('laberinto.title') || 'Laberinto Vocacional' }}
                 </CardTitle>
-                <p class="text-sm text-white/50 mt-0.5 font-mono">{{ $t('laberinto.map_desc') }}</p>
+                <p class="text-sm text-white/50 mt-0.5 font-mono">{{ $t('laberinto.map_desc') || 'Tu mapa de descubrimiento' }}</p>
               </div>
               <Badge variant="outline" class="text-white border-white/20 bg-white/5">
-                {{ $t('laberinto.stages_count') }}
+                {{ modules.length }} Etapas
               </Badge>
             </div>
           </CardHeader>
-          <CardContent class="px-0 pb-0 bg-[#121826]">
+          
+          <CardContent class="px-0 pb-0 bg-[#0B1120]">
             <div class="relative min-h-[700px] w-full overflow-hidden">
-              <!-- Background grid -->
               <div
                 class="absolute inset-0"
                 style="background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 30px 30px;"
               />
 
-              <!-- Path Lines SVG -->
-              <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+              <svg v-if="modules.length > 1" class="absolute inset-0 z-0 w-full h-full pointer-events-none">
                 <defs>
                   <filter id="glow-blue" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="4" result="blur" />
                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                   </filter>
-                  <linearGradient id="line-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="#3B82F6" />
-                    <stop offset="100%" stop-color="#1E3A8A" />
-                  </linearGradient>
                 </defs>
                 <line
                   v-for="i in modules.length - 1"
@@ -247,40 +273,34 @@ const selectedModule = ref<any>(null)
                   :y1="`${100 * ((i - 1) + 0.5) / modules.length}%`"
                   :x2="(i % 2 === 0) ? '35%' : '65%'"
                   :y2="`${100 * (i + 0.5) / modules.length}%`"
-                  :stroke="modules[i-1].status === 'available' && modules[i].status === 'available' ? '#3B82F6' : (modules[i-1].status === 'available' ? '#1E3A8A' : '#374151')"
+                  :stroke="modules[i-1].status !== 'locked' && modules[i].status !== 'locked' ? '#3B82F6' : (modules[i-1].status !== 'locked' ? '#1E3A8A' : '#374151')"
                   stroke-width="3"
-                  :stroke-dasharray="modules[i-1].status === 'available' && modules[i].status === 'available' ? '8 6' : '0'"
-                  :class="modules[i-1].status === 'available' && modules[i].status === 'available' ? 'animate-[dash_2s_linear_infinite]' : ''"
+                  :stroke-dasharray="modules[i-1].status !== 'locked' && modules[i].status !== 'locked' ? '8 6' : '0'"
+                  :class="modules[i-1].status !== 'locked' && modules[i].status !== 'locked' ? 'animate-[dash_2s_linear_infinite]' : ''"
                   stroke-linecap="round"
                 />
               </svg>
 
-              <!-- Modules -->
-              <div class="relative z-10 w-full h-full flex flex-col justify-between py-12" :style="{ minHeight: `${modules.length * 150}px` }">
-                <div v-for="(mod, idx) in modules" :key="mod.id" class="flex-1 flex items-center relative w-full">
+              <div class="relative z-10 flex flex-col justify-between w-full h-full py-12" :style="{ minHeight: `${modules.length * 150}px` }">
+                <div v-for="(mod, idx) in modules" :key="mod.id" class="relative flex items-center flex-1 w-full">
                   <div
-                    class="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group"
-                    :class="mod.status === 'available' ? 'cursor-pointer' : 'cursor-not-allowed'"
-                    :style="{
-                      left: idx % 2 === 0 ? '35%' : '65%',
-                      top: '50%'
-                    }"
-                    @click="mod.status === 'available' && (selectedModule = mod)"
+                    class="absolute flex flex-col items-center transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 group"
+                    :class="[
+                      mod.status !== 'locked' ? 'cursor-pointer hover:scale-105' : 'cursor-not-allowed opacity-60 grayscale',
+                      idx === currentModuleIndex ? 'drop-shadow-[0_0_20px_rgba(59,130,246,0.6)] scale-110' : ''
+                    ]"
+                    :style="{ left: idx % 2 === 0 ? '35%' : '65%', top: '50%' }"
                   >
-                    <!-- Current Module Indicator -->
-                    <div v-if="mod.status === 'available' && mod.progress < 100" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#3B82F6] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-blue-500/30 whitespace-nowrap z-30 tracking-wide uppercase transition-transform group-hover:-translate-y-2">
-                      {{ $t('laberinto.continue_maze') }}
+                    <div v-if="idx === currentModuleIndex" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#3B82F6] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-blue-500/50 whitespace-nowrap z-30 tracking-wide uppercase animate-bounce">
+                      {{ $t('laberinto.continue_maze') || 'Continuar aquí' }}
                       <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#3B82F6]"></div>
                     </div>
 
-                    <!-- Isometric Platform SVG -->
                     <div class="relative z-20">
-                      <svg width="150" height="120" viewBox="0 0 150 120" class="drop-shadow-2xl overflow-visible">
+                      <svg width="150" height="120" viewBox="0 0 150 120" class="overflow-visible drop-shadow-2xl">
                         <g>
-                          <!-- Base Shadow -->
                           <ellipse cx="75" cy="100" rx="45" ry="15" fill="black" fill-opacity="0.5" class="transition-transform duration-500 group-hover:scale-90 opacity-60" />
                           
-                          <!-- Lower Base Platform (Fixed) -->
                           <g class="transform translate-y-6">
                             <polygon points="75,30 135,60 75,90 15,60" fill="#1F2937" />
                             <polygon points="15,60 75,90 75,100 15,70" fill="#111827" />
@@ -288,52 +308,42 @@ const selectedModule = ref<any>(null)
                             <polygon points="75,30 135,60 75,90 15,60" fill="none" stroke="#374151" stroke-width="1" />
                           </g>
 
-                          <!-- Connecting Beam (if available) -->
-                          <polygon v-if="mod.status === 'available'" points="65,40 85,40 85,90 65,90" fill="#3B82F6" opacity="0.15" filter="url(#glow-blue)" />
-                          <polygon v-if="mod.status === 'available'" points="70,40 80,40 80,90 70,90" fill="#3B82F6" opacity="0.3" />
-
-                          <!-- Floating Top Layer (Animates on hover) -->
-                          <g :class="`transition-all duration-500 ease-out ${mod.status === 'available' ? 'group-hover:-translate-y-4' : 'opacity-60'}`">
-                            <!-- Top Face -->
-                            <polygon points="75,10 135,40 75,70 15,40" :fill="mod.status === 'available' ? '#3B82F6' : '#4B5563'" />
+                          <g :class="`transition-all duration-500 ease-out ${mod.status !== 'locked' ? 'group-hover:-translate-y-4' : ''}`">
+                            <polygon points="75,10 135,40 75,70 15,40" :fill="mod.status !== 'locked' ? '#3B82F6' : '#4B5563'" />
                             <polygon points="75,10 135,40 75,70 15,40" fill="white" fill-opacity="0.1" />
-                            <!-- Inner Diamond Pattern -->
-                            <polygon v-if="mod.status === 'available'" points="75,22 120,44 75,66 30,44" fill="none" stroke="#BFDBFE" stroke-width="1.5" opacity="0.6" />
-                            <polygon v-if="mod.status === 'available'" points="75,30 105,45 75,60 45,45" :fill="'#1D4ED8'" opacity="0.4" />
+                            <polygon v-if="mod.status !== 'locked'" points="75,22 120,44 75,66 30,44" fill="none" stroke="#BFDBFE" stroke-width="1.5" opacity="0.6" />
+                            <polygon v-if="mod.status !== 'locked'" points="75,30 105,45 75,60 45,45" :fill="'#1D4ED8'" opacity="0.4" />
                             
-                            <!-- Left Face -->
-                            <polygon points="15,40 75,70 75,80 15,50" :fill="mod.status === 'available' ? '#2563EB' : '#374151'" />
+                            <polygon points="15,40 75,70 75,80 15,50" :fill="mod.status !== 'locked' ? '#2563EB' : '#374151'" />
                             <polygon points="15,40 75,70 75,80 15,50" fill="black" fill-opacity="0.2" />
                             
-                            <!-- Right Face -->
-                            <polygon points="75,70 135,40 135,50 75,80" :fill="mod.status === 'available' ? '#1D4ED8' : '#1F2937'" />
+                            <polygon points="75,70 135,40 135,50 75,80" :fill="mod.status !== 'locked' ? '#1D4ED8' : '#1F2937'" />
                             <polygon points="75,70 135,40 135,50 75,80" fill="black" fill-opacity="0.4" />
-                            
-                            <!-- Top Edge Highlights -->
-                            <polyline v-if="mod.status === 'available'" points="15,40 75,70 135,40" fill="none" stroke="#BFDBFE" stroke-width="2" opacity="0.9" />
                           </g>
                         </g>
                       </svg>
                     </div>
 
-                    <!-- Text Label next to the node -->
                     <div
                       class="absolute whitespace-nowrap top-[45%] -translate-y-1/2 transition-transform duration-500"
                       :class="[
                         idx % 2 === 0 ? 'left-[100%] ml-2 text-left' : 'right-[100%] mr-2 text-right',
-                        mod.status === 'available' ? 'group-hover:-translate-y-4' : ''
+                        mod.status !== 'locked' ? 'group-hover:-translate-y-4' : ''
                       ]"
                     >
-                      <p class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider">{{ $t('laberinto.stage') }} {{ idx + 1 }}</p>
-                      <h3 :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status === 'available' ? 'text-white drop-shadow-md' : 'text-gray-500'}`">
+                      <p class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider">{{ $t('laberinto.stage') || 'Etapa' }} {{ idx + 1 }}</p>
+                      <h3 :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status !== 'locked' ? 'text-white drop-shadow-md' : 'text-gray-500'}`">
                         {{ mod.title }}
                       </h3>
-                      <p v-if="mod.status === 'available'" class="text-[11px] mt-1.5 flex items-center font-medium" :class="idx % 2 === 0 ? 'justify-start text-[#3B82F6]' : 'justify-end text-[#3B82F6]'">
-                        <component :is="mod.icon" class="w-3.5 h-3.5 mr-1" />
-                        {{ mod.progress }}% {{ $t('laberinto.completed') }}
+                      
+                      <p v-if="mod.status === 'completed'" class="text-[11px] mt-1.5 flex items-center font-bold" :class="idx % 2 === 0 ? 'justify-start text-emerald-400' : 'justify-end text-emerald-400'">
+                        <CheckCircle2 class="w-3.5 h-3.5 mr-1" /> Completado
+                      </p>
+                      <p v-else-if="mod.status === 'in_progress' || mod.status === 'available'" class="text-[11px] mt-1.5 flex items-center font-bold" :class="idx % 2 === 0 ? 'justify-start text-[#3B82F6]' : 'justify-end text-[#3B82F6]'">
+                        <component :is="mod.icon" class="w-3.5 h-3.5 mr-1" /> {{ mod.progress }}% {{ $t('laberinto.completed') || 'Progreso' }}
                       </p>
                       <p v-else class="text-[11px] text-gray-500 mt-1.5 flex items-center font-medium" :class="idx % 2 === 0 ? 'justify-start' : 'justify-end'">
-                        <Lock class="w-3 h-3 mr-1" /> {{ $t('laberinto.locked') }}
+                        <Lock class="w-3 h-3 mr-1" /> {{ $t('laberinto.locked') || 'Bloqueado' }}
                       </p>
                     </div>
                   </div>
@@ -344,56 +354,77 @@ const selectedModule = ref<any>(null)
         </Card>
       </div>
 
-      <!-- Right Sidebar -->
       <div class="space-y-4">
-        <!-- Continue Card -->
         <Card class="border border-[#082065]/20 bg-[#082065]/5">
           <CardContent class="p-4">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 bg-[#082065] rounded-lg flex items-center justify-center">
-                <PlayCircle class="w-4 h-4 text-white" />
+            <div v-if="activeModule">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-8 h-8 bg-[#082065] rounded-lg flex items-center justify-center">
+                  <PlayCircle class="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p class="text-xs text-muted-foreground">{{ $t('laberinto.next_challenge') || 'Siguiente Desafío' }}</p>
+                  <p class="text-sm font-semibold">{{ activeModule.title }}</p>
+                </div>
               </div>
-              <div>
-                <p class="text-xs text-muted-foreground">{{ $t('laberinto.next_challenge') }}</p>
-                <p class="text-sm font-semibold">{{ $t('laberinto.modules.m2_t') }}</p>
+              <div class="mb-3">
+                <p class="text-xs italic text-muted-foreground line-clamp-3">
+                  {{ activeModule.description }}
+                </p>
               </div>
+              <Button class="w-full bg-[#082065] hover:bg-[#0D47A1] text-white text-sm gap-2 font-bold shadow-md transition-transform hover:-translate-y-0.5">
+                <PlayCircle class="w-4 h-4" />
+                {{ $t('laberinto.start_stage') || 'Iniciar Etapa' }} (+{{ activeModule.xp }} XP)
+              </Button>
             </div>
-            <div class="mb-3">
-              <p class="text-xs text-muted-foreground italic line-clamp-3">
-                {{ $t('laberinto.challenge_desc') }}
-              </p>
+            <div v-else class="py-4 text-center">
+              <CheckCircle2 class="w-8 h-8 mx-auto mb-2 text-emerald-500" />
+              <p class="text-sm font-bold text-slate-800">¡Has completado toda la ruta!</p>
+              <p class="text-xs text-slate-500">Espera nuevos desafíos.</p>
             </div>
-            <Button class="w-full bg-[#082065] hover:bg-[#0D47A1] text-white text-sm gap-2">
-              <PlayCircle class="w-4 h-4" />
-              {{ $t('laberinto.start_stage') }}
-            </Button>
           </CardContent>
         </Card>
 
-        <!-- Stats -->
         <Card>
-          <CardHeader class="pb-2 pt-4 px-4">
-            <CardTitle class="text-sm">{{ $t('laberinto.maze_status') }}</CardTitle>
+          <CardHeader class="px-4 pt-4 pb-2 border-b border-gray-100">
+            <CardTitle class="text-sm font-bold">{{ $t('laberinto.maze_status') || 'Estado de la Ruta' }}</CardTitle>
           </CardHeader>
-          <CardContent class="px-4 pb-4 space-y-2">
-            <div v-for="m in modules" :key="m.id" class="flex items-center gap-2.5">
+          <CardContent class="px-4 pt-3 pb-4 space-y-3">
+            <div v-for="m in modules" :key="m.id" class="flex items-center gap-3">
               <div
-                class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                :style="{ background: m.status === 'available' ? m.color : '#e5e7eb' }"
+                class="flex items-center justify-center flex-shrink-0 transition-colors rounded-full w-7 h-7"
+                :style="{ background: m.status !== 'locked' ? m.color : '#f3f4f6' }"
               >
-                <CheckCircle2 v-if="m.status === 'available'" class="w-3.5 h-3.5 text-white" />
-                <Lock v-else class="w-3 h-3 text-gray-400" />
+                <CheckCircle2 v-if="m.status === 'completed'" class="w-4 h-4 text-white" />
+                <component :is="m.icon" v-else-if="m.status === 'in_progress' || m.status === 'available'" class="w-4 h-4 text-white" />
+                <Lock v-else class="w-3.5 h-3.5 text-gray-400" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium truncate">{{ m.title }}</p>
+                <p :class="`text-xs font-bold truncate ${m.status !== 'locked' ? 'text-slate-800' : 'text-slate-400'}`">{{ m.title }}</p>
+                <div v-if="m.status !== 'locked' && m.progress > 0" class="w-full h-1 mt-1 rounded-full bg-slate-100">
+                  <div class="h-full rounded-full" :style="{ width: `${m.progress}%`, backgroundColor: m.color }"></div>
+                </div>
               </div>
-              <span class="text-xs text-muted-foreground flex-shrink-0">
-                {{ m.status === 'available' ? `${m.progress}%` : '—' }}
+              <span :class="`text-[10px] font-black flex-shrink-0 ${m.status !== 'locked' ? 'text-blue-600' : 'text-slate-400'}`">
+                {{ m.status !== 'locked' ? `${m.progress}%` : '—' }}
               </span>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
+    
+    <div v-else class="flex items-center justify-center min-h-[400px]">
+      <div class="flex flex-col items-center gap-4">
+        <div class="w-10 h-10 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+        <p class="text-sm font-bold text-gray-500">Cargando tu laberinto vocacional...</p>
+      </div>
+    </div>
   </DashboardLayout>
 </template>
+
+<style scoped>
+.transition-all {
+  transition: all 0.25s ease;
+}
+</style>

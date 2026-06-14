@@ -20,6 +20,7 @@ import {
   Lock,
   Map as MapIcon,
   PlayCircle,
+  RefreshCw,
   Sparkles,
   Star,
   Target,
@@ -35,6 +36,7 @@ const modules = ref<any[]>([]);
 const selectedModule = ref<any>(null);
 const nextNodeRef = ref<any>(null);
 const isGenerating = ref(false);
+const isGeneratingIA = ref(false); // Para controlar el estado del botón de refresco IA
 
 const totalProgress = ref(0);
 const userXP = ref(0);
@@ -99,6 +101,49 @@ const stats = computed(() => [
   },
 ]);
 
+const currentModuleIndex = computed(() => {
+  return modules.value.findIndex((m) => m.status === "available");
+});
+
+// Función aislada para pedir a la IA una nueva misión y guardarla en caché
+const regenerarMisionIA = async (postulanteId: number, force = false) => {
+  try {
+    isGeneratingIA.value = true;
+
+    // Si no forzamos la recarga, intentamos buscar en localStorage primero
+    if (!force) {
+      const cachedMission = localStorage.getItem(
+        `nexus_ai_mission_${postulanteId}`,
+      );
+      if (cachedMission) {
+        nextNodeRef.value = JSON.parse(cachedMission);
+        isGeneratingIA.value = false;
+        return;
+      }
+    }
+
+    // Si forzamos o no hay caché, llamamos a la API
+    nextNodeRef.value = null; // Limpiamos la actual para mostrar el skeleton/texto de carga
+
+    const aiRes = await api.get(
+      `/api/v1/ai/ruta/siguiente-nodo?postulanteId=${postulanteId}`,
+    );
+
+    if (aiRes.data && aiRes.data.success) {
+      nextNodeRef.value = aiRes.data.data;
+      // Guardamos la nueva misión en caché
+      localStorage.setItem(
+        `nexus_ai_mission_${postulanteId}`,
+        JSON.stringify(aiRes.data.data),
+      );
+    }
+  } catch (e) {
+    console.warn("No se pudo obtener el nodo de la IA", e);
+  } finally {
+    isGeneratingIA.value = false;
+  }
+};
+
 const fetchNextIntelligentNode = async () => {
   try {
     isGenerating.value = true;
@@ -113,6 +158,9 @@ const fetchNextIntelligentNode = async () => {
         "No se pudo obtener el perfil de postulante, usando fallback ID",
       );
     }
+
+    // Cargar la misión IA desde caché o generarla si es la primera vez
+    regenerarMisionIA(postulanteId, false);
 
     try {
       const journeyRes = await api.get(
@@ -132,25 +180,31 @@ const fetchNextIntelligentNode = async () => {
             color = "#FFB20D";
             icon = MapIcon;
           }
-          if (nodo.tipo === "LABERINTO" || nodo.tipo === "QUIZ") {
+          if (
+            nodo.tipo === "LABERINTO" ||
+            nodo.tipo === "QUIZ" ||
+            nodo.tipo === "DESAFIO"
+          ) {
             color = "#B50E30";
             icon = Gamepad2;
           }
-          if (nodo.tipo === "MENTORIA") {
+          if (nodo.tipo === "MENTORIA" || nodo.tipo === "EVENTO") {
             color = "#2E7D32";
             icon = Star;
           }
 
           const isCompleted = nodo.estado === "COMPLETADO";
+          const isInProgress = nodo.estado === "EN_PROGRESO";
           const isAvailable =
-            nodo.estado === "PENDIENTE" &&
-            (i === 0 || journey.nodos[i - 1].estado === "COMPLETADO");
+            isInProgress ||
+            (nodo.estado === "PENDIENTE" &&
+              (i === 0 || journey.nodos[i - 1].estado === "COMPLETADO"));
 
           if (isCompleted) {
             xpCounter += nodo.xp || 0;
             completedCount++;
           }
-          if (nodo.estado === "PENDIENTE") pendingCount++;
+          if (nodo.estado === "PENDIENTE" || isInProgress) pendingCount++;
 
           return {
             id: nodo.id,
@@ -163,7 +217,7 @@ const fetchNextIntelligentNode = async () => {
               : isAvailable
                 ? "available"
                 : "locked",
-            progress: isCompleted ? 100 : 0,
+            progress: isCompleted ? 100 : isInProgress ? 50 : 0,
             xp: nodo.xp || 10,
           };
         });
@@ -230,17 +284,6 @@ const fetchNextIntelligentNode = async () => {
         },
       ];
     }
-
-    try {
-      const aiRes = await api.get(
-        `/api/v1/ai/ruta/siguiente-nodo?postulanteId=${postulanteId}`,
-      );
-      if (aiRes.data && aiRes.data.success) {
-        nextNodeRef.value = aiRes.data.data;
-      }
-    } catch (e) {
-      console.warn("No se pudo obtener el nodo de la IA", e);
-    }
   } catch (error) {
     console.error("Error crítico cargando la ruta", error);
   } finally {
@@ -264,7 +307,7 @@ const generarNuevaRutaCompleta = async () => {
     );
     if (res.data && res.data.success) {
       alert("¡Ruta completa generada exitosamente con IA!");
-      await fetchNextIntelligentNode(); // Recarga la UI dinámicamente
+      await fetchNextIntelligentNode();
     }
   } catch (error) {
     console.error("Error generando ruta completa", error);
@@ -272,6 +315,24 @@ const generarNuevaRutaCompleta = async () => {
   } finally {
     isGenerating.value = false;
   }
+};
+
+const iniciarExperienciaIA = () => {
+  if (!nextNodeRef.value) return;
+
+  selectedModule.value = {
+    id: "ia-mission-temp",
+    title: `[Misión IA] ${nextNodeRef.value.tituloNodo}`,
+    description: nextNodeRef.value.descripcionExperiencia,
+    icon: markRaw(Sparkles),
+    color: "#FFB20D",
+    status: "available",
+    progress: 0,
+    xp: nextNodeRef.value.xpRecompensa || 0,
+    isAiNode: true,
+  };
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 onMounted(() => {
@@ -545,23 +606,23 @@ onMounted(() => {
                   :x2="i % 2 === 0 ? '35%' : '65%'"
                   :y2="`${(100 * (i + 0.5)) / modules.length}%`"
                   :stroke="
-                    modules[i - 1].status === 'available' &&
-                    modules[i].status === 'available'
+                    modules[i - 1].status !== 'locked' &&
+                    modules[i].status !== 'locked'
                       ? '#EF4444'
-                      : modules[i - 1].status === 'available'
+                      : modules[i - 1].status !== 'locked'
                         ? '#991B1B'
                         : '#374151'
                   "
                   stroke-width="3"
                   :stroke-dasharray="
-                    modules[i - 1].status === 'available' &&
-                    modules[i].status === 'available'
+                    modules[i - 1].status !== 'locked' &&
+                    modules[i].status !== 'locked'
                       ? '8 6'
                       : '0'
                   "
                   :class="
-                    modules[i - 1].status === 'available' &&
-                    modules[i].status === 'available'
+                    modules[i - 1].status !== 'locked' &&
+                    modules[i].status !== 'locked'
                       ? 'animate-[dash_2s_linear_infinite]'
                       : ''
                   "
@@ -579,26 +640,24 @@ onMounted(() => {
                   class="relative flex items-center flex-1 w-full"
                 >
                   <div
-                    class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2 group"
-                    :class="
-                      mod.status === 'available'
-                        ? 'cursor-pointer'
-                        : 'cursor-not-allowed'
-                    "
+                    class="absolute flex flex-col items-center transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 group"
+                    :class="[
+                      mod.status !== 'locked'
+                        ? 'cursor-pointer hover:scale-105'
+                        : 'cursor-not-allowed opacity-60 grayscale',
+                      idx === currentModuleIndex
+                        ? 'drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] scale-110'
+                        : '',
+                    ]"
                     :style="{ left: idx % 2 === 0 ? '35%' : '65%', top: '50%' }"
-                    @click="
-                      mod.status === 'available' && (selectedModule = mod)
-                    "
+                    @click="mod.status !== 'locked' && (selectedModule = mod)"
                   >
+                    <!-- ETIQUETA ANIMADA PARA EL MÓDULO ACTUAL -->
                     <div
-                      v-if="
-                        mod.status === 'available' &&
-                        mod.progress > 0 &&
-                        mod.progress < 100
-                      "
-                      class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#EF4444] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-red-500/30 whitespace-nowrap z-30 tracking-wide uppercase transition-transform group-hover:-translate-y-2"
+                      v-if="idx === currentModuleIndex"
+                      class="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#EF4444] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-red-500/50 whitespace-nowrap z-30 tracking-wide uppercase animate-bounce"
                     >
-                      {{ $t("ruta.continue_route") }}
+                      {{ $t("ruta.continue_route") || "Continuar aquí" }}
                       <div
                         class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#EF4444]"
                       ></div>
@@ -642,14 +701,12 @@ onMounted(() => {
                             />
                           </g>
                           <g
-                            :class="`transition-all duration-500 ease-out ${mod.status === 'available' ? 'group-hover:-translate-y-4' : 'opacity-60'}`"
+                            :class="`transition-all duration-500 ease-out ${mod.status !== 'locked' ? 'group-hover:-translate-y-4' : ''}`"
                           >
                             <polygon
                               points="75,10 135,40 75,70 15,40"
                               :fill="
-                                mod.status === 'available'
-                                  ? '#EF4444'
-                                  : '#4B5563'
+                                mod.status !== 'locked' ? '#EF4444' : '#4B5563'
                               "
                             />
                             <polygon
@@ -658,7 +715,7 @@ onMounted(() => {
                               fill-opacity="0.1"
                             />
                             <polygon
-                              v-if="mod.status === 'available'"
+                              v-if="mod.status !== 'locked'"
                               points="75,22 120,44 75,66 30,44"
                               fill="none"
                               stroke="#FECACA"
@@ -666,7 +723,7 @@ onMounted(() => {
                               opacity="0.6"
                             />
                             <polygon
-                              v-if="mod.status === 'available'"
+                              v-if="mod.status !== 'locked'"
                               points="75,30 105,45 75,60 45,45"
                               :fill="'#B91C1C'"
                               opacity="0.4"
@@ -674,9 +731,7 @@ onMounted(() => {
                             <polygon
                               points="15,40 75,70 75,80 15,50"
                               :fill="
-                                mod.status === 'available'
-                                  ? '#DC2626'
-                                  : '#374151'
+                                mod.status !== 'locked' ? '#DC2626' : '#374151'
                               "
                             />
                             <polygon
@@ -687,9 +742,7 @@ onMounted(() => {
                             <polygon
                               points="75,70 135,40 135,50 75,80"
                               :fill="
-                                mod.status === 'available'
-                                  ? '#B91C1C'
-                                  : '#1F2937'
+                                mod.status !== 'locked' ? '#B91C1C' : '#1F2937'
                               "
                             />
                             <polygon
@@ -708,7 +761,7 @@ onMounted(() => {
                         idx % 2 === 0
                           ? 'left-[100%] ml-2 text-left'
                           : 'right-[100%] mr-2 text-right',
-                        mod.status === 'available'
+                        mod.status !== 'locked'
                           ? 'group-hover:-translate-y-4'
                           : '',
                       ]"
@@ -719,13 +772,25 @@ onMounted(() => {
                         {{ $t("ruta.module_prefix") || "Módulo" }} {{ idx + 1 }}
                       </p>
                       <h3
-                        :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status === 'available' ? 'text-white drop-shadow-md' : 'text-gray-500'}`"
+                        :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status !== 'locked' ? 'text-white drop-shadow-md' : 'text-gray-500'}`"
                       >
                         {{ mod.title }}
                       </h3>
                       <p
-                        v-if="mod.status === 'available'"
-                        class="text-[11px] mt-1.5 flex items-center font-medium"
+                        v-if="mod.status === 'completed'"
+                        class="text-[11px] mt-1.5 flex items-center font-bold"
+                        :class="
+                          idx % 2 === 0
+                            ? 'justify-start text-emerald-400'
+                            : 'justify-end text-emerald-400'
+                        "
+                      >
+                        <CheckCircle2 class="w-3.5 h-3.5 mr-1" />
+                        Completado
+                      </p>
+                      <p
+                        v-else-if="mod.status === 'available'"
+                        class="text-[11px] mt-1.5 flex items-center font-bold"
                         :class="
                           idx % 2 === 0
                             ? 'justify-start text-[#EF4444]'
@@ -733,7 +798,7 @@ onMounted(() => {
                         "
                       >
                         <component :is="mod.icon" class="w-3.5 h-3.5 mr-1" />
-                        {{ mod.progress }}% completado
+                        En Progreso
                       </p>
                       <p
                         v-else
@@ -764,37 +829,60 @@ onMounted(() => {
           ></div>
 
           <CardContent class="relative z-10 p-5">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="relative">
-                <div
-                  class="absolute inset-0 bg-[#B50E30] blur-sm opacity-40 rounded-xl group-hover:opacity-60 transition-opacity"
-                ></div>
-                <div
-                  class="w-10 h-10 bg-gradient-to-br from-[#B50E30] to-[#8F0B26] rounded-xl flex items-center justify-center relative z-10 shadow-sm"
-                >
-                  <PlayCircle class="w-5 h-5 text-white" />
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <div
+                    class="absolute inset-0 bg-[#B50E30] blur-sm opacity-40 rounded-xl group-hover:opacity-60 transition-opacity"
+                  ></div>
+                  <div
+                    class="w-10 h-10 bg-gradient-to-br from-[#B50E30] to-[#8F0B26] rounded-xl flex items-center justify-center relative z-10 shadow-sm"
+                  >
+                    <PlayCircle class="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p
+                    class="text-[10px] font-black text-[#B50E30] uppercase tracking-wider mb-0.5 flex items-center gap-1"
+                  >
+                    <Sparkles class="w-3 h-3" />
+                    {{ $t("ruta.ai_recommendation") || "Recomendación IA" }}
+                  </p>
+                  <p class="text-sm font-bold leading-tight text-slate-800">
+                    {{
+                      nextNodeRef
+                        ? nextNodeRef.tituloNodo
+                        : $t("ruta.calculating_short")
+                    }}
+                  </p>
                 </div>
               </div>
-              <div class="flex-1">
-                <p
-                  class="text-[10px] font-black text-[#B50E30] uppercase tracking-wider mb-0.5 flex items-center gap-1"
-                >
-                  <Sparkles class="w-3 h-3" />
-                  {{ $t("ruta.ai_recommendation") || "Recomendación IA" }}
-                </p>
-                <p class="text-sm font-bold leading-tight text-slate-800">
-                  {{
-                    nextNodeRef
-                      ? nextNodeRef.tituloNodo
-                      : $t("ruta.calculating_short")
-                  }}
-                </p>
-              </div>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                class="w-8 h-8 rounded-full text-slate-400 hover:text-[#B50E30] hover:bg-red-50"
+                @click="regenerarMisionIA(auth.state.user?.id || 1, true)"
+                :disabled="isGeneratingIA"
+                title="Generar nueva recomendación"
+              >
+                <RefreshCw
+                  :class="['w-4 h-4', isGeneratingIA ? 'animate-spin' : '']"
+                />
+              </Button>
             </div>
 
             <div
-              class="p-3 mb-4 border shadow-inner bg-slate-50 border-slate-100 rounded-xl"
+              class="relative p-3 mb-4 border shadow-inner bg-slate-50 border-slate-100 rounded-xl"
             >
+              <div
+                v-if="isGeneratingIA"
+                class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50/80 rounded-xl"
+              >
+                <span class="text-xs font-bold text-slate-500 animate-pulse"
+                  >Analizando perfil...</span
+                >
+              </div>
               <p
                 class="text-xs italic font-medium leading-relaxed text-slate-600 line-clamp-3"
               >
@@ -807,6 +895,8 @@ onMounted(() => {
             </div>
 
             <Button
+              @click="iniciarExperienciaIA"
+              :disabled="!nextNodeRef || isGeneratingIA"
               class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white text-sm gap-2 shadow-lg shadow-red-900/20 font-bold h-11 transition-all hover:-translate-y-0.5"
             >
               <PlayCircle class="w-4 h-4" />

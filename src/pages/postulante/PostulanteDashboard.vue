@@ -206,7 +206,6 @@ onMounted(() => {
     moduleColor="#082065"
   >
     <div class="space-y-6">
-      <!-- Hero Section (Test NOT completed) -->
       <Card
         v-if="!auth.state.user?.careerSuggestion"
         class="bg-gradient-to-br from-[#082065] to-[#0D47A1] border-0 text-white overflow-hidden relative"
@@ -273,7 +272,6 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <!-- Hero Section (Test COMPLETED) -->
       <Card
         v-else
         class="bg-gradient-to-br from-blue-900 via-[#082065] to-indigo-900 border-0 text-white overflow-hidden relative shadow-lg"
@@ -356,9 +354,7 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <!-- Main Features Grid -->
       <div class="grid gap-6 md:grid-cols-2">
-        <!-- Minijuego: Laberinto de Vocaciones -->
         <Card class="transition-shadow hover:shadow-lg">
           <CardHeader>
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3">
@@ -371,7 +367,6 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <div class="space-y-4">
-              <!-- Isometric Illustration Placeholder -->
               <div
                 class="aspect-square rounded-xl bg-gradient-to-br from-[#F1F1F1] to-[#D9D9D9] flex items-center justify-center relative overflow-hidden"
               >
@@ -413,17 +408,16 @@ onMounted(() => {
         </Card>
       </div>
 
-      <!-- Bitácora Digital (Expanded) -->
       <Card id="bitacora" class="w-full border-t-4 border-t-[#082065] shadow-lg">
-        <CardHeader class="bg-slate-50/50 pb-6 rounded-t-lg">
+        <CardHeader class="pb-6 rounded-t-lg bg-slate-50/50">
           <div class="flex items-start justify-between">
             <div class="flex gap-4">
               <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center shadow-md">
-                <BookOpen class="w-7 h-7 text-white" />
+                <BookOpen class="text-white w-7 h-7" />
               </div>
               <div>
                 <CardTitle class="text-2xl">{{ $t("postulante.digital_log") || 'Bitácora Digital' }}</CardTitle>
-                <CardDescription class="text-base mt-1 text-gray-600">
+                <CardDescription class="mt-1 text-base text-gray-600">
                   {{ $t("postulante.log_desc") || 'Registra tus reflexiones, descubrimientos y logros vocacionales.' }}
                 </CardDescription>
               </div>
@@ -434,10 +428,9 @@ onMounted(() => {
           </div>
         </CardHeader>
         <CardContent class="pt-6">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- Formulario de nueva entrada -->
-            <div class="lg:col-span-5 space-y-5 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-              <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+          <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div class="p-5 space-y-5 bg-white border border-gray-100 shadow-sm lg:col-span-5 rounded-xl">
+              <h3 class="flex items-center gap-2 text-lg font-bold text-gray-800">
                 <Plus class="w-5 h-5 text-[#082065]" />
                 Nueva Entrada
               </h3>
@@ -474,27 +467,26 @@ onMounted(() => {
               </div>
             </div>
 
-            <!-- Historial -->
             <div class="lg:col-span-7">
-              <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center justify-between">
+              <h3 class="flex items-center justify-between mb-4 text-lg font-bold text-gray-800">
                 <span>Historial de avances</span>
                 <Button variant="ghost" size="sm" @click="fetchBitacora" :disabled="bitacoraLoading" class="text-gray-500 hover:text-[#082065]">
                   Actualizar
                 </Button>
               </h3>
               <div v-if="bitacoraLoading" class="flex flex-col gap-3">
-                <div v-for="i in 3" :key="i" class="h-28 bg-gray-100 rounded-xl animate-pulse"></div>
+                <div v-for="i in 3" :key="i" class="bg-gray-100 h-28 rounded-xl animate-pulse"></div>
               </div>
-              <div v-else-if="entries.length === 0" class="flex flex-col items-center justify-center text-center p-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                <BookOpen class="w-12 h-12 text-gray-300 mb-3" />
-                <p class="text-gray-500 font-medium">Aún no tienes entradas en tu bitácora.</p>
-                <p class="text-gray-400 text-sm mt-1">Registra tu primer avance usando el formulario.</p>
+              <div v-else-if="entries.length === 0" class="flex flex-col items-center justify-center p-10 text-center border border-gray-200 border-dashed bg-gray-50 rounded-xl">
+                <BookOpen class="w-12 h-12 mb-3 text-gray-300" />
+                <p class="font-medium text-gray-500">Aún no tienes entradas en tu bitácora.</p>
+                <p class="mt-1 text-sm text-gray-400">Registra tu primer avance usando el formulario.</p>
               </div>
               <div v-else class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 <div
                   v-for="(entry, i) in entries"
                   :key="i"
-                  class="p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all group relative flex flex-col gap-2"
+                  class="relative flex flex-col gap-2 p-4 transition-all bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md group"
                 >
                   <div class="flex items-start justify-between gap-4">
                     <div>
@@ -524,7 +516,7 @@ onMounted(() => {
                             </Badge>
                             <span class="truncate">{{ entry.titulo || 'Entrada' }}</span>
                           </DialogTitle>
-                          <DialogDescription class="pt-4 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed text-left">
+                          <DialogDescription class="pt-4 text-sm leading-relaxed text-left text-gray-700 whitespace-pre-wrap">
                             {{ entry.descripcion }}
                           </DialogDescription>
                         </DialogHeader>
@@ -538,7 +530,6 @@ onMounted(() => {
           </CardContent>
         </Card>
 
-        <!-- Conexión P2P -->
         <Card class="transition-shadow hover:shadow-lg md:col-span-2">
           <CardHeader>
             <div
@@ -586,7 +577,6 @@ onMounted(() => {
           </CardContent>
       </Card>
 
-      <!-- Progress Section -->
       <Card>
         <CardHeader>
           <CardTitle>{{ $t("postulante.your_progress") }}</CardTitle>
