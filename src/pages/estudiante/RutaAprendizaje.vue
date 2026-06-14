@@ -57,14 +57,16 @@ const selectedModule = ref<any>(null);
 const totalProgress = ref(20);
 const nextNodeRef = ref<any>(null);
 const isGenerating = ref(false);
+const studentCareer = ref<string>("Ingeniería - I Ciclo");
 
 const fetchNextIntelligentNode = async () => {
   try {
-    const postulanteId = 1; // Mock ID
+    const usuarioId = auth.state.user?.id;
+    if (!usuarioId) return;
     // Get Current Journey
     try {
       const journeyRes = await api.get(
-        `/api/journeys/postulante/${postulanteId}/activo`,
+        `/api/journeys/usuario/${usuarioId}/activo`,
       );
       if (journeyRes.data && journeyRes.data.success) {
         const journey = journeyRes.data.data;
@@ -179,9 +181,10 @@ const fetchNextIntelligentNode = async () => {
 const generarNuevaRutaCompleta = async () => {
   try {
     isGenerating.value = true;
-    const postulanteId = 1; // Mock ID
+    const usuarioId = auth.state.user?.id;
+    if (!usuarioId) return;
     const res = await api.post(
-      `/api/v1/ai/ruta/generar-completa?postulanteId=${postulanteId}`,
+      `/api/v1/ai/ruta/generar-completa?usuarioId=${usuarioId}`,
     );
     if (res.data && res.data.success) {
       // Reload the page or fetch new nodes
@@ -196,7 +199,28 @@ const generarNuevaRutaCompleta = async () => {
   }
 };
 
+const fetchEstudianteData = async () => {
+  const userId = auth.state.user?.id;
+  if (!userId) return;
+
+  try {
+    const perfilRes = await api.get(`/api/estudiantes/by-usuario/${userId}`);
+    if (perfilRes.data?.data) {
+      const perfil = perfilRes.data.data;
+      if (perfil.carrera) {
+        const cicloRoman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+        const cicloNumber = parseInt(perfil.ciclo) || 1;
+        const roman = cicloRoman[cicloNumber - 1] || perfil.ciclo;
+        studentCareer.value = `${perfil.carrera.nombre} - ${roman} Ciclo`;
+      }
+    }
+  } catch (e) {
+    console.error("Error fetching student profile data", e);
+  }
+};
+
 onMounted(() => {
+  fetchEstudianteData();
   fetchNextIntelligentNode();
 });
 </script>
@@ -290,14 +314,14 @@ onMounted(() => {
                   {{ $t("ruta.welcome_back") }}
                 </p>
                 <h2 class="text-2xl font-black leading-tight tracking-tight">
-                  {{ auth.state.user?.name || "Alejandro Lastra" }}
+                  {{ auth.state.user?.name || "Estudiante" }}
                 </h2>
                 <div
                   class="flex items-center gap-1.5 mt-2 bg-white/10 w-fit px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10"
                 >
                   <GraduationCap class="w-4 h-4 text-amber-300" />
                   <span class="text-xs font-semibold text-amber-100"
-                    >Ingeniería de Sistemas - V Ciclo</span
+                    >{{ studentCareer }}</span
                   >
                 </div>
               </div>

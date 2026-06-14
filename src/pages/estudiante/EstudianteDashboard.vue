@@ -33,6 +33,7 @@ import { useI18n } from 'vue-i18n';
 const auth = useAuth();
 const { t } = useI18n();
 const studentCode = ref<string>("");
+const studentCareer = ref<string>("Ingeniería - I Ciclo");
 const copied = ref(false);
 
 const loadStudentCode = async () => {
@@ -124,22 +125,40 @@ const upcomingTasks = ref([
 const conexionesMentoria = ref<any[]>([]);
 
 const fetchEstudianteData = async () => {
-  try {
-    const estudianteId = 2;
-    const conRes = await api.get(`/api/conexiones/estudiante/${estudianteId}`);
-    conexionesMentoria.value = conRes.data.data || [];
+  const userId = auth.state.user?.id;
+  if (!userId) return;
 
-    if (conexionesMentoria.value.length > 0) {
-      upcomingTasks.value.unshift({
-        title: `Mentoría solicitada por Postulante #${conexionesMentoria.value[0].postulanteId}`,
-        course: "Conexión P2P NEXUS",
-        date: "Lo antes posible",
-        type: "Mentoría",
-        urgent: true,
-      });
+  try {
+    const perfilRes = await api.get(`/api/estudiantes/by-usuario/${userId}`);
+    if (perfilRes.data?.data) {
+      const perfil = perfilRes.data.data;
+      if (perfil.carrera) {
+        const cicloRoman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+        const cicloNumber = parseInt(perfil.ciclo) || 1;
+        const roman = cicloRoman[cicloNumber - 1] || perfil.ciclo;
+        studentCareer.value = `${perfil.carrera.nombre} - ${roman} Ciclo`;
+      }
+
+      // Fetch conexiones using the real profile ID
+      try {
+        const conRes = await api.get(`/api/conexiones/estudiante/${perfil.id}`);
+        conexionesMentoria.value = conRes.data.data || [];
+
+        if (conexionesMentoria.value.length > 0) {
+          upcomingTasks.value.unshift({
+            title: `Mentoría solicitada por Postulante #${conexionesMentoria.value[0].postulanteId}`,
+            course: "Conexión P2P NEXUS",
+            date: "Lo antes posible",
+            type: "Mentoría",
+            urgent: true,
+          });
+        }
+      } catch (connErr) {
+        console.warn("No se pudieron cargar las conexiones de mentoría", connErr);
+      }
     }
   } catch (e) {
-    console.error("Error fetching mentor connections", e);
+    console.error("Error fetching student profile data", e);
   }
 };
 
@@ -199,6 +218,10 @@ onMounted(async () => {
               <CardTitle class="text-3xl font-extrabold tracking-tight md:text-4xl"
                 >{{ $t('dashboard.welcome', { name: auth.state.user?.name ? auth.state.user.name.split(" ")[0] : "Estudiante" }) }}</CardTitle
               >
+              <div class="flex items-center gap-2 mt-3 mb-1 px-3 py-1.5 rounded-lg bg-black/20 w-fit text-white shadow-inner border border-white/10">
+                <BookOpen class="w-4 h-4 text-red-200" />
+                <span class="text-sm font-semibold tracking-wide text-red-100">{{ studentCareer }}</span>
+              </div>
               <CardDescription class="max-w-md mt-2 text-base font-medium leading-relaxed text-red-100/90">
                 {{ $t('dashboard.important_task') }}
               </CardDescription>

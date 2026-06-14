@@ -12,6 +12,7 @@ import TestVocacional from '@/pages/postulante/TestVocacional.vue'
 import LaberintoVocaciones from '@/pages/postulante/LaberintoVocaciones.vue'
 import ChatEstudiantes from '@/pages/postulante/ChatEstudiantes.vue'
 import ContactoMentores from '@/pages/postulante/ContactoMentores.vue'
+import ConfiguracionPage from '@/pages/configuracion/ConfiguracionPage.vue'
 import { useAuth } from '@/lib/auth'
 
 const router = createRouter({
@@ -107,6 +108,13 @@ const router = createRouter({
           path: 'utp-plus',
           name: 'utp-plus',
           component: UTPPlusDashboard,
+        },
+        {
+          // Configuracion
+          path: 'configuracion',
+          name: 'configuracion',
+          component: ConfiguracionPage,
+          meta: { requiresAuth: true }
         },
       ],
     },
