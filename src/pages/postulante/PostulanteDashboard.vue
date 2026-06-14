@@ -19,7 +19,9 @@ import {
   ArrowRight,
   BookOpen,
   Brain,
+  Check,
   Circle,
+  Copy,
   Gamepad2,
   Heart,
   Home,
@@ -42,6 +44,9 @@ const copied = ref(false);
 const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
   { icon: markRaw(Brain), label: t('nav.vocational_tests'), href: "/postulante/test" },
+  { icon: markRaw(Gamepad2), label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
+  { icon: markRaw(BookOpen), label: t('postulante.digital_log'), href: "/postulante/bitacora" },
+  { icon: markRaw(MessageCircle), label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
 ])
 
 const mentors = ref<{ name: string; career: string; online: boolean }[]>([]);
@@ -174,16 +179,30 @@ onMounted(() => {
             </CardDescription>
           </div>
           <div
-            class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0"
+            class="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:bg-white/15 transition-all cursor-default group shrink-0"
           >
             <span
-              class="text-[10px] uppercase font-bold text-blue-200 tracking-wider"
-              >{{ $t("postulante.family_code") }}</span
-            >
-            <span
-              class="font-mono text-lg font-black tracking-widest text-white"
-              >NEX-CAM-2026</span
-            >
+              class="text-[10px] uppercase font-bold text-blue-200 tracking-widest flex items-center gap-1.5"
+              >
+              <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+              {{ $t("postulante.family_code") }}
+            </span>
+            <div class="flex items-center gap-2">
+              <span
+                class="font-mono text-xl font-black tracking-[0.2em] text-white"
+              >
+                {{ codigoVinculacion }}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                class="w-8 h-8 text-white transition-all hover:bg-white/20"
+                @click="copyCode"
+              >
+                <Check v-if="copied" class="w-4 h-4 text-green-300" />
+                <Copy v-else class="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent class="relative z-10">
@@ -241,16 +260,30 @@ onMounted(() => {
             </CardDescription>
           </div>
           <div
-            class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0"
+            class="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:bg-white/15 transition-all cursor-default group shrink-0"
           >
             <span
-              class="text-[10px] uppercase font-bold text-blue-200 tracking-wider"
-              >{{ $t("postulante.family_code") }}</span
-            >
-            <span
-              class="font-mono text-lg font-black tracking-widest text-white"
-              >NEX-CAM-2026</span
-            >
+              class="text-[10px] uppercase font-bold text-blue-200 tracking-widest flex items-center gap-1.5"
+              >
+              <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+              {{ $t("postulante.family_code") }}
+            </span>
+            <div class="flex items-center gap-2">
+              <span
+                class="font-mono text-xl font-black tracking-[0.2em] text-white"
+              >
+                {{ codigoVinculacion }}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                class="w-8 h-8 text-white transition-all hover:bg-white/20"
+                @click="copyCode"
+              >
+                <Check v-if="copied" class="w-4 h-4 text-green-300" />
+                <Copy v-else class="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent class="relative z-10 flex flex-wrap gap-3 pt-4">
@@ -268,7 +301,7 @@ onMounted(() => {
       </Card>
 
       <!-- Main Features Grid -->
-      <div class="grid gap-6 md:grid-cols-3">
+      <div class="grid gap-6 md:grid-cols-2">
         <!-- Minijuego: Laberinto de Vocaciones -->
         <Card class="transition-shadow hover:shadow-lg">
           <CardHeader>
@@ -383,7 +416,7 @@ onMounted(() => {
         </Card>
 
         <!-- Conexión P2P -->
-        <Card class="transition-shadow hover:shadow-lg">
+        <Card class="transition-shadow hover:shadow-lg md:col-span-2">
           <CardHeader>
             <div
               class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3"

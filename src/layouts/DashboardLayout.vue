@@ -11,6 +11,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { useAuth } from "@/lib/auth";
 import {
   Bell,
@@ -270,17 +278,15 @@ const logoImage = computed(() => {
         <Breadcrumb v-if="breadcrumbs && breadcrumbs.length > 0" class="mb-4">
           <BreadcrumbList>
             <template v-for="(crumb, index) in breadcrumbs" :key="index">
-              <div class="flex items-center">
-                <BreadcrumbSeparator v-if="index > 0">
-                  <ChevronRight class="w-4 h-4" />
-                </BreadcrumbSeparator>
-                <BreadcrumbItem>
-                  <BreadcrumbLink v-if="crumb.href" :href="crumb.href">{{
-                    crumb.label
-                  }}</BreadcrumbLink>
-                  <BreadcrumbPage v-else>{{ crumb.label }}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </div>
+              <BreadcrumbSeparator v-if="index > 0">
+                <ChevronRight class="w-4 h-4" />
+              </BreadcrumbSeparator>
+              <BreadcrumbItem>
+                <BreadcrumbLink v-if="crumb.href" :href="crumb.href">{{
+                  crumb.label
+                }}</BreadcrumbLink>
+                <BreadcrumbPage v-else>{{ crumb.label }}</BreadcrumbPage>
+              </BreadcrumbItem>
             </template>
           </BreadcrumbList>
         </Breadcrumb>

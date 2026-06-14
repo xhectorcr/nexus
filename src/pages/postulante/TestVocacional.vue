@@ -20,7 +20,10 @@ import {
   Zap,
   TrendingUp,
   Heart,
-  Home
+  Home,
+  Gamepad2,
+  BookOpen,
+  MessageCircle
 } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -32,6 +35,9 @@ const { t } = useI18n()
 const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
   { icon: markRaw(Brain), label: t('testVocacional.breadcrumb'), href: "/postulante/test" },
+  { icon: markRaw(Gamepad2), label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
+  { icon: markRaw(BookOpen), label: t('postulante.digital_log'), href: "/postulante/bitacora" },
+  { icon: markRaw(MessageCircle), label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
 ])
 
 // Steps: 
