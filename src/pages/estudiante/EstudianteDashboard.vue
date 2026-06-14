@@ -23,40 +23,37 @@ import {
   Star,
   TrendingUp,
 } from "lucide-vue-next";
-import { computed, markRaw, onMounted, ref } from "vue";
+import { markRaw } from "vue";
 
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 const auth = useAuth();
 const { t } = useI18n();
-
-const copied = ref(false);
-const isLoading = ref(true);
-const dashboardData = ref<any>(null); // Guardará la respuesta del backend
 const studentCode = ref<string>("");
+const studentCareer = ref<string>("");
+const copied = ref(false);
 
-// 1. Llamamos al nuevo endpoint
-const fetchDashboardData = async () => {
+const loadStudentCode = async () => {
   try {
-    isLoading.value = true;
-    const response = await api.get("/api/estudiantes/dashboard/me");
-    dashboardData.value = response.data.data;
-    // Extraemos el código de vinculación directamente del dashboard
-    studentCode.value = dashboardData.value.codigoVinculacion;
-  } catch (error) {
-    console.error("Error al cargar el dashboard del estudiante:", error);
-  } finally {
-    isLoading.value = false;
+    const code = await auth.fetchStudentCode();
+    studentCode.value = code ?? "";
+  } catch (e) {
+    console.error("Error cargando código estudiante", e);
+    studentCode.value = "ERROR";
   }
 };
 
 const copyCode = async () => {
   if (!studentCode.value || studentCode.value === "ERROR") return;
+
   try {
     await navigator.clipboard.writeText(studentCode.value);
+
     copied.value = true;
+
     setTimeout(() => {
       copied.value = false;
     }, 1200);
@@ -74,79 +71,149 @@ const sidebarItems = computed(() => [
   },
 ]);
 
-// 2. Hacemos que los stats (Tarjetas pequeñas) sean reactivas al backend
+const statsValues = ref({
+  promedioAcumulado: "0.0",
+  creditosAprobados: "0",
+  cursosActuales: "0",
+  asistenciaGlobal: "0%",
+});
+
 const stats = computed(() => [
   {
     label: t("dashboard.stats_avg"),
-    value: dashboardData.value?.promedioAcumulado || "0.0",
+    value: statsValues.value.promedioAcumulado,
     icon: markRaw(Star),
     color: "#B50E30",
   },
   {
     label: t("dashboard.stats_credits"),
-    value: dashboardData.value?.creditosAprobados?.toString() || "0",
+    value: statsValues.value.creditosAprobados,
     icon: markRaw(Award),
     color: "#082065",
   },
   {
     label: t("dashboard.stats_courses"),
-    value: dashboardData.value?.cursosActuales?.toString() || "0",
+    value: statsValues.value.cursosActuales,
     icon: markRaw(BookOpen),
     color: "#B50E30",
   },
   {
     label: t("dashboard.stats_attendance"),
-    value: dashboardData.value?.asistenciaGlobal || "0%",
+    value: statsValues.value.asistenciaGlobal,
     icon: markRaw(TrendingUp),
     color: "#2E7D32",
   },
 ]);
 
+const upcomingTasks = ref<any[]>([]);
+
 const conexionesMentoria = ref<any[]>([]);
 
+const activeJourney = ref<any>(null);
+
+const computedXP = computed(() => {
+  if (!activeJourney.value) return 0;
+  return activeJourney.value.nodos
+    .filter((n: any) => n.estado === "COMPLETADO")
+    .reduce((sum: number, n: any) => sum + (n.xp || 0), 0);
+});
+
+const computedLevel = computed(() => {
+  return Math.floor(computedXP.value / 100) + 1;
+});
+
 const fetchEstudianteData = async () => {
+  const userId = auth.state.user?.id;
+  if (!userId) return;
+
   try {
-    const estudianteId = auth.state.user?.id || 2; // O usa el ID real si lo tienes en Auth
-    const conRes = await api.get(`/api/conexiones/estudiante/${estudianteId}`);
-    conexionesMentoria.value = conRes.data.data || [];
+    const perfilRes = await api.get(`/api/estudiantes/by-usuario/${userId}`);
+    if (perfilRes.data?.data) {
+      const perfil = perfilRes.data.data;
+      if (perfil.carrera) {
+        const cicloRoman = [
+          "I",
+          "II",
+          "III",
+          "IV",
+          "V",
+          "VI",
+          "VII",
+          "VIII",
+          "IX",
+          "X",
+        ];
+        const cicloNumber = parseInt(perfil.ciclo) || 1;
+        const roman = cicloRoman[cicloNumber - 1] || perfil.ciclo;
+        studentCareer.value = `${perfil.carrera.nombre} - ${roman} Ciclo`;
+      }
+
+      // Update stats: si no existen se pone en 0 para usuarios nuevos
+      statsValues.value.promedioAcumulado = (
+        perfil.promedioAcumulado || 0.0
+      ).toString();
+      statsValues.value.creditosAprobados = (
+        perfil.creditosAprobados || 0
+      ).toString();
+      statsValues.value.cursosActuales = (
+        perfil.cursosActuales || 0
+      ).toString();
+      statsValues.value.asistenciaGlobal =
+        (perfil.asistenciaGlobal || 0).toString() + "%";
+
+      // Fetch conexiones using the real profile ID
+      try {
+        const conRes = await api.get(`/api/conexiones/estudiante/${perfil.id}`);
+        conexionesMentoria.value = conRes.data.data || [];
+
+        if (conexionesMentoria.value.length > 0) {
+          upcomingTasks.value.unshift({
+            title: `Mentoría solicitada por Postulante #${conexionesMentoria.value[0].postulanteId}`,
+            course: "Conexión P2P NEXUS",
+            date: "Lo antes posible",
+            type: "Mentoría",
+            urgent: true,
+          });
+        }
+      } catch (connErr) {
+        console.warn(
+          "No se pudieron cargar las conexiones de mentoría",
+          connErr,
+        );
+      }
+    }
   } catch (e) {
-    console.warn("Error fetching mentor connections", e);
+    console.error("Error fetching student profile data", e);
+  }
+
+  try {
+    const journeyRes = await api.get(`/api/journeys/usuario/${userId}/activo`);
+    if (journeyRes.data?.data) {
+      activeJourney.value = journeyRes.data.data;
+
+      // Poblar las próximas entregas con los nodos pendientes
+      const nodosPendientes = activeJourney.value.nodos.filter(
+        (n: any) => n.estado === "PENDIENTE",
+      );
+
+      nodosPendientes.slice(0, 3).forEach((nodo: any, index: number) => {
+        upcomingTasks.value.push({
+          title: nodo.titulo,
+          course: "Ruta Inteligente",
+          date: index === 0 ? "Recomendado para hoy" : "Sin fecha límite",
+          type: nodo.tipo,
+          urgent: index === 0, // El primero siempre lo marcamos urgente para darle foco
+        });
+      });
+    }
+  } catch (e) {
+    console.warn("No active journey found");
   }
 };
 
-// 3. Mapeamos las próximas entregas (Tareas) de forma dinámica
-const upcomingTasks = computed(() => {
-  const tasks =
-    dashboardData.value?.proximasEntregas?.map((t: any) => ({
-      title: t.titulo,
-      course: t.curso,
-      date: t.vencimiento,
-      type: t.tipo,
-      // Definimos qué es urgente (ej. si es examen o vence hoy/mañana)
-      urgent:
-        t.tipo === "Examen" ||
-        t.tipo === "Mentoría" ||
-        t.vencimiento.toLowerCase().includes("mañana") ||
-        t.vencimiento.toLowerCase().includes("hoy"),
-    })) || [];
-
-  // Mantenemos la lógica de la mentoría si existe conexión P2P
-  if (conexionesMentoria.value.length > 0) {
-    tasks.unshift({
-      title: `Mentoría solicitada por Postulante #${conexionesMentoria.value[0].postulanteId}`,
-      course: "Conexión P2P NEXUS",
-      date: "Lo antes posible",
-      type: "Mentoría",
-      urgent: true,
-    });
-  }
-
-  return tasks;
-});
-
-onMounted(() => {
-  fetchDashboardData();
+onMounted(async () => {
   fetchEstudianteData();
+  await loadStudentCode();
 });
 </script>
 
@@ -158,7 +225,7 @@ onMounted(() => {
     :breadcrumbs="[{ label: $t('nav.home') }]"
     moduleColor="#B50E30"
   >
-    <div class="space-y-6" v-if="!isLoading">
+    <div class="space-y-6">
       <Card
         class="bg-gradient-to-br from-[#B50E30] via-[#8F0B26] to-[#5C0517] border-0 text-white overflow-hidden relative shadow-2xl shadow-red-900/20"
       >
@@ -189,9 +256,9 @@ onMounted(() => {
                 />
               </div>
               <div
-                class="absolute -bottom-2 -right-2 bg-[#B50E30] text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg z-20 border-2 border-[#8F0B26]"
+                class="absolute -bottom-2 -right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[10px] font-black px-2 py-0.5 rounded-lg border-2 border-white shadow-lg"
               >
-                NIVEL 3
+                NIVEL {{ computedLevel }}
               </div>
             </div>
 
@@ -204,26 +271,31 @@ onMounted(() => {
               </div>
               <CardTitle
                 class="text-3xl font-extrabold tracking-tight md:text-4xl"
-              >
-                {{
+                >{{
                   $t("dashboard.welcome", {
-                    name:
-                      dashboardData?.nombreEstudiante?.split(" ")[0] ||
-                      "Estudiante",
+                    name: auth.state.user?.name
+                      ? auth.state.user.name.split(" ")[0]
+                      : "Estudiante",
                   })
-                }}
-              </CardTitle>
+                }}</CardTitle
+              >
+              <div
+                v-if="studentCareer && studentCareer !== 'Perfil Incompleto'"
+                class="flex items-center gap-2 mt-3 mb-1 px-3 py-1.5 rounded-lg bg-black/20 w-fit text-white shadow-inner border border-white/10"
+              >
+                <BookOpen class="w-4 h-4 text-red-200" />
+                <span
+                  class="text-sm font-semibold tracking-wide text-red-100"
+                  >{{ studentCareer }}</span
+                >
+              </div>
               <CardDescription
                 class="max-w-md mt-2 text-base font-medium leading-relaxed text-red-100/90"
               >
-                {{
-                  dashboardData?.mensajeMotivacional ||
-                  $t("dashboard.important_task")
-                }}
+                {{ $t("dashboard.important_task") }}
               </CardDescription>
             </div>
           </div>
-
           <div
             class="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:bg-white/15 transition-all cursor-default group"
           >
@@ -231,13 +303,9 @@ onMounted(() => {
               class="text-[10px] uppercase font-bold text-red-200 tracking-widest flex items-center gap-1.5"
             >
               <div
-                :class="`w-1.5 h-1.5 rounded-full ${dashboardData?.tieneFamiliarVinculado ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`"
+                class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"
               ></div>
-              {{
-                dashboardData?.tieneFamiliarVinculado
-                  ? "VÍNCULO FAMILIAR ACTIVO"
-                  : "CÓDIGO FAMILIAR"
-              }}
+              {{ $t("dashboard.active_link") }}
             </span>
             <div class="flex items-center gap-2">
               <span
@@ -279,10 +347,12 @@ onMounted(() => {
           :key="i"
           class="relative overflow-hidden transition-all duration-300 border border-black group hover:-translate-y-1 hover:shadow-xl"
         >
+          <!-- Subtle color glow background on hover -->
           <div
             class="absolute inset-0 transition-opacity duration-500 opacity-0 pointer-events-none group-hover:opacity-10"
             :style="{ backgroundColor: stat.color }"
           ></div>
+
           <CardContent
             class="relative z-10 flex flex-col items-center justify-center p-6 text-center"
           >
@@ -326,19 +396,13 @@ onMounted(() => {
             </Button>
           </CardHeader>
           <CardContent>
-            <div
-              v-if="upcomingTasks.length === 0"
-              class="py-6 text-sm font-medium text-center text-gray-500"
-            >
-              ¡Genial! No tienes entregas pendientes por ahora. 🎉
-            </div>
-
             <div class="mt-4 space-y-3">
               <div
                 v-for="(task, i) in upcomingTasks"
                 :key="i"
                 class="relative flex items-start gap-4 p-4 overflow-hidden transition-all duration-300 bg-white border border-black group rounded-xl hover:border-black hover:shadow-md"
               >
+                <!-- Urgent accent line -->
                 <div
                   v-if="task.urgent"
                   class="absolute left-0 top-0 bottom-0 w-1 bg-[#B50E30]"
@@ -401,45 +465,66 @@ onMounted(() => {
                 class="absolute top-0 right-0 w-32 h-32 bg-[#B50E30]/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-150 duration-700"
               ></div>
 
-              <div class="relative z-10 flex items-start justify-between mb-4">
+              <div
+                v-if="activeJourney"
+                class="relative z-10 flex items-start justify-between mb-4"
+              >
                 <div>
                   <Badge
                     class="bg-red-100 text-[#B50E30] hover:bg-red-100 border-0 mb-2 text-[10px] font-black uppercase tracking-widest"
-                    >{{ $t("dashboard.in_progress") }}</Badge
+                    >{{
+                      activeJourney.estado === "COMPLETADO"
+                        ? "COMPLETADO"
+                        : $t("dashboard.in_progress")
+                    }}</Badge
                   >
                   <h4 class="text-sm font-bold text-slate-800">
-                    {{
-                      dashboardData?.progresoRuta?.nombreModulo ||
-                      $t("dashboard.module1_name")
-                    }}
+                    {{ activeJourney.titulo }}
                   </h4>
                 </div>
                 <div class="px-2 py-1 bg-white border rounded-lg shadow-sm">
                   <span class="text-sm font-black text-[#B50E30]"
-                    >{{
-                      dashboardData?.progresoRuta?.porcentajeProgreso || 0
-                    }}%</span
+                    >{{ activeJourney.porcentajeProgreso || 0 }}%</span
                   >
                 </div>
               </div>
+              <div
+                v-else
+                class="relative z-10 flex flex-col items-center justify-center mb-4 text-center"
+              >
+                <Badge
+                  class="bg-gray-100 text-gray-500 border-0 mb-2 text-[10px] font-black uppercase tracking-widest"
+                  >Sin ruta activa</Badge
+                >
+                <h4 class="text-sm font-bold text-slate-800">
+                  Aún no tienes una ruta de aprendizaje
+                </h4>
+                <p class="mt-2 text-xs text-slate-500">
+                  Ve a la sección "Ruta de Aprendizaje" para generar tu primera
+                  ruta con IA.
+                </p>
+              </div>
 
-              <div class="relative z-10 mb-5">
+              <div v-if="activeJourney" class="relative z-10 mb-5">
                 <div
                   class="flex justify-between text-xs text-slate-500 font-medium mb-1.5"
                 >
                   <span>{{ $t("dashboard.module_progress") }}</span>
-                  <span>{{
-                    dashboardData?.progresoRuta?.nodosCompletados || "0/0 nodos"
-                  }}</span>
+                  <span
+                    >{{
+                      activeJourney.nodos.filter(
+                        (n: any) => n.estado === "COMPLETADO",
+                      ).length
+                    }}/{{ activeJourney.nodos.length }}
+                    {{ $t("dashboard.nodes") }}</span
+                  >
                 </div>
                 <div
                   class="h-2.5 w-full bg-slate-200/60 rounded-full overflow-hidden shadow-inner"
                 >
                   <div
-                    class="h-full bg-gradient-to-r from-[#B50E30] to-red-400 rounded-full shadow-[0_0_10px_rgba(181,14,48,0.5)] transition-all duration-1000"
-                    :style="{
-                      width: `${dashboardData?.progresoRuta?.porcentajeProgreso || 0}%`,
-                    }"
+                    class="h-full bg-gradient-to-r from-[#B50E30] to-red-400 rounded-full shadow-[0_0_10px_rgba(181,14,48,0.5)]"
+                    :style="`width: ${activeJourney.porcentajeProgreso || 0}%`"
                   ></div>
                 </div>
               </div>
@@ -447,11 +532,8 @@ onMounted(() => {
               <p
                 class="text-xs text-slate-600 font-medium mb-5 relative z-10 flex items-center gap-1.5"
               >
-                <Award class="w-4 h-4 text-amber-500 shrink-0" />
-                {{
-                  dashboardData?.progresoRuta?.recompensaDesbloqueo ||
-                  $t("dashboard.unlock")
-                }}
+                <Award class="w-4 h-4 text-amber-500" />
+                {{ $t("dashboard.unlock") }}
               </p>
 
               <Button
@@ -464,15 +546,6 @@ onMounted(() => {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
-
-    <div v-else class="flex items-center justify-center min-h-[400px]">
-      <div class="flex flex-col items-center gap-4">
-        <div
-          class="w-10 h-10 border-4 border-[#B50E30] border-t-transparent rounded-full animate-spin"
-        ></div>
-        <p class="text-sm font-bold text-gray-500">Cargando tu progreso...</p>
       </div>
     </div>
   </DashboardLayout>

@@ -255,7 +255,7 @@ const logoImage = computed(() => {
                   <Home class="w-4 h-4 mr-2" />
                   {{ $t("layout.home_page") }}
                 </DropdownMenuItem>
-                <DropdownMenuItem class="cursor-pointer">
+                <DropdownMenuItem class="cursor-pointer" @click="router.push('/configuracion')">
                   <Settings class="w-4 h-4 mr-2" />
                   {{ $t("layout.settings") }}
                 </DropdownMenuItem>

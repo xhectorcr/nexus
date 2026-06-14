@@ -1,155 +1,162 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import RootLayout from '@/layouts/RootLayout.vue'
-import LandingPage from '@/pages/landing/LandingPage.vue'
-import PostulanteDashboard from '@/pages/postulante/PostulanteDashboard.vue'
-import EstudianteDashboard from '@/pages/estudiante/EstudianteDashboard.vue'
-import RutaAprendizaje from '@/pages/estudiante/RutaAprendizaje.vue'
-import FamiliaDashboard from '@/pages/familia/FamiliaDashboard.vue'
-import FamiliaProgreso from '@/pages/familia/FamiliaProgreso.vue'
-import UTPPlusDashboard from '@/pages/utp-plus/UTPPlusDashboard.vue'
-import LoginPage from '@/pages/login/LoginPage.vue'
-import TestVocacional from '@/pages/postulante/TestVocacional.vue'
-import LaberintoVocaciones from '@/pages/postulante/LaberintoVocaciones.vue'
-import Bitacora from '@/pages/postulante/Bitacora.vue'
-import P2P from '@/pages/postulante/P2P.vue'
-import { useAuth } from '@/lib/auth'
+import RootLayout from "@/layouts/RootLayout.vue";
+import { useAuth } from "@/lib/auth";
+import ConfiguracionPage from "@/pages/configuracion/ConfiguracionPage.vue";
+import EstudianteDashboard from "@/pages/estudiante/EstudianteDashboard.vue";
+import RutaAprendizaje from "@/pages/estudiante/RutaAprendizaje.vue";
+import FamiliaDashboard from "@/pages/familia/FamiliaDashboard.vue";
+import FamiliaProgreso from "@/pages/familia/FamiliaProgreso.vue";
+import LandingPage from "@/pages/landing/LandingPage.vue";
+import LoginPage from "@/pages/login/LoginPage.vue";
+import Bitacora from "@/pages/postulante/Bitacora.vue";
+import LaberintoVocaciones from "@/pages/postulante/LaberintoVocaciones.vue";
+import P2P from "@/pages/postulante/P2P.vue";
+import PostulanteDashboard from "@/pages/postulante/PostulanteDashboard.vue";
+import TestVocacional from "@/pages/postulante/TestVocacional.vue";
+import UTPPlusDashboard from "@/pages/utp-plus/UTPPlusDashboard.vue";
+import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
+      path: "/",
       component: RootLayout,
       children: [
         {
           // Landing Page
-          path: '',
-          name: 'home',
+          path: "",
+          name: "home",
           component: LandingPage,
         },
         {
           // Login Page
-          path: 'login',
-          name: 'login',
+          path: "login",
+          name: "login",
           component: LoginPage,
         },
         {
           // Register Page
-          path: 'register',
-          name: 'register',
+          path: "register",
+          name: "register",
           component: LoginPage,
         },
         {
           // Postulante
-          path: 'postulante',
-          name: 'postulante',
+          path: "postulante",
+          name: "postulante",
           component: PostulanteDashboard,
-          meta: { requiresAuth: true, role: 'postulante' }
+          meta: { requiresAuth: true, role: "postulante" },
         },
         {
           // Postulante Test Vocacional
-          path: 'postulante/test',
-          name: 'postulante-test',
+          path: "postulante/test",
+          name: "postulante-test",
           component: TestVocacional,
-          meta: { requiresAuth: true, role: 'postulante' }
+          meta: { requiresAuth: true, role: "postulante" },
         },
         {
           // Postulante Laberinto Vocaciones
-          path: 'postulante/laberinto',
-          name: 'postulante-laberinto',
+          path: "postulante/laberinto",
+          name: "postulante-laberinto",
           component: LaberintoVocaciones,
-          meta: { requiresAuth: true, role: 'postulante' }
+          meta: { requiresAuth: true, role: "postulante" },
         },
         {
           // Postulante Bitácora
-          path: 'postulante/bitacora',
-          name: 'postulante-bitacora',
+          path: "postulante/bitacora",
+          name: "postulante-bitacora",
           component: Bitacora,
-          meta: { requiresAuth: true, role: 'postulante' }
+          meta: { requiresAuth: true, role: "postulante" },
         },
         {
           // Postulante P2P
-          path: 'postulante/p2p',
-          name: 'postulante-p2p',
+          path: "postulante/p2p",
+          name: "postulante-p2p",
           component: P2P,
-          meta: { requiresAuth: true, role: 'postulante' }
+          meta: { requiresAuth: true, role: "postulante" },
         },
         {
           // Estudiante Dashboard
-          path: 'estudiante',
-          name: 'estudiante',
+          path: "estudiante",
+          name: "estudiante",
           component: EstudianteDashboard,
-          meta: { requiresAuth: true, role: 'estudiante' }
+          meta: { requiresAuth: true, role: "estudiante" },
         },
         {
           // Estudiante Ruta
-          path: 'estudiante/ruta',
-          name: 'estudiante-ruta',
+          path: "estudiante/ruta",
+          name: "estudiante-ruta",
           component: RutaAprendizaje,
-          meta: { requiresAuth: true, role: 'estudiante' }
+          meta: { requiresAuth: true, role: "estudiante" },
         },
         {
           // Padre de familia
-          path: 'familia',
-          name: 'familia',
+          path: "familia",
+          name: "familia",
           component: FamiliaDashboard,
-          meta: { requiresAuth: true, role: 'familia' }
+          meta: { requiresAuth: true, role: "familia" },
         },
         {
           // Padre de familia Progreso
-          path: 'familia/progreso',
-          name: 'familia-progreso',
+          path: "familia/progreso",
+          name: "familia-progreso",
           component: FamiliaProgreso,
-          meta: { requiresAuth: true, role: 'familia' }
+          meta: { requiresAuth: true, role: "familia" },
         },
         {
           // UTP+ (IA)
-          path: 'utp-plus',
-          name: 'utp-plus',
+          path: "utp-plus",
+          name: "utp-plus",
           component: UTPPlusDashboard,
+        },
+        {
+          // Configuracion
+          path: "configuracion",
+          name: "configuracion",
+          component: ConfiguracionPage,
+          meta: { requiresAuth: true },
         },
       ],
     },
   ],
-})
+});
 
 router.beforeEach((to, _from, next) => {
-  const auth = useAuth()
-  const isAuthenticated = !!auth.state.user
-  const userRole = auth.state.user?.role
+  const auth = useAuth();
+  const isAuthenticated = !!auth.state.user;
+  const userRole = auth.state.user?.role;
 
   if (to.meta.requiresAuth) {
     if (!isAuthenticated) {
       // User is not logged in, redirect to login
-      const targetRole = to.meta.role as string || ''
+      const targetRole = (to.meta.role as string) || "";
       next({
-        path: '/login',
+        path: "/login",
         query: {
           role: targetRole,
-          redirect: to.fullPath
-        }
-      })
+          redirect: to.fullPath,
+        },
+      });
     } else if (to.meta.role && to.meta.role !== userRole) {
       // Logged in but has wrong role, redirect to appropriate portal
-      if (userRole === 'estudiante') next('/estudiante')
-      else if (userRole === 'familia') next('/familia')
-      else if (userRole === 'postulante') next('/postulante')
-      else next('/')
+      if (userRole === "estudiante") next("/estudiante");
+      else if (userRole === "familia") next("/familia");
+      else if (userRole === "postulante") next("/postulante");
+      else next("/");
     } else {
-      next()
+      next();
     }
   } else {
     // If logged in and tries to go to login or register, redirect to their portal
-    if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
-      if (userRole === 'estudiante') next('/estudiante')
-      else if (userRole === 'familia') next('/familia')
-      else if (userRole === 'postulante') next('/postulante')
-      else next('/')
+    if ((to.path === "/login" || to.path === "/register") && isAuthenticated) {
+      if (userRole === "estudiante") next("/estudiante");
+      else if (userRole === "familia") next("/familia");
+      else if (userRole === "postulante") next("/postulante");
+      else next("/");
     } else {
-      next()
+      next();
     }
   }
-})
+});
 
-export default router
-
+export default router;

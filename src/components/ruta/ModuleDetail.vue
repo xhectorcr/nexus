@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,11 +18,28 @@ import {
   Lock,
   Star,
   Flame,
+  Loader2,
+  Trophy,
+  ArrowRight,
 } from 'lucide-vue-next'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { api } from '@/lib/api'
+import { useAuth } from '@/lib/auth'
 
 const props = defineProps<{
   module: any
 }>()
+
+const emit = defineEmits(['completed'])
+
+const auth = useAuth()
 
 const activityIcons: Record<string, any> = {
   video: PlayCircle,
@@ -44,23 +61,98 @@ const activityLabels: Record<string, string> = {
   reflection: "Reflexión · Bitácora",
 }
 
-const sampleActivities = [
-  { id: "a1", type: "video", title: "¿Quién soy? Introducción al autoconocimiento", duration: "12 min", completed: true, xp: 20 },
-  { id: "a2", type: "reading", title: "Teoría de las inteligencias vocacionales", duration: "15 min", completed: true, xp: 15 },
-  { id: "a3", type: "activity", title: "Rueda de la vida: mis fortalezas y áreas de mejora", duration: "20 min", completed: true, xp: 30 },
-  { id: "a4", type: "quiz", title: "Quiz: Conoce tu perfil de autoconocimiento", duration: "10 min", completed: true, xp: 40 },
-  { id: "a5", type: "game", title: "Laberinto de Vocaciones · Nivel 1", duration: "25 min", completed: false, xp: 50 },
-  { id: "a6", type: "exercise", title: "Árbol de mis valores personales y profesionales", duration: "30 min", completed: false, xp: 35 },
-  { id: "a7", type: "reflection", title: "Reflexión final: Mi primera entrada en la Bitácora", duration: "15 min", completed: false, xp: 25 },
-]
+const activities = ref<any[]>([])
+const isLoadingActivities = ref(false)
 
-const activities = ref(sampleActivities)
+const minijuego = ref<any>(null)
+const isLoadingMinijuego = ref(false)
+const showMinijuego = ref(false)
+const minijuegoCurrentQuestion = ref(0)
+const minijuegoScore = ref(0)
+const minijuegoFinished = ref(false)
+const selectedAnswerIndex = ref<number | null>(null)
+const showAnswerExplanation = ref(false)
 
-const toggle = (id: string) => {
-  activities.value = activities.value.map(a => 
-    a.id === id ? { ...a, completed: !a.completed } : a
-  )
+const selectedActivity = ref<any>(null)
+const isActivityModalOpen = ref(false)
+
+const openActivityModal = (activity: any, isUnlocked: boolean) => {
+  if (!isUnlocked) return
+  selectedActivity.value = activity
+  isActivityModalOpen.value = true
 }
+
+const completeSelectedActivity = () => {
+  if (selectedActivity.value) {
+    activities.value = activities.value.map(a => 
+      a.id === selectedActivity.value.id ? { ...a, completed: true } : a
+    )
+  }
+  isActivityModalOpen.value = false
+  selectedActivity.value = null
+}
+
+const allActivitiesCompleted = computed(() => {
+  return activities.value.length > 0 && activities.value.every(a => a.completed)
+})
+
+const fetchActivities = async () => {
+  try {
+    isLoadingActivities.value = true
+    const usuarioId = auth.state.user?.id
+    if (!usuarioId) return
+    const res = await api.get(`/api/v1/ai/ruta/nodos/${props.module.id}/actividades?usuarioId=${usuarioId}`)
+    if (res.data && res.data.success) {
+      activities.value = res.data.data
+    }
+  } catch (error) {
+    console.error("Error fetching activities", error)
+  } finally {
+    isLoadingActivities.value = false
+  }
+}
+
+const startMinijuego = async () => {
+  try {
+    showMinijuego.value = true
+    if (!minijuego.value) {
+      isLoadingMinijuego.value = true
+      const usuarioId = auth.state.user?.id
+      const res = await api.get(`/api/v1/ai/ruta/nodos/${props.module.id}/minijuego?usuarioId=${usuarioId}`)
+      if (res.data && res.data.success) {
+        minijuego.value = res.data.data
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching minijuego", error)
+    showMinijuego.value = false
+  } finally {
+    isLoadingMinijuego.value = false
+  }
+}
+
+const submitAnswer = (idx: number) => {
+  if (showAnswerExplanation.value) return
+  selectedAnswerIndex.value = idx
+  showAnswerExplanation.value = true
+  if (idx === minijuego.value.preguntas[minijuegoCurrentQuestion.value].indiceCorrecto) {
+    minijuegoScore.value += 1
+  }
+}
+
+const nextQuestion = () => {
+  if (minijuegoCurrentQuestion.value < minijuego.value.preguntas.length - 1) {
+    minijuegoCurrentQuestion.value++
+    selectedAnswerIndex.value = null
+    showAnswerExplanation.value = false
+  } else {
+    minijuegoFinished.value = true
+  }
+}
+
+onMounted(() => {
+  fetchActivities()
+})
 </script>
 
 <template>
@@ -86,29 +178,79 @@ const toggle = (id: string) => {
         </div>
       </div>
 
-      <!-- Video placeholder -->
-      <Card class="overflow-hidden border-0 shadow-sm">
-        <div
-          class="aspect-video bg-gray-900 flex items-center justify-center relative cursor-pointer group"
-          style="min-height: 220px;"
-        >
-          <img
-            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=450&fit=crop"
-            alt="Video introductorio"
-            class="absolute inset-0 w-full h-full object-cover opacity-40"
-          />
-          <div class="relative z-10 flex flex-col items-center gap-2">
-            <div class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-              <PlayCircle class="w-9 h-9 text-[#B50E30]" />
+      <!-- Loading State -->
+      <Card v-if="isLoadingActivities" class="border-0 shadow-sm py-12 flex flex-col items-center justify-center">
+        <Loader2 class="w-8 h-8 text-primary animate-spin mb-4" />
+        <p class="text-muted-foreground font-medium">La IA está generando tus actividades personalizadas...</p>
+      </Card>
+
+      <!-- Minijuego View -->
+      <Card v-else-if="showMinijuego" class="border-2 border-primary shadow-lg overflow-hidden">
+        <div v-if="isLoadingMinijuego" class="py-16 flex flex-col items-center justify-center">
+          <Loader2 class="w-10 h-10 text-primary animate-spin mb-4" />
+          <p class="text-muted-foreground font-medium">Creando minijuego interactivo...</p>
+        </div>
+        <div v-else-if="minijuego && !minijuegoFinished">
+          <div class="bg-primary text-primary-foreground p-6 text-center">
+            <h2 class="text-2xl font-bold">{{ minijuego.titulo }}</h2>
+            <p class="opacity-90 mt-2">{{ minijuego.descripcion }}</p>
+            <div class="mt-4 flex justify-center gap-2">
+              <div v-for="(_, idx) in minijuego.preguntas" :key="idx" class="w-3 h-3 rounded-full" :class="idx === minijuegoCurrentQuestion ? 'bg-white' : idx < minijuegoCurrentQuestion ? 'bg-green-300' : 'bg-primary-foreground/30'"></div>
             </div>
-            <span class="text-white text-sm font-medium">¿Quién soy? Introducción al autoconocimiento</span>
-            <span class="text-white/60 text-xs">12 minutos</span>
+          </div>
+          <div class="p-6">
+            <h3 class="text-xl font-medium text-center mb-6">{{ minijuego.preguntas[minijuegoCurrentQuestion].pregunta }}</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                v-for="(opcion, idx) in minijuego.preguntas[minijuegoCurrentQuestion].opciones"
+                :key="idx"
+                @click="submitAnswer(idx)"
+                :disabled="showAnswerExplanation"
+                class="p-4 rounded-xl border-2 text-left font-medium transition-all"
+                :class="{
+                  'border-gray-200 hover:border-primary hover:bg-primary/5': selectedAnswerIndex !== idx && !showAnswerExplanation,
+                  'border-primary bg-primary/10': selectedAnswerIndex === idx && !showAnswerExplanation,
+                  'border-green-500 bg-green-50 text-green-700': showAnswerExplanation && idx === minijuego.preguntas[minijuegoCurrentQuestion].indiceCorrecto,
+                  'border-red-500 bg-red-50 text-red-700': showAnswerExplanation && selectedAnswerIndex === idx && idx !== minijuego.preguntas[minijuegoCurrentQuestion].indiceCorrecto,
+                  'border-gray-200 opacity-50': showAnswerExplanation && idx !== minijuego.preguntas[minijuegoCurrentQuestion].indiceCorrecto && selectedAnswerIndex !== idx
+                }"
+              >
+                {{ opcion }}
+              </button>
+            </div>
+            
+            <div v-if="showAnswerExplanation" class="mt-6 p-4 rounded-xl border" :class="selectedAnswerIndex === minijuego.preguntas[minijuegoCurrentQuestion].indiceCorrecto ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+              <div class="flex items-start gap-3">
+                <CheckCircle2 v-if="selectedAnswerIndex === minijuego.preguntas[minijuegoCurrentQuestion].indiceCorrecto" class="w-6 h-6 text-green-600 mt-0.5" />
+                <Circle v-else class="w-6 h-6 text-red-600 mt-0.5" />
+                <div>
+                  <h4 class="font-bold" :class="selectedAnswerIndex === minijuego.preguntas[minijuegoCurrentQuestion].indiceCorrecto ? 'text-green-800' : 'text-red-800'">
+                    {{ selectedAnswerIndex === minijuego.preguntas[minijuegoCurrentQuestion].indiceCorrecto ? '¡Correcto!' : 'Incorrecto' }}
+                  </h4>
+                  <p class="mt-1" :class="selectedAnswerIndex === minijuego.preguntas[minijuegoCurrentQuestion].indiceCorrecto ? 'text-green-700' : 'text-red-700'">
+                    {{ minijuego.preguntas[minijuegoCurrentQuestion].explicacion }}
+                  </p>
+                </div>
+              </div>
+              <Button class="w-full mt-4" @click="nextQuestion">Continuar <ArrowRight class="w-4 h-4 ml-2" /></Button>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="minijuegoFinished" class="py-12 px-6 text-center flex flex-col items-center">
+          <div class="w-20 h-20 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-6">
+            <Trophy class="w-10 h-10" />
+          </div>
+          <h2 class="text-3xl font-bold mb-2">¡Módulo Completado!</h2>
+          <p class="text-muted-foreground mb-6">Obtuviste {{ minijuegoScore }} de {{ minijuego.preguntas.length }} respuestas correctas.</p>
+          <div class="flex gap-4">
+            <Button variant="outline" @click="showMinijuego = false">Volver a Actividades</Button>
+            <Button class="bg-yellow-500 hover:bg-yellow-600 text-white" @click="emit('completed')">Continuar al siguiente módulo</Button>
           </div>
         </div>
       </Card>
 
       <!-- Activity checklist -->
-      <Card>
+      <Card v-else>
         <CardHeader class="pb-3 pt-5 px-5">
           <CardTitle class="flex items-center gap-2 text-base">
             <CheckSquare class="w-4 h-4" :style="{ color: module.color }" />
@@ -122,7 +264,7 @@ const toggle = (id: string) => {
             @click="() => {
               const prevCompleted = idx === 0 || activities[idx - 1].completed
               const isUnlocked = activity.completed || prevCompleted
-              if (isUnlocked) toggle(activity.id)
+              openActivityModal(activity, isUnlocked)
             }"
             :class="`flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-150 ${
               activity.completed
@@ -188,7 +330,18 @@ const toggle = (id: string) => {
             <span>{{ activities.filter(a => a.completed).length }} de {{ activities.length }} actividades</span>
             <span>{{ activities.filter((a) => a.completed).reduce((sum, a) => sum + a.xp, 0) }} / {{ activities.reduce((sum, a) => sum + a.xp, 0) }} XP</span>
           </div>
-          <Button class="w-full text-white text-sm gap-2" :style="{ backgroundColor: module.color }">
+          <div v-if="allActivitiesCompleted" class="mt-4">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center mb-4">
+              <Trophy class="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+              <h4 class="font-bold text-yellow-800">¡Minijuego Desbloqueado!</h4>
+              <p class="text-xs text-yellow-700 mt-1">Completa el desafío final para ganar la insignia del módulo.</p>
+            </div>
+            <Button class="w-full text-white text-sm gap-2" :style="{ backgroundColor: module.color }" @click="startMinijuego">
+              <Gamepad2 class="w-4 h-4" />
+              Jugar y Completar Módulo
+            </Button>
+          </div>
+          <Button v-else class="w-full text-white text-sm gap-2" :style="{ backgroundColor: module.color }">
             <PlayCircle class="w-4 h-4" />
             Continuar donde lo dejaste
           </Button>
@@ -203,7 +356,7 @@ const toggle = (id: string) => {
           </div>
           <div>
             <p class="text-xs text-muted-foreground">Tiempo estimado restante</p>
-            <p class="text-sm font-semibold">{{ activities.filter(a => !a.completed).reduce((sum, a) => sum + parseInt(a.duration), 0) }} minutos</p>
+            <p class="text-sm font-semibold">{{ activities.filter(a => !a.completed).reduce((sum, a) => sum + parseInt(a.duration || '0'), 0) }} minutos</p>
           </div>
         </CardContent>
       </Card>
@@ -228,5 +381,47 @@ const toggle = (id: string) => {
         </CardContent>
       </Card>
     </div>
+
+    <!-- Modal de Actividad -->
+    <Dialog :open="isActivityModalOpen" @update:open="val => isActivityModalOpen = val">
+      <DialogContent class="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <div class="flex items-center gap-2 mb-2">
+            <component
+              v-if="selectedActivity"
+              :is="activityIcons[selectedActivity.type]"
+              class="w-5 h-5"
+              :style="{ color: module.color }"
+            />
+            <span v-if="selectedActivity" class="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              {{ activityLabels[selectedActivity.type] }}
+            </span>
+          </div>
+          <DialogTitle class="text-2xl font-bold leading-tight" v-if="selectedActivity">
+            {{ selectedActivity.title }}
+          </DialogTitle>
+          <DialogDescription class="flex gap-4 items-center mt-2" v-if="selectedActivity">
+            <span class="flex items-center gap-1"><Clock class="w-4 h-4"/> {{ selectedActivity.duration }}</span>
+            <span class="flex items-center gap-1 font-semibold text-yellow-600"><Star class="w-4 h-4"/> +{{ selectedActivity.xp }} XP</span>
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="py-6 whitespace-pre-wrap text-base leading-relaxed text-gray-700 dark:text-gray-300" v-if="selectedActivity">
+          {{ selectedActivity.contenido || "No hay contenido disponible para esta actividad." }}
+        </div>
+
+        <DialogFooter class="sm:justify-between">
+          <Button variant="outline" @click="isActivityModalOpen = false">Cerrar</Button>
+          <Button :style="{ backgroundColor: module.color }" class="text-white gap-2" @click="completeSelectedActivity" v-if="selectedActivity && !selectedActivity.completed">
+            <CheckCircle2 class="w-4 h-4" />
+            Completar Actividad
+          </Button>
+          <Button variant="outline" disabled class="gap-2" v-if="selectedActivity && selectedActivity.completed">
+            <CheckCircle2 class="w-4 h-4 text-green-500" />
+            Completada
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
