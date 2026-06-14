@@ -18,7 +18,6 @@ const sidebarItems = computed(() => [
   <DashboardLayout
     :sidebarItems="sidebarItems"
     :title="$t('postulante.chat_students') || 'Chatear con estudiantes'"
-    :subtitle="$t('postulante.p2p_subtitle') || 'Conecta con estudiantes actuales'"
     :breadcrumbs="[{ label: $t('nav.home') || 'Inicio', href: '/postulante' }, { label: 'Chat' }]"
     moduleColor="#082065"
   >
