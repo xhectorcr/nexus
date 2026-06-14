@@ -21,7 +21,7 @@ import {
   Star,
   Trophy,
 } from "lucide-vue-next";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useAuth } from "@/lib/auth";
 
 const props = defineProps<{
@@ -87,20 +87,63 @@ onMounted(async () => {
 });
 
 // Mecánica 2: Lectura/Video (Trivia de Conocimiento Interactiva)
-const triviaOptions = [
-  { text: "Evitar hacer preguntas para no parecer inexperto", isCorrect: false },
-  { text: "Identificar el problema central y proponer soluciones iterativas", isCorrect: true },
-  { text: "Dejar que la IA resuelva todo sin entender el código", isCorrect: false },
-  { text: "Abandonar el proyecto al encontrar el primer bug", isCorrect: false },
+const triviaBank = [
+  {
+    q: "¿Cuál es el principal objetivo en esta fase de tu desarrollo profesional?",
+    options: [
+      { text: "Evitar hacer preguntas para no parecer inexperto", isCorrect: false },
+      { text: "Identificar el problema central y proponer soluciones iterativas", isCorrect: true },
+      { text: "Dejar que la IA resuelva todo sin entender el código", isCorrect: false },
+      { text: "Abandonar el proyecto al encontrar el primer bug", isCorrect: false },
+    ]
+  },
+  {
+    q: "Frente a un desafío desconocido, la mejor actitud es:",
+    options: [
+      { text: "Rendirse rápidamente y pasar a otra cosa", isCorrect: false },
+      { text: "Investigar, descomponer el problema y aprender haciendo", isCorrect: true },
+      { text: "Copiar la primera solución que aparezca en internet", isCorrect: false },
+      { text: "Esperar a que alguien más lo resuelva por ti", isCorrect: false }
+    ]
+  },
+  {
+    q: "¿Qué habilidad es fundamental desarrollar para el trabajo moderno?",
+    options: [
+      { text: "Comunicación asertiva, empatía y adaptabilidad", isCorrect: true },
+      { text: "Memorizar absolutamente toda la teoría sin aplicarla", isCorrect: false },
+      { text: "Trabajar de forma completamente aislada sin hablar con nadie", isCorrect: false },
+      { text: "Creer que ya se sabe todo y dejar de estudiar", isCorrect: false }
+    ]
+  },
+  {
+    q: "Al organizar tus proyectos, es altamente recomendable:",
+    options: [
+      { text: "Avanzar sin ningún plan estructurado", isCorrect: false },
+      { text: "Usar metodologías ágiles o matrices de priorización", isCorrect: true },
+      { text: "Dejar las cosas más importantes para el último minuto", isCorrect: false },
+      { text: "Hacer múltiples tareas complejas al mismo tiempo (multitasking)", isCorrect: false }
+    ]
+  }
 ];
-const triviaSelected = ref<any>(null);
+
+const currentTriviaData = computed(() => {
+  const hash = props.module?.id ? props.module.id % triviaBank.length : 0;
+  return triviaBank[hash];
+});
+
+const triviaSelectedIdx = ref<number | null>(null);
 const triviaStatus = ref<'idle'|'error'|'correct'>('idle');
 const shakeTriviaError = ref(false);
 
-const selectTrivia = (opt: any) => {
+watch(() => props.module?.id, () => {
+  triviaSelectedIdx.value = null;
+  triviaStatus.value = props.module?.status === 'completed' ? 'correct' : 'idle';
+});
+
+const selectTrivia = (idx: number, opt: any) => {
   if (props.module.status === 'completed' || triviaStatus.value === 'correct') return;
   
-  triviaSelected.value = opt;
+  triviaSelectedIdx.value = idx;
   if (opt.isCorrect) {
     triviaStatus.value = 'correct';
   } else {
@@ -172,10 +215,14 @@ const prevWizardStep = () => {
 const canSubmit = computed(() => {
   if (props.module.status === "completed" || isCompleting.value) return false;
 
-  if (moduleType.value === "QUIZ" || moduleType.value === "DESAFIO") {
+  const type = moduleType.value;
+
+  if (type === "QUIZ" || type === "DESAFIO") {
     return isSequenceCorrect.value;
   }
-  if (moduleType.value === "LECTURA" || moduleType.value === "VIDEO") {
+  
+  // Módulos que usan la Trivia (Lectura, Video, o Bitácora/Foro que no son el inicial)
+  if (type === "LECTURA" || type === "VIDEO" || (!isFirstBitacora.value && (type === "BITACORA" || type === "FORO"))) {
     return triviaStatus.value === 'correct';
   }
   
@@ -189,7 +236,7 @@ const canSubmit = computed(() => {
            f.perseverancia.trim().length >= 10;
   }
 
-  // Por defecto (Bitácora, Foro, etc.) normal
+  // Fallback
   return reflexion.value.trim().length >= 30;
 });
 
@@ -426,7 +473,7 @@ const completarModulo = async () => {
           <!-- MECÁNICA 2: LECTURA / VIDEO (Resumen Gamificado)-->
           <!-- ============================================== -->
           <div
-            v-else-if="moduleType === 'LECTURA' || moduleType === 'VIDEO'"
+            v-else-if="moduleType === 'LECTURA' || moduleType === 'VIDEO' || (!isFirstBitacora && (moduleType === 'BITACORA' || moduleType === 'FORO'))"
             class="space-y-6"
           >
             <div
@@ -437,22 +484,22 @@ const completarModulo = async () => {
             
             <div class="p-6 bg-slate-900/50 border border-slate-700 rounded-2xl relative overflow-hidden">
               <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]"></div>
-              <h4 class="text-lg font-bold text-white mb-6 relative z-10">¿Cuál es el principal objetivo en esta fase de tu desarrollo profesional?</h4>
+              <h4 class="text-lg font-bold text-white mb-6 relative z-10">{{ currentTriviaData.q }}</h4>
               
               <div class="grid gap-3 relative z-10" :class="{ 'animate-[shake_0.5s_ease-in-out]': shakeTriviaError }">
                 <button
-                  v-for="(opt, idx) in triviaOptions"
+                  v-for="(opt, idx) in currentTriviaData.options"
                   :key="idx"
-                  @click="selectTrivia(opt)"
+                  @click="selectTrivia(idx, opt)"
                   class="flex items-center w-full p-4 text-left transition-all border-2 rounded-xl hover:-translate-y-0.5"
                   :class="[
-                    triviaSelected === opt 
+                    triviaSelectedIdx === idx 
                       ? (triviaStatus === 'correct' ? 'border-emerald-500 bg-emerald-500/10' : triviaStatus === 'error' ? 'border-red-500 bg-red-500/10' : 'border-blue-500 bg-blue-500/10')
                       : 'border-slate-700 bg-slate-800/50 hover:border-blue-500/50 hover:bg-blue-900/20'
                   ]"
                   :disabled="module.status === 'completed' || triviaStatus === 'correct'"
                 >
-                  <div class="w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center font-bold text-sm shrink-0 transition-colors" :class="triviaSelected === opt && triviaStatus === 'correct' ? 'border-emerald-500 text-emerald-400 bg-emerald-500/20' : 'border-slate-600 text-slate-400'">
+                  <div class="w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center font-bold text-sm shrink-0 transition-colors" :class="triviaSelectedIdx === idx && triviaStatus === 'correct' ? 'border-emerald-500 text-emerald-400 bg-emerald-500/20' : 'border-slate-600 text-slate-400'">
                     {{ String.fromCharCode(65 + idx) }}
                   </div>
                   <span class="font-medium text-slate-200">{{ opt.text }}</span>
