@@ -20,122 +20,126 @@ import {
   Target,
   MessageSquare,
   ChevronRight,
-  ArrowRight,
+  ArrowRight
 } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { computed } from 'vue'
 
-const sidebarItems = [
-  { icon: markRaw(Home), label: "Inicio", href: "/utp-plus" },
-]
+const { t } = useI18n()
 
-const careers = [
+const sidebarItems = computed(() => [
+  { icon: markRaw(Home), label: t('nav.home'), href: "/utp-plus" },
+])
+
+const careers = computed(() => [
   {
-    name: "Ingeniería de Sistemas",
+    name: t('utpplus.data.careers.c1'),
     match: 92,
     salary: "S/ 3,500 - S/ 6,000",
-    duration: "5 años",
-    field: "Tecnología",
+    duration: t('utpplus.data.careers.years'),
+    field: t('utpplus.data.careers.f1'),
     color: "#B50E30",
   },
   {
-    name: "Ciencia de Datos",
+    name: t('utpplus.data.careers.c2'),
     match: 88,
     salary: "S/ 4,000 - S/ 7,500",
-    duration: "5 años",
-    field: "Tecnología",
-    color: "#1565C0",
+    duration: t('utpplus.data.careers.years'),
+    field: t('utpplus.data.careers.f1'),
+    color: "#082065",
   },
   {
-    name: "Ingeniería Industrial",
+    name: t('utpplus.data.careers.c3'),
     match: 75,
     salary: "S/ 3,000 - S/ 5,500",
-    duration: "5 años",
-    field: "Ingeniería",
+    duration: t('utpplus.data.careers.years'),
+    field: t('utpplus.data.careers.f2'),
     color: "#D4A017",
   },
-]
+])
 
-const matchmakingNodes = [
-  { type: "student", label: "Tú", color: "#B50E30" },
-  { type: "mentor", label: "Ana García", color: "#1565C0" },
-  { type: "course", label: "Intro a Programación", color: "#D4A017" },
-  { type: "club", label: "Club de Robótica", color: "#2E7D32" },
-  { type: "resource", label: "Taller IA", color: "#F9A825" },
-]
+const matchmakingNodes = computed(() => [
+  { type: "student", label: t('utpplus.you'), color: "#B50E30" },
+  { type: "mentor", label: "Ana García", color: "#082065" },
+  { type: "course", label: t('utpplus.data.nodes.n1'), color: "#D4A017" },
+  { type: "club", label: t('utpplus.data.nodes.n2'), color: "#2E7D32" },
+  { type: "resource", label: t('utpplus.data.nodes.n3'), color: "#F9A825" },
+])
 
-const insights = [
+const insights = computed(() => [
   {
     icon: markRaw(Brain),
-    title: "Intereses detectados",
-    items: ["Tecnología", "Innovación", "Resolución de problemas"],
+    title: t('utpplus.data.insights.t1'),
+    items: [t('utpplus.data.insights.t1_i1'), t('utpplus.data.insights.t1_i2'), t('utpplus.data.insights.t1_i3')],
   },
   {
     icon: markRaw(Star),
-    title: "Fortalezas",
-    items: ["Pensamiento lógico", "Creatividad", "Trabajo en equipo"],
+    title: t('utpplus.data.insights.t2'),
+    items: [t('utpplus.data.insights.t2_i1'), t('utpplus.data.insights.t2_i2'), t('utpplus.data.insights.t2_i3')],
   },
   {
     icon: markRaw(Target),
-    title: "Habilidades emergentes",
-    items: ["Programación", "Análisis de datos", "Liderazgo"],
+    title: t('utpplus.data.insights.t3'),
+    items: [t('utpplus.data.insights.t3_i1'), t('utpplus.data.insights.t3_i2'), t('utpplus.data.insights.t3_i3')],
   },
-]
+])
 
-const actions = [
+const actions = computed(() => [
   {
     icon: markRaw(BookOpen),
-    title: "Explorar curso de Python",
-    description: "Basado en tu interés en programación",
+    title: t('utpplus.data.actions.a1_t'),
+    description: t('utpplus.data.actions.a1_d'),
     color: "#B50E30",
   },
   {
     icon: markRaw(Users),
-    title: "Conectar con Ana García",
-    description: "Mentor en Ingeniería de Sistemas",
-    color: "#1565C0",
+    title: t('utpplus.data.actions.a2_t'),
+    description: t('utpplus.data.actions.a2_d'),
+    color: "#082065",
   },
   {
     icon: markRaw(Target),
-    title: "Completar evaluación vocacional",
-    description: "Mejora tu perfil en un 20%",
+    title: t('utpplus.data.actions.a3_t'),
+    description: t('utpplus.data.actions.a3_d'),
     color: "#D4A017",
   },
-]
+])
 
-const stats = [
-  { label: "Compatibilidad promedio", value: "85%", icon: markRaw(TrendingUp) },
-  { label: "Carreras analizadas", value: "12", icon: markRaw(GraduationCap) },
-  { label: "Conexiones sugeridas", value: "8", icon: markRaw(Users) },
-]
+const stats = computed(() => [
+  { label: t('utpplus.data.stats.s1'), value: "85%", icon: markRaw(TrendingUp) },
+  { label: t('utpplus.data.stats.s2'), value: "12", icon: markRaw(GraduationCap) },
+  { label: t('utpplus.data.stats.s3'), value: "8", icon: markRaw(Users) },
+])
 </script>
 
 <template>
   <DashboardLayout
     :sidebarItems="sidebarItems"
-    title="NEXUS UTP+"
-    subtitle="Intermediario inteligente impulsado por IA"
+    :title="$t('utpplus.title')"
+    :subtitle="$t('utpplus.subtitle')"
     :breadcrumbs="[
-      { label: 'Inicio' }
+      { label: $t('nav.home') }
     ]"
-    moduleColor="#1565C0"
+    moduleColor="#082065"
   >
     <div class="space-y-6">
       <!-- AI Hero Banner -->
-      <Card class="bg-gradient-to-br from-[#1565C0] to-[#0D47A1] border-0 text-white overflow-hidden relative">
-        <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-48 -mt-48" />
-        <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full -ml-32 -mb-32" />
+      <Card class="bg-gradient-to-br from-[#082065] to-[#0D47A1] border-0 text-white overflow-hidden relative">
+        <div class="absolute top-0 right-0 -mt-48 -mr-48 rounded-full w-96 h-96 bg-white/10" />
+        <div class="absolute bottom-0 left-0 w-64 h-64 -mb-32 -ml-32 rounded-full bg-white/10" />
         <CardHeader class="relative z-10">
           <div class="flex items-center gap-2 mb-2">
             <Sparkles class="w-5 h-5" />
-            <span class="text-sm font-medium">Inteligencia Artificial</span>
+            <span class="text-sm font-medium">{{ $t('utpplus.ai_tag') }}</span>
           </div>
-          <CardTitle class="text-3xl">Tu asistente vocacional inteligente</CardTitle>
+          <CardTitle class="text-3xl">{{ $t('utpplus.ai_title') }}</CardTitle>
           <CardDescription class="text-white/90">
-            Descubre carreras, conecta con mentores y recibe recomendaciones personalizadas
+            {{ $t('utpplus.ai_desc') }}
           </CardDescription>
         </CardHeader>
         <CardContent class="relative z-10">
-          <div class="grid md:grid-cols-3 gap-4">
-            <div v-for="(stat, i) in stats" :key="i" class="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+          <div class="grid gap-4 md:grid-cols-3">
+            <div v-for="(stat, i) in stats" :key="i" class="p-4 bg-white/10 backdrop-blur-sm rounded-xl">
               <div class="flex items-center gap-3">
                 <component :is="stat.icon" class="w-5 h-5" />
                 <div>
@@ -153,22 +157,22 @@ const stats = [
         <CardHeader>
           <div class="flex items-center justify-between">
             <div>
-              <CardTitle>Perfil de Carrera</CardTitle>
-              <CardDescription>Carreras recomendadas según tu perfil</CardDescription>
+              <CardTitle>{{ $t('utpplus.career_profile') }}</CardTitle>
+              <CardDescription>{{ $t('utpplus.career_desc') }}</CardDescription>
             </div>
-            <Button variant="outline">Ver todas</Button>
+            <Button variant="outline">{{ $t('utpplus.view_all') }}</Button>
           </div>
         </CardHeader>
         <CardContent>
           <div class="space-y-4">
-            <Card v-for="(career, i) in careers" :key="i" class="hover:shadow-md transition-shadow border-l-4" :style="{ borderLeftColor: career.color }">
+            <Card v-for="(career, i) in careers" :key="i" class="transition-shadow border-l-4 hover:shadow-md" :style="{ borderLeftColor: career.color }">
               <CardContent class="p-6">
                 <div class="flex items-start justify-between mb-4">
                   <div class="flex-1">
                     <div class="flex items-center gap-3 mb-2">
                       <h3 class="font-semibold text-lg text-[#1F1F1F]">{{ career.name }}</h3>
                       <Badge class="text-white" :style="{ backgroundColor: career.color }">
-                        {{ career.match }}% Match
+                        {{ career.match }}{{ $t('utpplus.match') }}
                       </Badge>
                     </div>
                     <p class="text-sm text-[#5F6368]">{{ career.field }}</p>
@@ -179,22 +183,22 @@ const stats = [
                   <div class="flex items-center gap-2">
                     <DollarSign class="w-4 h-4 text-[#5F6368]" />
                     <div>
-                      <p class="text-xs text-[#5F6368]">Salario promedio</p>
+                      <p class="text-xs text-[#5F6368]">{{ $t('utpplus.salary') }}</p>
                       <p class="text-sm font-medium text-[#1F1F1F]">{{ career.salary }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
                     <Clock class="w-4 h-4 text-[#5F6368]" />
                     <div>
-                      <p class="text-xs text-[#5F6368]">Duración</p>
+                      <p class="text-xs text-[#5F6368]">{{ $t('utpplus.duration') }}</p>
                       <p class="text-sm font-medium text-[#1F1F1F]">{{ career.duration }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
                     <Briefcase class="w-4 h-4 text-[#5F6368]" />
                     <div>
-                      <p class="text-xs text-[#5F6368]">Campo laboral</p>
-                      <p class="text-sm font-medium text-[#1F1F1F]">Amplio</p>
+                      <p class="text-xs text-[#5F6368]">{{ $t('utpplus.field') }}</p>
+                      <p class="text-sm font-medium text-[#1F1F1F]">{{ $t('utpplus.field_wide') }}</p>
                     </div>
                   </div>
                 </div>
@@ -202,15 +206,15 @@ const stats = [
                 <div class="flex items-center justify-between pt-4 border-t border-[#D9D9D9]">
                   <div class="flex items-center gap-2 text-sm text-[#5F6368]">
                     <Users class="w-4 h-4" />
-                    <span>3 mentores disponibles</span>
+                    <span>3 {{ $t('utpplus.mentors_avail') }}</span>
                   </div>
                   <div class="flex gap-2">
                     <Button variant="ghost" size="sm">
                       <Star class="w-4 h-4 mr-1" />
-                      Testimonios
+                      {{ $t('utpplus.testimonials') }}
                     </Button>
                     <Button size="sm" :style="{ backgroundColor: career.color }" class="text-white hover:opacity-90">
-                      Ver detalles
+                      {{ $t('utpplus.view_details') }}
                       <ChevronRight class="w-4 h-4 ml-1" />
                     </Button>
                   </div>
@@ -221,22 +225,22 @@ const stats = [
         </CardContent>
       </Card>
 
-      <div class="grid md:grid-cols-2 gap-6">
+      <div class="grid gap-6 md:grid-cols-2">
         <!-- Matchmaking -->
         <Card>
           <CardHeader>
             <div class="flex items-center gap-2">
-              <Network class="w-5 h-5 text-[#1565C0]" />
-              <CardTitle>Matchmaking IA</CardTitle>
+              <Network class="w-5 h-5 text-[#082065]" />
+              <CardTitle>{{ $t('utpplus.matchmaking') }}</CardTitle>
             </div>
-            <CardDescription>Conexiones inteligentes para tu desarrollo</CardDescription>
+            <CardDescription>{{ $t('utpplus.matchmaking_desc') }}</CardDescription>
           </CardHeader>
           <CardContent>
             <div class="relative aspect-square">
               <!-- Central Node -->
-              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+              <div class="absolute z-10 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
                 <div class="w-20 h-20 rounded-full bg-gradient-to-br from-[#B50E30] to-[#8F0B26] flex items-center justify-center text-white font-medium shadow-lg">
-                  Tú
+                  {{ $t('utpplus.you') }}
                 </div>
               </div>
 
@@ -244,7 +248,7 @@ const stats = [
               <div v-for="(node, i) in matchmakingNodes.slice(1)" :key="i">
                 <!-- Connection Line -->
                 <svg
-                  class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none"
+                  class="absolute w-full h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none top-1/2 left-1/2"
                   style="z-index: 0;"
                 >
                   <line
@@ -261,13 +265,13 @@ const stats = [
 
                 <!-- Node -->
                 <div
-                  class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                  class="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
                   :style="{
                     transform: `translate(-50%, -50%) translate(${Math.cos((i * 360 / 4 * Math.PI) / 180) * 140}px, ${Math.sin((i * 360 / 4 * Math.PI) / 180) * 140}px)`,
                   }"
                 >
                   <div
-                    class="w-16 h-16 rounded-full flex items-center justify-center text-white text-xs font-medium shadow-lg text-center p-2 leading-tight"
+                    class="flex items-center justify-center w-16 h-16 p-2 text-xs font-medium leading-tight text-center text-white rounded-full shadow-lg"
                     :style="{ backgroundColor: node.color }"
                   >
                     {{ node.label }}
@@ -277,7 +281,7 @@ const stats = [
             </div>
 
             <div class="mt-4 pt-4 border-t border-[#D9D9D9]">
-              <p class="text-sm text-[#5F6368] mb-3">Conexiones recomendadas:</p>
+              <p class="text-sm text-[#5F6368] mb-3">{{ $t('utpplus.recommended_connections') }}</p>
               <div class="space-y-2">
                 <div v-for="(node, i) in matchmakingNodes.slice(1)" :key="i" class="flex items-center gap-2 text-sm">
                   <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: node.color }" />
@@ -292,30 +296,26 @@ const stats = [
         <Card>
           <CardHeader>
             <div class="flex items-center gap-2">
-              <Brain class="w-5 h-5 text-[#1565C0]" />
-              <CardTitle>Análisis de Bitácora</CardTitle>
+              <Brain class="w-5 h-5 text-[#082065]" />
+              <CardTitle>{{ $t('utpplus.log_analysis') }}</CardTitle>
             </div>
-            <CardDescription>Insights generados por IA de tus registros</CardDescription>
+            <CardDescription>{{ $t('utpplus.log_insights') }}</CardDescription>
           </CardHeader>
           <CardContent class="space-y-6">
             <!-- AI Chat Message -->
-            <div class="p-4 rounded-lg bg-gradient-to-br from-[#1565C0]/10 to-[#0D47A1]/10 border border-[#1565C0]/20">
+            <div class="p-4 rounded-lg bg-gradient-to-br from-[#082065]/10 to-[#0D47A1]/10 border border-[#082065]/20">
               <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#1565C0] to-[#0D47A1] flex items-center justify-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center flex-shrink-0">
                   <Sparkles class="w-4 h-4 text-white" />
                 </div>
                 <div class="flex-1">
-                  <p class="text-sm text-[#1F1F1F] mb-2">
-                    Basado en tu bitácora, <strong>Ingeniería de Sistemas</strong> tiene alta
-                    compatibilidad. Tus proyectos de programación y robótica muestran un fuerte
-                    interés en tecnología.
-                  </p>
+                  <p class="text-sm text-[#1F1F1F] mb-2" v-html="$t('utpplus.chat_message', { strong: '<strong>', '/strong': '</strong>' })"></p>
                   <Button
                     size="sm"
                     variant="ghost"
-                    class="text-[#1565C0] hover:bg-[#1565C0]/10 p-0 h-auto"
+                    class="text-[#082065] hover:bg-[#082065]/10 p-0 h-auto"
                   >
-                    Ver explicación completa
+                    {{ $t('utpplus.view_explanation') }}
                     <ArrowRight class="w-3 h-3 ml-1" />
                   </Button>
                 </div>
@@ -326,7 +326,7 @@ const stats = [
             <div class="space-y-4">
               <div v-for="(insight, i) in insights" :key="i" class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <component :is="insight.icon" class="w-4 h-4 text-[#1565C0]" />
+                  <component :is="insight.icon" class="w-4 h-4 text-[#082065]" />
                   <h4 class="font-medium text-sm text-[#1F1F1F]">{{ insight.title }}</h4>
                 </div>
                 <div class="flex flex-wrap gap-2">
@@ -342,9 +342,9 @@ const stats = [
               </div>
             </div>
 
-            <Button class="w-full bg-[#1565C0] hover:bg-[#0D47A1]">
+            <Button class="w-full bg-[#082065] hover:bg-[#0D47A1]">
               <MessageSquare class="w-4 h-4 mr-2" />
-              Chatear con el asistente IA
+              {{ $t('utpplus.chat_ai') }}
             </Button>
           </CardContent>
         </Card>
@@ -353,15 +353,15 @@ const stats = [
       <!-- Recommended Actions -->
       <Card>
         <CardHeader>
-          <CardTitle>Próximos pasos recomendados</CardTitle>
-          <CardDescription>Acciones sugeridas para avanzar en tu viaje vocacional</CardDescription>
+          <CardTitle>{{ $t('utpplus.next_steps') }}</CardTitle>
+          <CardDescription>{{ $t('utpplus.steps_desc') }}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div class="grid md:grid-cols-3 gap-4">
-            <Card v-for="(action, i) in actions" :key="i" class="hover:shadow-md transition-shadow cursor-pointer group">
+          <div class="grid gap-4 md:grid-cols-3">
+            <Card v-for="(action, i) in actions" :key="i" class="transition-shadow cursor-pointer hover:shadow-md group">
               <CardContent class="p-5">
                 <div
-                  class="w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
+                  class="flex items-center justify-center w-12 h-12 mb-3 transition-transform rounded-xl group-hover:scale-110"
                   :style="{ backgroundColor: `${action.color}15` }"
                 >
                   <component :is="action.icon" class="w-6 h-6" :style="{ color: action.color }" />
@@ -371,10 +371,10 @@ const stats = [
                 <Button
                   size="sm"
                   variant="ghost"
-                  class="p-0 h-auto"
+                  class="h-auto p-0"
                   :style="{ color: action.color }"
                 >
-                  Iniciar
+                  {{ $t('utpplus.start') }}
                   <ChevronRight class="w-4 h-4 ml-1" />
                 </Button>
               </CardContent>

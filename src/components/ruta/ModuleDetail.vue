@@ -162,7 +162,7 @@ const toggle = (id: string) => {
 
             <div class="flex items-center gap-3 flex-shrink-0">
               <span class="text-xs text-muted-foreground hidden sm:block">{{ activity.duration }}</span>
-              <span class="text-xs font-medium" :style="{ color: activity.completed ? '#16a34a' : '#D4A017' }">
+              <span class="text-xs font-medium" :style="{ color: activity.completed ? '#16a34a' : '#FFB20D' }">
                 +{{ activity.xp }} XP
               </span>
               <CheckCircle2 v-if="activity.completed" class="w-5 h-5 text-green-500" />
@@ -199,7 +199,7 @@ const toggle = (id: string) => {
       <Card>
         <CardContent class="p-4 flex items-center gap-3">
           <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-            <Clock class="w-5 h-5 text-[#1565C0]" />
+            <Clock class="w-5 h-5 text-[#082065]" />
           </div>
           <div>
             <p class="text-xs text-muted-foreground">Tiempo estimado restante</p>

@@ -21,6 +21,7 @@ import {
 } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import LanguageSelector from '@/components/LanguageSelector.vue'
 
 const router = useRouter();
 const route = useRoute();
@@ -162,21 +163,21 @@ const themeColors = computed(() => {
       };
     case "familia":
       return {
-        primary: "#D4A017",
+        primary: "#FFB20D",
         hover: "#B8870F",
-        bgLight: "bg-[#D4A017]/5",
-        border: "border-[#D4A017]/20",
-        gradient: "from-[#D4A017] to-[#B8870F]",
-        text: "text-[#D4A017]",
+        bgLight: "bg-[#FFB20D]/5",
+        border: "border-[#FFB20D]/20",
+        gradient: "from-[#FFB20D] to-[#B8870F]",
+        text: "text-[#FFB20D]",
       };
     case "postulante":
       return {
-        primary: "#1565C0",
+        primary: "#082065",
         hover: "#0D47A1",
-        bgLight: "bg-[#1565C0]/5",
-        border: "border-[#1565C0]/20",
-        gradient: "from-[#1565C0] to-[#0D47A1]",
-        text: "text-[#1565C0]",
+        bgLight: "bg-[#082065]/5",
+        border: "border-[#082065]/20",
+        gradient: "from-[#082065] to-[#0D47A1]",
+        text: "text-[#082065]",
       };
   }
 });
@@ -191,8 +192,12 @@ const themeColors = computed(() => {
       class="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-[#B50E30]/5 blur-3xl pointer-events-none"
     />
     <div
-      class="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-[#1565C0]/5 blur-3xl pointer-events-none"
+      class="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-[#082065]/5 blur-3xl pointer-events-none"
     />
+
+    <div class="absolute top-6 right-6 z-50">
+      <LanguageSelector />
+    </div>
 
     <div class="relative z-10 sm:mx-auto sm:w-full sm:max-w-md">
       <!-- Logo and Title -->
@@ -208,10 +213,10 @@ const themeColors = computed(() => {
           >
         </router-link>
         <h2 class="text-center text-3xl font-extrabold text-[#1F1F1F]">
-          {{ isRegister ? "Crear tu Cuenta" : "Iniciar Sesión" }}
+          {{ isRegister ? $t('login.title_register') : $t('login.title_login') }}
         </h2>
         <p class="mt-2 text-center text-sm text-[#5F6368]">
-          Accede a tu portal personalizado de orientación vocacional UTP
+          {{ $t('login.subtitle') }}
         </p>
       </div>
     </div>
@@ -221,13 +226,13 @@ const themeColors = computed(() => {
       <Card class="border-[#D9D9D9] shadow-xl bg-white/80 backdrop-blur-md">
         <CardHeader class="pb-4">
           <CardTitle class="text-xl font-bold text-[#1F1F1F]">
-            {{ isRegister ? "Formulario de Registro" : "Formulario de Acceso" }}
+            {{ isRegister ? $t('login.form_register') : $t('login.form_login') }}
           </CardTitle>
           <CardDescription>
             {{
               isRegister
-                ? "Completa tus datos para registrarte."
-                : "Selecciona tu rol y escribe tus credenciales."
+                ? $t('login.desc_register')
+                : $t('login.desc_login')
             }}
           </CardDescription>
         </CardHeader>
@@ -244,19 +249,19 @@ const themeColors = computed(() => {
                 value="estudiante"
                 class="rounded-lg font-bold text-xs transition-all py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
-                Estudiante
+                {{ $t('login.role_student') }}
               </TabsTrigger>
               <TabsTrigger
                 value="familia"
                 class="rounded-lg font-bold text-xs transition-all py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
-                Familia
+                {{ $t('login.role_family') }}
               </TabsTrigger>
               <TabsTrigger
                 value="postulante"
                 class="rounded-lg font-bold text-xs transition-all py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
-                Postulante
+                {{ $t('login.role_applicant') }}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -269,7 +274,7 @@ const themeColors = computed(() => {
           >
             <div class="space-y-1.5">
               <Label for="email" class="text-sm font-semibold text-[#1F1F1F]"
-                >Correo Electrónico</Label
+                >{{ $t('login.email') }}</Label
               >
               <div class="relative">
                 <Mail
@@ -287,7 +292,7 @@ const themeColors = computed(() => {
 
             <div class="space-y-1.5">
               <Label for="password" class="text-sm font-semibold text-[#1F1F1F]"
-                >Contraseña</Label
+                >{{ $t('login.password') }}</Label
               >
               <div class="relative">
                 <KeyRound
@@ -323,7 +328,7 @@ const themeColors = computed(() => {
                 class="border-2 border-white border-t-transparent animate-spin rounded-full w-4.5 h-4.5"
               ></span>
               <span v-else class="flex items-center gap-2">
-                Ingresar al Portal
+                {{ $t('login.enter_portal') }}
                 <ArrowRight class="w-4 h-4" />
               </span>
             </Button>
@@ -333,7 +338,7 @@ const themeColors = computed(() => {
           <form v-else @submit.prevent="handleRegister" class="space-y-4">
             <div class="space-y-1.5">
               <Label for="fullName" class="text-sm font-semibold text-[#1F1F1F]"
-                >Nombre Completo</Label
+                >{{ $t('login.full_name') }}</Label
               >
               <div class="relative">
                 <UserCheck
@@ -351,7 +356,7 @@ const themeColors = computed(() => {
 
             <div class="space-y-1.5">
               <Label for="regEmail" class="text-sm font-semibold text-[#1F1F1F]"
-                >Correo Electrónico</Label
+                >{{ $t('login.email') }}</Label
               >
               <div class="relative">
                 <Mail
@@ -371,7 +376,7 @@ const themeColors = computed(() => {
               <Label
                 for="regPassword"
                 class="text-sm font-semibold text-[#1F1F1F]"
-                >Contraseña</Label
+                >{{ $t('login.password') }}</Label
               >
               <div class="relative">
                 <KeyRound
@@ -391,7 +396,7 @@ const themeColors = computed(() => {
               <Label
                 for="confirmPassword"
                 class="text-sm font-semibold text-[#1F1F1F]"
-                >Confirmar Contraseña</Label
+                >{{ $t('login.confirm_password') }}</Label
               >
               <div class="relative">
                 <KeyRound
@@ -412,7 +417,7 @@ const themeColors = computed(() => {
               <Label
                 for="studentPin"
                 class="text-sm font-semibold text-[#1F1F1F]"
-                >Pin del Alumno (Opcional)</Label
+                >{{ $t('login.student_pin') }}</Label
               >
               <div class="relative">
                 <KeyRound
@@ -448,7 +453,7 @@ const themeColors = computed(() => {
                 class="border-2 border-white border-t-transparent animate-spin rounded-full w-4.5 h-4.5"
               ></span>
               <span v-else class="flex items-center gap-2">
-                Crear Cuenta
+                {{ $t('login.create_account_btn') }}
                 <UserPlus class="w-4 h-4 ml-1" />
               </span>
             </Button>
@@ -465,7 +470,7 @@ const themeColors = computed(() => {
               </div>
               <div class="relative flex justify-center text-xs uppercase">
                 <span class="px-3 font-bold text-gray-500 bg-white"
-                  >O continuar con</span
+                  >{{ $t('login.or_continue') }}</span
                 >
               </div>
             </div>
@@ -482,8 +487,8 @@ const themeColors = computed(() => {
             >
               {{
                 isRegister
-                  ? "¿Ya tienes una cuenta? Inicia sesión"
-                  : "¿No tienes cuenta? Regístrate gratis"
+                  ? $t('login.already_have')
+                  : $t('login.no_account')
               }}
             </button>
           </div>

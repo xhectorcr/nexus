@@ -1,13 +1,6 @@
 <script setup lang="ts">
+import LanguageSelector from "@/components/LanguageSelector.vue";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -71,8 +64,8 @@ const logoGradient = computed(
 const logoImage = computed(() => {
   const color = props.moduleColor.toUpperCase();
   if (color === "#B50E30") return "/image/UTP-rojo.webp";
-  if (color === "#1565C0") return "/image/UTP-azul.png";
-  if (color === "#D4A017") return "/image/UTP-dorado.png";
+  if (color === "#082065") return "/image/UTP-azul.png";
+  if (color === "#FFB20D") return "/image/UTP-dorado.png";
   return "/image/UTP-rojo.webp";
 });
 </script>
@@ -176,7 +169,9 @@ const logoImage = computed(() => {
       >
         <X v-if="sidebarOpen" class="w-4 h-4" />
         <Menu v-else class="w-4 h-4" />
-        <span v-if="sidebarOpen" class="text-sm">Contraer</span>
+        <span v-if="sidebarOpen" class="text-sm">{{
+          $t("layout.collapse")
+        }}</span>
       </button>
     </aside>
 
@@ -194,7 +189,7 @@ const logoImage = computed(() => {
                 class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5F6368]"
               />
               <Input
-                placeholder="Buscar en NEXUS..."
+                :placeholder="$t('layout.search')"
                 class="pl-10 bg-[#F1F1F1] border-transparent focus:bg-white"
               />
             </div>
@@ -202,6 +197,8 @@ const logoImage = computed(() => {
 
           <!-- Right Actions -->
           <div class="flex items-center gap-4">
+            <LanguageSelector />
+
             <!-- Notifications -->
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
@@ -213,24 +210,28 @@ const logoImage = computed(() => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" class="w-80">
-                <DropdownMenuLabel>Notificaciones</DropdownMenuLabel>
+                <DropdownMenuLabel>{{
+                  $t("layout.notifications")
+                }}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <div class="flex flex-col gap-1">
-                    <span class="text-sm font-medium">Nuevo mensaje</span>
-                    <span class="text-xs text-[#5F6368]"
-                      >Tienes un nuevo mentor disponible</span
-                    >
+                    <span class="text-sm font-medium">{{
+                      $t("layout.new_message")
+                    }}</span>
+                    <span class="text-xs text-[#5F6368]">{{
+                      $t("layout.new_message_desc")
+                    }}</span>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <div class="flex flex-col gap-1">
-                    <span class="text-sm font-medium"
-                      >Progreso actualizado</span
-                    >
-                    <span class="text-xs text-[#5F6368]"
-                      >Has completado el 75% de tu evaluación</span
-                    >
+                    <span class="text-sm font-medium">{{
+                      $t("layout.progress_updated")
+                    }}</span>
+                    <span class="text-xs text-[#5F6368]">{{
+                      $t("layout.progress_updated_desc")
+                    }}</span>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -257,18 +258,20 @@ const logoImage = computed(() => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                <DropdownMenuLabel>{{
+                  $t("layout.my_account")
+                }}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   @click="router.push('/')"
                   class="cursor-pointer"
                 >
                   <Home class="w-4 h-4 mr-2" />
-                  Página Inicio
+                  {{ $t("layout.home_page") }}
                 </DropdownMenuItem>
                 <DropdownMenuItem class="cursor-pointer">
                   <Settings class="w-4 h-4 mr-2" />
-                  Configuración
+                  {{ $t("layout.settings") }}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -276,7 +279,7 @@ const logoImage = computed(() => {
                   class="text-red-600 cursor-pointer focus:text-red-700"
                 >
                   <LogOut class="w-4 h-4 mr-2" />
-                  Cerrar Sesión
+                  {{ $t("layout.logout") }}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
