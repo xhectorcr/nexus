@@ -329,7 +329,8 @@ const fetchStudentProfileData = async () => {
 };
 
 const generarNuevaRutaCompleta = async () => {
-  const limitKey = `ia_gen_${new Date().toDateString()}`;
+  const usuarioId = auth.state.user?.id || 'anon';
+  const limitKey = `ia_gen_${usuarioId}_${new Date().toDateString()}`;
   const count = parseInt(localStorage.getItem(limitKey) || "0");
 
   if (count >= 3) {
@@ -352,8 +353,7 @@ const generarNuevaRutaCompleta = async () => {
   try {
     isGenerating.value = true;
     localStorage.setItem(limitKey, (count + 1).toString());
-    const usuarioId = auth.state.user?.id;
-    if (!usuarioId) return;
+    if (!usuarioId || usuarioId === 'anon') return;
     const res = await api.post(
       `/api/v1/ai/ruta/generar-completa?usuarioId=${usuarioId}`,
     );

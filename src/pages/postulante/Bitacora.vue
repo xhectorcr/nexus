@@ -38,6 +38,46 @@ const sidebarItems = computed(() => [
     icon: markRaw(Brain),
     label: t("nav.vocational_tests") || "Tests",
     href: "/postulante/test",
+<script setup lang="ts">
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { ArrowRight, BookOpen, Brain, Eye, Gamepad2, Home, MessageCircle, Plus, MessageSquare } from "lucide-vue-next";
+import { computed, markRaw, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+
+const auth = useAuth();
+const { t } = useI18n();
+
+const sidebarItems = computed(() => [
+  {
+    icon: markRaw(Home),
+    label: t("nav.home") || "Inicio",
+    href: "/postulante",
+  },
+  {
+    icon: markRaw(Brain),
+    label: t("nav.vocational_tests") || "Tests",
+    href: "/postulante/test",
   },
   {
     icon: markRaw(Gamepad2),
@@ -48,11 +88,6 @@ const sidebarItems = computed(() => [
     icon: markRaw(BookOpen),
     label: t("postulante.digital_log") || "Bitácora",
     href: "/postulante/bitacora",
-  },
-  {
-    icon: markRaw(MessageCircle),
-    label: t("postulante.p2p_connection") || "Conexión P2P",
-    href: "/postulante/p2p",
   },
   {
     icon: markRaw(MessageSquare),
