@@ -4,7 +4,6 @@ import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -17,35 +16,32 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import ModuleDetail from "@/components/ruta/ModuleDetail.vue";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import {
   ArrowLeft,
   Award,
+  BookOpen,
   CheckCircle2,
-  ChevronRight,
   Circle,
   Clock,
-  Code2,
   Flame,
   Gamepad2,
-  Gamepad2,
-  GraduationCap,
+  Home,
   Info,
+  Lock,
+  Map as MapIcon,
   PlayCircle,
-  TrendingUp,
   Sparkles,
+  Star,
   Target,
-  BookOpen,
+  TrendingUp,
 } from "lucide-vue-next";
-import { computed, markRaw, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 const auth = useAuth();
@@ -85,8 +81,36 @@ const showNotificationModal = ref(false);
 const notificationTitle = ref("");
 const notificationMessage = ref("");
 
+const currentModuleIndex = ref(0);
+const isGeneratingIA = ref(false);
+const regenerarMisionIA = async (userId: number, force: boolean) => {
+  isGeneratingIA.value = true;
+  // TODO: Implementar lógica
+  setTimeout(() => isGeneratingIA.value = false, 1000);
+};
+const iniciarExperienciaIA = () => {
+  if (nextNodeRef.value) {
+    selectedModule.value = {
+      ...nextNodeRef.value,
+      title: nextNodeRef.value.tituloNodo,
+      description: nextNodeRef.value.descripcionExp
+    };
+  }
+};
+
 const localBitacora = ref<{ titulo: string; descripcion: string }[]>([]);
 const bitacoraForm = ref({ titulo: "", descripcion: "" });
+
+const userXP = ref(0);
+const userLevel = ref(1);
+const userStreak = ref(1);
+const dynamicStats = ref({
+  completed: 0,
+  pending: 0,
+  hours: 0,
+  avgScore: 0
+});
+
 
 const showNotification = (title: string, message: string) => {
   notificationTitle.value = title;
@@ -157,6 +181,9 @@ const fetchNextIntelligentNode = async () => {
         }
         
         // Map nodes to UI modules
+        let xpCounter = 0;
+        let completedCount = 0;
+        let pendingCount = 0;
         modules.value = journey.nodos.map((nodo: any, i: number) => {
           let color = "#082065";
           let icon = Target;
@@ -217,15 +244,12 @@ const fetchNextIntelligentNode = async () => {
         userXP.value = xpCounter;
         userLevel.value = Math.floor(xpCounter / 100) + 1;
         userStreak.value = Math.max(1, completedCount * 2);
-        totalProgress.value =
-          Math.round((completedCount / journey.nodos.length) * 100) || 0;
-
         dynamicStats.value.completed = completedCount;
         dynamicStats.value.pending = pendingCount;
         dynamicStats.value.hours = +(completedCount * 1.5).toFixed(1);
         dynamicStats.value.avgScore =
           completedCount > 0
-            ? +(14 + (postulanteId % 5) + completedCount * 0.5).toFixed(1)
+            ? +(14 + (usuarioId % 5) + completedCount * 0.5).toFixed(1)
             : 0;
       }
     } catch (e) {
