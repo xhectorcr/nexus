@@ -41,11 +41,11 @@
     "module2_f1": "Panel de Progreso",
     "module2_f2": "Recursos y Guías",
     "module2_f3": "Foro Moderado",
-    "module3_title": "NEXUS UTP+",
-    "module3_desc": "Intermediario inteligente con IA y matchmaking",
-    "module3_f1": "Perfil de Carrera",
-    "module3_f2": "Matchmaking IA",
-    "module3_f3": "Análisis de Bitácora",
+    "module3_title": "Foro UTP+",
+    "module3_desc": "Espacio de debate, consultas y apoyo entre estudiantes y postulantes",
+    "module3_f1": "Consultas académicas",
+    "module3_f2": "Debates y experiencias",
+    "module3_f3": "Apoyo entre pares",
     "footer": "© 2026 NEXUS - Universidad Tecnológica del Perú"
   },
   "dashboard": {

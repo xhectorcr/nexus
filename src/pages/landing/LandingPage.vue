@@ -104,11 +104,8 @@ const modulesPointerEvents = computed(() => scrollProgress.value > 0.8 ? 'auto' 
       <!-- Hero Section -->
       <section class="container px-6 mx-auto absolute inset-0 flex flex-col justify-center" 
                :style="{ opacity: heroOpacity, pointerEvents: heroOpacity > 0.5 ? 'auto' : 'none', transition: 'opacity 0.1s' }">
-        <div class="max-w-4xl mx-auto text-center transform -translate-y-10 md:-translate-y-20 lg:translate-x-[-15%] xl:translate-x-[-20%]">
-          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#B50E30]/10 border border-[#B50E30]/20 mb-6">
-            <Sparkles class="w-4 h-4 text-[#B50E30]" />
-            <span class="text-sm text-[#B50E30] font-medium">{{ $t('landing.powered') }}</span>
-          </div>
+        <div class="max-w-4xl mx-auto text-center transform lg:translate-x-[-15%] xl:translate-x-[-20%]">
+
           <h1 class="text-5xl md:text-6xl font-bold text-[#1F1F1F] mb-6 leading-tight">
             {{ $t('landing.hero_title_1') }}<br />
             <span class="bg-gradient-to-r from-[#B50E30] to-[#D13C5B] bg-clip-text text-transparent">
