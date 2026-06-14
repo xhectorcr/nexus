@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,6 +23,7 @@ import {
   Check,
   Circle,
   Copy,
+  Eye,
   Gamepad2,
   Heart,
   Home,
@@ -31,6 +33,8 @@ import {
   Send,
   Sparkles,
   Target,
+  MessageSquare,
+  Users
 } from "lucide-vue-next";
 import { computed, markRaw, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -51,6 +55,57 @@ const sidebarItems = computed(() => [
 
 const mentors = ref<{ name: string; career: string; online: boolean }[]>([]);
 const entries = ref<any[]>([]);
+
+const bitacoraForm = ref({
+  titulo: '',
+  descripcion: '',
+  tipoEntrada: 'EXPERIENCIA'
+});
+const bitacoraLoading = ref(false);
+const bitacoraSubmitting = ref(false);
+
+const fetchBitacora = async () => {
+  bitacoraLoading.value = true;
+  try {
+    const postulantId = auth.state.user?.id || 1;
+    const res = await api.get(`/api/bitacoras/postulante/${postulantId}`);
+    entries.value = res.data?.data || res.data || [];
+  } catch (error) {
+    console.error("No se pudo obtener la bitácora desde la BD", error);
+  } finally {
+    bitacoraLoading.value = false;
+  }
+};
+
+const saveBitacoraEntry = async () => {
+  if (!bitacoraForm.value.titulo || !bitacoraForm.value.descripcion) return;
+  bitacoraSubmitting.value = true;
+  
+  try {
+    const postulantId = auth.state.user?.id || 1;
+    const payload = {
+      ...bitacoraForm.value,
+      postulanteId: postulantId, // Requerido por el backend real (BitacoraEntradaRequest)
+      emocion: "MOTIVADO",
+      nivelConfianza: 8,
+      nivelMotivacion: 10,
+      tags: ["General"]
+    };
+    
+    // Ruta oficial del backend: POST /api/bitacoras
+    await api.post(`/api/bitacoras`, payload);
+    
+    // Recargar datos directamente de la base de datos
+    await fetchBitacora();
+    
+    // Limpiar el formulario solo si tuvo éxito en la base de datos
+    bitacoraForm.value = { titulo: '', descripcion: '', tipoEntrada: 'EXPERIENCIA' };
+  } catch (error) {
+    console.error("Error al guardar la bitácora en la BD:", error);
+  } finally {
+    bitacoraSubmitting.value = false;
+  }
+};
 
 const stats = computed(() => [
   { label: t('postulante.labyrinth_completed'), value: "40%", color: "#082065" },
@@ -138,6 +193,7 @@ const copyCode = async () => {
 
 onMounted(() => {
   fetchDashboardData();
+  fetchBitacora();
 });
 </script>
 
@@ -355,63 +411,130 @@ onMounted(() => {
             </div>
           </CardContent>
         </Card>
+      </div>
 
-        <!-- Bitácora Digital -->
-        <Card class="transition-shadow hover:shadow-lg">
-          <CardHeader>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3">
-              <BookOpen class="w-6 h-6 text-white" />
+      <!-- Bitácora Digital (Expanded) -->
+      <Card id="bitacora" class="w-full border-t-4 border-t-[#082065] shadow-lg">
+        <CardHeader class="bg-slate-50/50 pb-6 rounded-t-lg">
+          <div class="flex items-start justify-between">
+            <div class="flex gap-4">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center shadow-md">
+                <BookOpen class="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <CardTitle class="text-2xl">{{ $t("postulante.digital_log") || 'Bitácora Digital' }}</CardTitle>
+                <CardDescription class="text-base mt-1 text-gray-600">
+                  {{ $t("postulante.log_desc") || 'Registra tus reflexiones, descubrimientos y logros vocacionales.' }}
+                </CardDescription>
+              </div>
             </div>
-            <CardTitle>{{ $t("postulante.digital_log") }}</CardTitle>
-            <CardDescription>
-              {{ $t("postulante.log_desc") }}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="write" class="w-full">
-              <TabsList class="grid w-full grid-cols-2">
-                <TabsTrigger value="write">{{
-                  $t("postulante.write")
-                }}</TabsTrigger>
-                <TabsTrigger value="entries">{{
-                  $t("postulante.entries")
-                }}</TabsTrigger>
-              </TabsList>
-              <TabsContent value="write" class="space-y-4">
-                <Input :placeholder="$t('postulante.entry_title')" />
-                <Textarea
-                  :placeholder="$t('postulante.describe_experience')"
-                  class="min-h-[120px]"
-                />
-                <div class="flex gap-2">
-                  <Button size="sm" variant="outline" class="flex-1">
-                    <Plus class="w-4 h-4 mr-1" />
-                    {{ $t("postulante.add_tag") }}
-                  </Button>
-                  <Button size="sm" class="bg-[#082065] hover:bg-[#0D47A1]">
-                    {{ $t('postulante.save') }}
-                  </Button>
+            <Badge variant="outline" class="bg-blue-50 text-[#082065] border-blue-200 px-3 py-1 text-sm hidden sm:inline-flex">
+              {{ entries.length }} entradas
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent class="pt-6">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Formulario de nueva entrada -->
+            <div class="lg:col-span-5 space-y-5 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+              <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <Plus class="w-5 h-5 text-[#082065]" />
+                Nueva Entrada
+              </h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">Título del avance / logro</label>
+                  <Input v-model="bitacoraForm.titulo" :placeholder="$t('postulante.entry_title') || 'Ej. Terminé mi primer test'" class="bg-gray-50 focus-visible:ring-[#082065]" />
                 </div>
-              </TabsContent>
-              <TabsContent value="entries" class="space-y-3">
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">Reflexión detallada</label>
+                  <Textarea
+                    v-model="bitacoraForm.descripcion"
+                    :placeholder="$t('postulante.describe_experience') || 'Me di cuenta de que disfruto mucho...'"
+                    class="min-h-[120px] bg-gray-50 focus-visible:ring-[#082065] resize-none"
+                  />
+                </div>
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">Tipo de registro</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="tipo in ['EXPERIENCIA', 'REFLEXION', 'LOGRO']"
+                      :key="tipo"
+                      @click="bitacoraForm.tipoEntrada = tipo"
+                      :class="['px-3 py-1.5 text-xs font-semibold rounded-full border transition-all', bitacoraForm.tipoEntrada === tipo ? 'bg-[#082065] text-white border-[#082065]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300']"
+                    >
+                      {{ tipo }}
+                    </button>
+                  </div>
+                </div>
+                <Button :disabled="bitacoraSubmitting || !bitacoraForm.titulo || !bitacoraForm.descripcion" @click="saveBitacoraEntry" class="w-full bg-[#082065] hover:bg-[#0D47A1] mt-2 shadow-md">
+                  <span v-if="bitacoraSubmitting">Guardando...</span>
+                  <span v-else class="flex items-center gap-2">Guardar registro <ArrowRight class="w-4 h-4" /></span>
+                </Button>
+              </div>
+            </div>
+
+            <!-- Historial -->
+            <div class="lg:col-span-7">
+              <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center justify-between">
+                <span>Historial de avances</span>
+                <Button variant="ghost" size="sm" @click="fetchBitacora" :disabled="bitacoraLoading" class="text-gray-500 hover:text-[#082065]">
+                  Actualizar
+                </Button>
+              </h3>
+              <div v-if="bitacoraLoading" class="flex flex-col gap-3">
+                <div v-for="i in 3" :key="i" class="h-28 bg-gray-100 rounded-xl animate-pulse"></div>
+              </div>
+              <div v-else-if="entries.length === 0" class="flex flex-col items-center justify-center text-center p-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                <BookOpen class="w-12 h-12 text-gray-300 mb-3" />
+                <p class="text-gray-500 font-medium">Aún no tienes entradas en tu bitácora.</p>
+                <p class="text-gray-400 text-sm mt-1">Registra tu primer avance usando el formulario.</p>
+              </div>
+              <div v-else class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 <div
                   v-for="(entry, i) in entries"
                   :key="i"
-                  class="p-3 rounded-lg bg-[#F1F1F1] hover:bg-[#D9D9D9] transition-colors cursor-pointer"
+                  class="p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all group relative flex flex-col gap-2"
                 >
-                  <p class="text-sm font-medium text-[#1F1F1F]">
-                    {{ entry.titulo || entry }}
-                  </p>
-                  <p class="text-xs text-[#5F6368] mt-1">
-                    {{
-                      entry.fecha
-                        ? new Date(entry.fecha).toLocaleDateString()
-                        : $t("postulante.recently")
-                    }}
-                  </p>
+                  <div class="flex items-start justify-between gap-4">
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <Badge variant="secondary" class="bg-blue-50 text-blue-700 hover:bg-blue-100 uppercase text-[10px] font-bold tracking-wider">
+                          {{ entry.tipoEntrada || 'ENTRADA' }}
+                        </Badge>
+                        <p class="text-xs text-[#5F6368]">
+                          {{ entry.fecha ? new Date(entry.fecha).toLocaleDateString() : $t("postulante.recently") }}
+                        </p>
+                      </div>
+                      <p class="text-sm font-bold text-[#1F1F1F]">
+                        {{ entry.titulo || entry }}
+                      </p>
+                    </div>
+                    <Dialog v-if="entry.descripcion">
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm" class="h-8 w-8 p-0 text-gray-400 hover:text-[#082065] transition-colors rounded-full" :title="$t('postulante.view_details') || 'Ver detalles'">
+                          <Eye class="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent class="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle class="flex items-center gap-2">
+                            <Badge variant="secondary" class="bg-blue-50 text-blue-700 uppercase text-[10px] font-bold">
+                              {{ entry.tipoEntrada || 'ENTRADA' }}
+                            </Badge>
+                            <span class="truncate">{{ entry.titulo || 'Entrada' }}</span>
+                          </DialogTitle>
+                          <DialogDescription class="pt-4 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed text-left">
+                            {{ entry.descripcion }}
+                          </DialogDescription>
+                        </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
+          </div>
           </CardContent>
         </Card>
 
@@ -458,17 +581,10 @@ onMounted(() => {
                     {{ mentor.career }}
                   </p>
                 </div>
-                <Button size="sm" variant="ghost">
-                  <Send class="w-4 h-4" />
-                </Button>
               </div>
-              <Button variant="outline" class="w-full">
-                {{ $t("postulante.view_all_mentors") }}
-              </Button>
             </div>
           </CardContent>
-        </Card>
-      </div>
+      </Card>
 
       <!-- Progress Section -->
       <Card>
@@ -496,3 +612,19 @@ onMounted(() => {
     </div>
   </DashboardLayout>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #E5E7EB;
+  border-radius: 20px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #D1D5DB;
+}
+</style>
