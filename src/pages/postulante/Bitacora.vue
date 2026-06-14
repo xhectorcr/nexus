@@ -21,47 +21,16 @@ import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { ArrowRight, BookOpen, Brain, Eye, Gamepad2, Home, MessageCircle, Plus, MessageSquare } from "lucide-vue-next";
-import { computed, markRaw, onMounted, ref } from "vue";
-import { useI18n } from "vue-i18n";
-
-const auth = useAuth();
-const { t } = useI18n();
-
-const sidebarItems = computed(() => [
-  {
-    icon: markRaw(Home),
-    label: t("nav.home") || "Inicio",
-    href: "/postulante",
-  },
-  {
-    icon: markRaw(Brain),
-    label: t("nav.vocational_tests") || "Tests",
-    href: "/postulante/test",
-<script setup lang="ts">
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import DashboardLayout from "@/layouts/DashboardLayout.vue";
-import { api } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
-import { ArrowRight, BookOpen, Brain, Eye, Gamepad2, Home, MessageCircle, Plus, MessageSquare } from "lucide-vue-next";
+  ArrowRight,
+  BookOpen,
+  Brain,
+  Eye,
+  Gamepad2,
+  Home,
+  MessageSquare,
+  Plus,
+} from "lucide-vue-next";
 import { computed, markRaw, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -158,10 +127,13 @@ onMounted(() => {
   <DashboardLayout
     :sidebarItems="sidebarItems"
     :title="$t('postulante.digital_log') || 'Bitácora Digital'"
-    :subtitle="$t('postulante.log_desc') || 'Registra tus reflexiones, descubrimientos y logros vocacionales.'"
+    :subtitle="
+      $t('postulante.log_desc') ||
+      'Registra tus reflexiones, descubrimientos y logros vocacionales.'
+    "
     :breadcrumbs="[
       { label: $t('nav.home') || 'Inicio', href: '/postulante' },
-      { label: $t('postulante.digital_log') || 'Bitácora' }
+      { label: $t('postulante.digital_log') || 'Bitácora' },
     ]"
     moduleColor="#082065"
   >
