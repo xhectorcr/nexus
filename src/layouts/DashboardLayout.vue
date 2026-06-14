@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useAuth } from "@/lib/auth";
 import {
-  Bell,
   ChevronRight,
   Home,
   LogOut,
@@ -185,43 +184,6 @@ const logoImage = computed(() => {
           <div class="flex items-center gap-4">
             <LanguageSelector />
 
-            <!-- Notifications -->
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="ghost" size="icon" class="relative">
-                  <Bell class="w-5 h-5" />
-                  <span
-                    class="absolute top-1 right-1 w-2 h-2 bg-[#B50E30] rounded-full"
-                  />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" class="w-80">
-                <DropdownMenuLabel>{{
-                  $t("layout.notifications")
-                }}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <div class="flex flex-col gap-1">
-                    <span class="text-sm font-medium">{{
-                      $t("layout.new_message")
-                    }}</span>
-                    <span class="text-xs text-[#5F6368]">{{
-                      $t("layout.new_message_desc")
-                    }}</span>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <div class="flex flex-col gap-1">
-                    <span class="text-sm font-medium">{{
-                      $t("layout.progress_updated")
-                    }}</span>
-                    <span class="text-xs text-[#5F6368]">{{
-                      $t("layout.progress_updated_desc")
-                    }}</span>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
 
             <!-- User Menu -->
             <DropdownMenu>
