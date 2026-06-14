@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuth } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Input } from '@/components/ui/input'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,55 +16,65 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth";
 import {
   Bell,
-  Search,
-  Menu,
-  X,
+  ChevronRight,
   GraduationCap,
   Home,
-  Settings,
   LogOut,
-  ChevronRight,
-} from 'lucide-vue-next'
-import { 
-  Breadcrumb, 
-  BreadcrumbItem, 
-  BreadcrumbLink, 
-  BreadcrumbList, 
-  BreadcrumbPage, 
-  BreadcrumbSeparator 
-} from '@/components/ui/breadcrumb'
+  Menu,
+  Search,
+  Settings,
+  X,
+} from "lucide-vue-next";
+import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 interface SidebarItem {
-  icon: any
-  label: string
-  href?: string
-  onClick?: () => void
+  icon: any;
+  label: string;
+  href?: string;
+  onClick?: () => void;
 }
 
-const props = withDefaults(defineProps<{
-  sidebarItems: SidebarItem[]
-  title: string
-  subtitle?: string
-  breadcrumbs?: { label: string; href?: string }[]
-  moduleColor?: string
-}>(), {
-  moduleColor: '#B50E30'
-})
+const props = withDefaults(
+  defineProps<{
+    sidebarItems: SidebarItem[];
+    title: string;
+    subtitle?: string;
+    breadcrumbs?: { label: string; href?: string }[];
+    moduleColor?: string;
+  }>(),
+  {
+    moduleColor: "#B50E30",
+  },
+);
 
-const sidebarOpen = ref(true)
-const route = useRoute()
-const router = useRouter()
-const auth = useAuth()
+const sidebarOpen = ref(true);
+const route = useRoute();
+const router = useRouter();
+const auth = useAuth();
 
 const handleLogout = () => {
-  auth.logout()
-  router.push('/')
-}
+  auth.logout();
+  router.push("/");
+};
 
-const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor} 0%, ${props.moduleColor}DD 100%)`)
+const logoGradient = computed(
+  () =>
+    `linear-gradient(135deg, ${props.moduleColor} 0%, ${props.moduleColor}DD 100%)`,
+);
+
+const logoImage = computed(() => {
+  const color = props.moduleColor.toUpperCase();
+  if (color === "#B50E30") return "/image/UTP-rojo.webp";
+  if (color === "#1565C0") return "/image/UTP-azul.png";
+  if (color === "#D4A017") return "/image/UTP-dorado.png";
+  return "/image/UTP-rojo.webp";
+});
 </script>
 
 <template>
@@ -70,16 +84,32 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
         sidebarOpen ? 'w-64' : 'w-20'
       }`"
     >
-      <div class="h-16 border-b border-[#D9D9D9] flex items-center justify-between px-4">
+      <div
+        class="h-16 border-b border-[#D9D9D9] flex items-center justify-between px-4"
+      >
         <template if="sidebarOpen">
-          <router-link to="/" class="flex items-center gap-2" v-if="sidebarOpen">
+          <router-link
+            to="/"
+            class="flex items-center gap-2"
+            v-if="sidebarOpen"
+          >
             <div
               class="flex items-center justify-center w-10 h-10 rounded-xl"
               :style="{ background: logoGradient }"
             >
               <GraduationCap class="w-6 h-6 text-white" />
             </div>
-            <span class="font-semibold text-lg text-[#1F1F1F]">NEXUS</span>
+          </router-link>
+        </template>
+        <template v-if="sidebarOpen">
+          <router-link to="/" class="flex items-center w-full">
+            <div class="flex items-center justify-start w-full h-14">
+              <img
+                :src="logoImage"
+                alt="UTP NEXUS"
+                class="h-full w-auto max-w-[200px] object-contain drop-shadow-sm transition-transform hover:scale-105"
+              />
+            </div>
           </router-link>
         </template>
         <template v-if="!sidebarOpen">
@@ -89,6 +119,17 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
           >
             <GraduationCap class="w-6 h-6 text-white" />
           </div>
+        </template>
+        <template v-else>
+          <router-link to="/" class="flex justify-center w-full">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto">
+              <img
+                :src="logoImage"
+                alt="UTP NEXUS"
+                class="object-contain w-full h-full transition-transform drop-shadow-sm hover:scale-105"
+              />
+            </div>
+          </router-link>
         </template>
       </div>
 
@@ -102,19 +143,27 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
                   ? 'text-white'
                   : 'text-[#5F6368] hover:bg-[#F1F1F1]'
               }`"
-              :style="route.path === item.href ? { backgroundColor: moduleColor } : undefined"
+              :style="
+                route.path === item.href
+                  ? { backgroundColor: moduleColor }
+                  : undefined
+              "
             >
               <component :is="item.icon" class="flex-shrink-0 w-5 h-5" />
-              <span v-if="sidebarOpen" class="text-sm font-medium">{{ item.label }}</span>
+              <span v-if="sidebarOpen" class="text-sm font-medium">{{
+                item.label
+              }}</span>
             </div>
           </router-link>
-          
+
           <button v-else @click="item.onClick" class="w-full text-left">
             <div
               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer text-[#5F6368] hover:bg-[#F1F1F1]"
             >
               <component :is="item.icon" class="flex-shrink-0 w-5 h-5" />
-              <span v-if="sidebarOpen" class="text-sm font-medium">{{ item.label }}</span>
+              <span v-if="sidebarOpen" class="text-sm font-medium">{{
+                item.label
+              }}</span>
             </div>
           </button>
         </template>
@@ -133,9 +182,7 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
 
     <!-- Main Content -->
     <div
-      :class="`transition-all duration-300 ${
-        sidebarOpen ? 'ml-64' : 'ml-20'
-      }`"
+      :class="`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`"
     >
       <!-- Top Navbar -->
       <header class="h-16 bg-white border-b border-[#D9D9D9] sticky top-0 z-30">
@@ -143,7 +190,9 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
           <!-- Search -->
           <div class="flex-1 max-w-md">
             <div class="relative">
-              <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5F6368]" />
+              <Search
+                class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5F6368]"
+              />
               <Input
                 placeholder="Buscar en NEXUS..."
                 class="pl-10 bg-[#F1F1F1] border-transparent focus:bg-white"
@@ -158,7 +207,9 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
               <DropdownMenuTrigger as-child>
                 <Button variant="ghost" size="icon" class="relative">
                   <Bell class="w-5 h-5" />
-                  <span class="absolute top-1 right-1 w-2 h-2 bg-[#B50E30] rounded-full" />
+                  <span
+                    class="absolute top-1 right-1 w-2 h-2 bg-[#B50E30] rounded-full"
+                  />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" class="w-80">
@@ -167,13 +218,19 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
                 <DropdownMenuItem>
                   <div class="flex flex-col gap-1">
                     <span class="text-sm font-medium">Nuevo mensaje</span>
-                    <span class="text-xs text-[#5F6368]">Tienes un nuevo mentor disponible</span>
+                    <span class="text-xs text-[#5F6368]"
+                      >Tienes un nuevo mentor disponible</span
+                    >
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <div class="flex flex-col gap-1">
-                    <span class="text-sm font-medium">Progreso actualizado</span>
-                    <span class="text-xs text-[#5F6368]">Has completado el 75% de tu evaluación</span>
+                    <span class="text-sm font-medium"
+                      >Progreso actualizado</span
+                    >
+                    <span class="text-xs text-[#5F6368]"
+                      >Has completado el 75% de tu evaluación</span
+                    >
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -185,17 +242,27 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
                 <Button variant="ghost" class="flex items-center gap-2 px-2">
                   <Avatar class="w-8 h-8">
                     <AvatarImage src="" />
-                    <AvatarFallback :style="{ backgroundColor: moduleColor }" class="font-bold text-white">
-                      {{ auth.state.user?.name ? auth.state.user.name[0] : 'U' }}
+                    <AvatarFallback
+                      :style="{ backgroundColor: moduleColor }"
+                      class="font-bold text-white"
+                    >
+                      {{
+                        auth.state.user?.name ? auth.state.user.name[0] : "U"
+                      }}
                     </AvatarFallback>
                   </Avatar>
-                  <span class="hidden text-sm font-medium md:block">{{ auth.state.user?.name || 'Usuario' }}</span>
+                  <span class="hidden text-sm font-medium md:block">{{
+                    auth.state.user?.name || "Usuario"
+                  }}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem @click="router.push('/')" class="cursor-pointer">
+                <DropdownMenuItem
+                  @click="router.push('/')"
+                  class="cursor-pointer"
+                >
                   <Home class="w-4 h-4 mr-2" />
                   Página Inicio
                 </DropdownMenuItem>
@@ -204,7 +271,10 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
                   Configuración
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem @click="handleLogout" class="text-red-600 cursor-pointer focus:text-red-700">
+                <DropdownMenuItem
+                  @click="handleLogout"
+                  class="text-red-600 cursor-pointer focus:text-red-700"
+                >
                   <LogOut class="w-4 h-4 mr-2" />
                   Cerrar Sesión
                 </DropdownMenuItem>
@@ -224,7 +294,9 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
                   <ChevronRight class="w-4 h-4" />
                 </BreadcrumbSeparator>
                 <BreadcrumbItem>
-                  <BreadcrumbLink v-if="crumb.href" :href="crumb.href">{{ crumb.label }}</BreadcrumbLink>
+                  <BreadcrumbLink v-if="crumb.href" :href="crumb.href">{{
+                    crumb.label
+                  }}</BreadcrumbLink>
                   <BreadcrumbPage v-else>{{ crumb.label }}</BreadcrumbPage>
                 </BreadcrumbItem>
               </div>

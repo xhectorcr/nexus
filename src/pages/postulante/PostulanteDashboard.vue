@@ -19,6 +19,7 @@ import {
   ArrowRight,
   BookOpen,
   Brain,
+  Check,
   Circle,
   Copy,
   Gamepad2,
@@ -36,6 +37,7 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 const auth = useAuth();
+const copied = ref(false);
 
 const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
@@ -113,7 +115,11 @@ const copyCode = async () => {
 
     await navigator.clipboard.writeText(code);
 
-    console.log("Código copiado:", code);
+    copied.value = true;
+
+    setTimeout(() => {
+      copied.value = false;
+    }, 1500);
   } catch (err) {
     console.error("Error copiando código:", err);
   }
@@ -130,7 +136,7 @@ onMounted(() => {
     title="NEXUS Postulante"
     subtitle="Descubre tu verdadera vocación con inteligencia artificial"
     :breadcrumbs="[{ label: 'Inicio' }]"
-    moduleColor="#B50E30"
+    moduleColor="#1565C0"
   >
     <div class="space-y-6">
       <!-- Hero Section (Test NOT completed) -->
@@ -176,10 +182,11 @@ onMounted(() => {
               <Button
                 size="icon"
                 variant="ghost"
-                class="w-6 h-6 text-white hover:bg-white/20"
+                class="w-8 h-8 text-white transition-all hover:bg-white/20"
                 @click="copyCode"
               >
-                <Copy />
+                <Check v-if="copied" class="w-4 h-4 text-green-300" />
+                <Copy v-else class="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -187,7 +194,7 @@ onMounted(() => {
         <CardContent class="relative z-10">
           <Button
             size="lg"
-            class="bg-white text-[#B50E30] hover:bg-white/90"
+            class="bg-white text-[#1565C0] hover:bg-white/90"
             @click="router.push('/postulante/test')"
           >
             Comenzar evaluación
@@ -256,10 +263,11 @@ onMounted(() => {
               <Button
                 size="icon"
                 variant="ghost"
-                class="w-6 h-6 text-white hover:bg-white/20"
+                class="w-8 h-8 text-white transition-all hover:bg-white/20"
                 @click="copyCode"
               >
-                <Copy />
+                <Check v-if="copied" class="w-4 h-4 text-green-300" />
+                <Copy v-else class="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -430,7 +438,7 @@ onMounted(() => {
                 <div class="relative">
                   <Avatar class="w-10 h-10">
                     <AvatarImage src="" />
-                    <AvatarFallback class="bg-[#B50E30] text-white">
+                    <AvatarFallback class="bg-[#1565C0] text-white">
                       {{ mentor.name[0] }}
                     </AvatarFallback>
                   </Avatar>
