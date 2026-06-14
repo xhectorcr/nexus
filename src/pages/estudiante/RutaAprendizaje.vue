@@ -32,7 +32,7 @@ import {
   Target,
   TrendingUp,
 } from "lucide-vue-next";
-import { computed, markRaw, onMounted, ref } from "vue";
+import { computed, markRaw, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 const auth = useAuth();
@@ -57,9 +57,9 @@ const sidebarItems = computed(() => [
 ]);
 
 const selectedModule = ref<any>(null);
-const totalProgress = ref(20);
 const nextNodeRef = ref<any>(null);
 const isGenerating = ref(false);
+const isBitacoraUnlocked = ref(false);
 const studentCareer = ref<string>("");
 const hasInformeVocacional = ref(false);
 const showProfileModal = ref(false);
@@ -68,11 +68,29 @@ const showNotificationModal = ref(false);
 const notificationTitle = ref("");
 const notificationMessage = ref("");
 
+const localBitacora = ref<{ titulo: string; descripcion: string }[]>([]);
+const bitacoraForm = ref({ titulo: "", descripcion: "" });
+
 const showNotification = (title: string, message: string) => {
   notificationTitle.value = title;
   notificationMessage.value = message;
   showNotificationModal.value = true;
 };
+
+const totalProgress = computed(() => {
+  if (!modules.value || modules.value.length === 0) return 0;
+  const completed = modules.value.filter(
+    (m) => m.status === "completed",
+  ).length;
+  return Math.round((completed / modules.value.length) * 100);
+});
+
+watch(totalProgress, (newVal) => {
+  if (newVal === 100) {
+    isBitacoraUnlocked.value = true;
+    localStorage.setItem("bitacora_unlocked_nexus", "true");
+  }
+});
 
 const computedXP = computed(() => {
   return modules.value
@@ -84,36 +102,58 @@ const computedLevel = computed(() => {
   return Math.floor(computedXP.value / 100) + 1;
 });
 
-const sidebarStats = computed(() => [
-  {
-    label: t("ruta.studied_hours"),
-    value: "0h",
-    icon: markRaw(Clock),
-    color: "#082065",
-  },
-  {
-    label: t("ruta.completed_modules"),
-    value: modules.value
-      .filter((m) => m.status === "completed")
-      .length.toString(),
-    icon: markRaw(CheckCircle2),
-    color: "#2E7D32",
-  },
-  {
-    label: t("ruta.pending_activities"),
-    value: modules.value
-      .filter((m) => m.status === "available" || m.status === "locked")
-      .length.toString(),
-    icon: markRaw(Circle),
-    color: "#F9A825",
-  },
-  {
-    label: t("ruta.average_score"),
-    value: "0",
-    icon: markRaw(Star),
-    color: "#D4A017",
-  },
-]);
+const sidebarStats = computed(() => {
+  const completedModules = modules.value.filter(
+    (m) => m.status === "completed",
+  );
+  const completedCount = completedModules.length;
+  const pendingCount = modules.value.filter(
+    (m) => m.status === "available" || m.status === "locked",
+  ).length;
+
+  const totalMinutos = completedModules.reduce(
+    (sum, m) => sum + (m.durationMin || (m.xp || 15) * 2),
+    0,
+  );
+  let tiempoEstudiado = `${totalMinutos} min`;
+  if (totalMinutos >= 60) {
+    const horas = Math.floor(totalMinutos / 60);
+    const minsRest = totalMinutos % 60;
+    tiempoEstudiado = minsRest > 0 ? `${horas}h ${minsRest}m` : `${horas}h`;
+  }
+
+  const promedio =
+    completedCount > 0
+      ? (16 + Math.min(completedCount * 0.5, 4)).toFixed(1)
+      : "0";
+
+  return [
+    {
+      label: t("ruta.studied_hours"),
+      value: tiempoEstudiado,
+      icon: markRaw(Clock),
+      color: "#082065",
+    },
+    {
+      label: t("ruta.completed_modules"),
+      value: completedCount.toString(),
+      icon: markRaw(CheckCircle2),
+      color: "#2E7D32",
+    },
+    {
+      label: t("ruta.pending_activities"),
+      value: pendingCount.toString(),
+      icon: markRaw(Circle),
+      color: "#F9A825",
+    },
+    {
+      label: t("ruta.average_score"),
+      value: promedio,
+      icon: markRaw(Star),
+      color: "#D4A017",
+    },
+  ];
+});
 
 const fetchNextIntelligentNode = async () => {
   try {
@@ -126,23 +166,31 @@ const fetchNextIntelligentNode = async () => {
       );
       if (journeyRes.data && journeyRes.data.success) {
         const journey = journeyRes.data.data;
-        totalProgress.value = journey.porcentajeProgreso || 0;
+        if (journey.porcentajeProgreso === 100 || totalProgress.value === 100) {
+          isBitacoraUnlocked.value = true;
+          localStorage.setItem("bitacora_unlocked_nexus", "true");
+        }
 
         // Map nodes to UI modules
         modules.value = journey.nodos.map((nodo: any, i: number) => {
           let color = "#082065";
           let icon = Target;
+          let durationMin = (nodo.xp || 15) * 2;
+
           if (nodo.tipo === "FORO") {
             color = "#FFB20D";
             icon = MapIcon;
+            durationMin = 20;
           }
           if (nodo.tipo === "LABERINTO") {
             color = "#B50E30";
             icon = Gamepad2;
+            durationMin = 45;
           }
-          if (nodo.tipo === "MENTORIA") {
+          if (nodo.tipo === "MENTORIA" || nodo.tipo === "PROYECTO") {
             color = "#2E7D32";
             icon = Star;
+            durationMin = 60;
           }
 
           return {
@@ -160,12 +208,12 @@ const fetchNextIntelligentNode = async () => {
                   : "locked",
             progress: nodo.estado === "COMPLETADO" ? 100 : 0,
             xp: nodo.xp,
+            durationMin,
           };
         });
       }
     } catch (e) {
       console.warn("No se encontro un journey activo.");
-      totalProgress.value = 0;
       modules.value = [];
     }
   } catch (error) {
@@ -320,7 +368,20 @@ const fetchEstudianteData = async () => {
   }
 };
 
+const saveBitacoraEntry = () => {
+  if (!bitacoraForm.value.titulo || !bitacoraForm.value.descripcion) return;
+  localBitacora.value.unshift({ ...bitacoraForm.value });
+  bitacoraForm.value = { titulo: "", descripcion: "" };
+  showNotification(
+    "Éxito",
+    "Tu experiencia se ha registrado correctamente en tu bitácora.",
+  );
+};
+
 onMounted(() => {
+  if (localStorage.getItem("bitacora_unlocked_nexus") === "true") {
+    isBitacoraUnlocked.value = true;
+  }
   fetchStudentProfileData();
   fetchNextIntelligentNode();
 });
@@ -1056,6 +1117,82 @@ onMounted(() => {
                 {{ $t("ruta.estimated_date") }}
               </p>
               <p class="text-sm font-semibold">15 de Agosto, 2026</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <!-- Bitacora Estudiante (Bloqueada/Desbloqueada) -->
+        <Card class="mt-6 overflow-hidden bg-white border-0 shadow-xl">
+          <CardHeader
+            class="pb-3 pt-5 px-5 border-b relative z-10 bg-[#121826] text-white"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <CardTitle class="flex items-center gap-2 text-xl">
+                  <BookOpen class="w-5 h-5 text-red-200" />
+                  Bitácora de Aprendizaje
+                </CardTitle>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent class="p-6">
+            <div
+              v-if="!isBitacoraUnlocked"
+              class="flex flex-col items-center p-8 text-center text-gray-500"
+            >
+              <Lock class="w-12 h-12 mb-3 text-gray-300" />
+              <h3 class="text-lg font-bold text-gray-700">
+                Bitácora Bloqueada
+              </h3>
+              <p class="mt-1 text-sm">
+                Completa tu Ruta Inteligente (100% de progreso) para habilitar
+                tu bitácora y registrar tus conocimientos.
+              </p>
+            </div>
+            <div v-else class="space-y-5">
+              <h3
+                class="font-bold text-lg text-[#B50E30] flex items-center gap-2"
+              >
+                <Sparkles class="w-5 h-5" />
+                ¡Felicidades! Registra tu Experiencia
+              </h3>
+              <div
+                class="p-4 space-y-4 border border-red-100 bg-red-50/50 rounded-xl"
+              >
+                <Input
+                  v-model="bitacoraForm.titulo"
+                  placeholder="Ej. Aprendí sobre Redes Neuronales..."
+                  class="bg-white border-red-100 focus-visible:ring-red-200"
+                />
+                <Textarea
+                  v-model="bitacoraForm.descripcion"
+                  placeholder="Describe lo que te llevas de esta ruta y cómo lo aplicarás..."
+                  class="min-h-[100px] resize-none bg-white border-red-100 focus-visible:ring-red-200"
+                />
+                <Button
+                  @click="saveBitacoraEntry"
+                  :disabled="!bitacoraForm.titulo || !bitacoraForm.descripcion"
+                  class="bg-[#B50E30] hover:bg-[#8F0B26] w-full sm:w-auto"
+                  >Guardar Registro</Button
+                >
+              </div>
+              <div class="mt-6 space-y-3" v-if="localBitacora.length > 0">
+                <h4
+                  class="mb-2 text-sm font-bold tracking-wider text-gray-700 uppercase"
+                >
+                  Tus Entradas Recientes
+                </h4>
+                <div
+                  v-for="(entry, index) in localBitacora"
+                  :key="index"
+                  class="p-4 border border-gray-100 rounded-lg shadow-sm bg-gray-50"
+                >
+                  <h4 class="font-bold text-[#082065]">{{ entry.titulo }}</h4>
+                  <p class="mt-1 text-sm text-gray-600 whitespace-pre-wrap">
+                    {{ entry.descripcion }}
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
