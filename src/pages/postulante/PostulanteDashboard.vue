@@ -9,9 +9,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { api } from "@/lib/api";
@@ -32,9 +38,6 @@ import {
   Plus,
   Send,
   Sparkles,
-  Target,
-  MessageSquare,
-  Users
 } from "lucide-vue-next";
 import { computed, markRaw, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -46,20 +49,26 @@ const { t } = useI18n();
 const copied = ref(false);
 
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
-  { icon: markRaw(Brain), label: t('nav.vocational_tests'), href: "/postulante/test" },
-  { icon: markRaw(Gamepad2), label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
-  { icon: markRaw(BookOpen), label: t('postulante.digital_log'), href: "/postulante/bitacora" },
-  { icon: markRaw(MessageCircle), label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
-])
+  { icon: markRaw(Home), label: t("nav.home"), href: "/postulante" },
+  {
+    icon: markRaw(Brain),
+    label: t("nav.vocational_tests"),
+    href: "/postulante/test",
+  },
+  {
+    icon: markRaw(Gamepad2),
+    label: t("postulante.labyrinth"),
+    href: "/postulante/laberinto",
+  },
+]);
 
 const mentors = ref<{ name: string; career: string; online: boolean }[]>([]);
 const entries = ref<any[]>([]);
 
 const bitacoraForm = ref({
-  titulo: '',
-  descripcion: '',
-  tipoEntrada: 'EXPERIENCIA'
+  titulo: "",
+  descripcion: "",
+  tipoEntrada: "EXPERIENCIA",
 });
 const bitacoraLoading = ref(false);
 const bitacoraSubmitting = ref(false);
@@ -81,7 +90,7 @@ const fetchBitacora = async () => {
 const saveBitacoraEntry = async () => {
   if (!bitacoraForm.value.titulo || !bitacoraForm.value.descripcion) return;
   bitacoraSubmitting.value = true;
-  
+
   try {
     const postulantId = auth.state.user?.id || 1;
     const payload = {
@@ -90,17 +99,21 @@ const saveBitacoraEntry = async () => {
       emocion: "MOTIVADO",
       nivelConfianza: 8,
       nivelMotivacion: 10,
-      tags: ["General"]
+      tags: ["General"],
     };
-    
+
     // Ruta oficial del backend: POST /api/bitacoras
     await api.post(`/api/bitacoras`, payload);
-    
+
     // Recargar datos directamente de la base de datos
     await fetchBitacora();
-    
+
     // Limpiar el formulario solo si tuvo éxito en la base de datos
-    bitacoraForm.value = { titulo: '', descripcion: '', tipoEntrada: 'EXPERIENCIA' };
+    bitacoraForm.value = {
+      titulo: "",
+      descripcion: "",
+      tipoEntrada: "EXPERIENCIA",
+    };
   } catch (error) {
     console.error("Error al guardar la bitácora en la BD:", error);
   } finally {
@@ -116,11 +129,15 @@ const statsValues = ref({
 });
 
 const stats = computed(() => [
-  { label: t('postulante.labyrinth_completed'), value: `${statsValues.value.labyrinth}%`, color: "#082065" },
-  { label: t('postulante.log_entries_count'), value: statsValues.value.logs.toString(), color: "#082065" },
-  { label: t('postulante.conversations'), value: statsValues.value.conversations.toString(), color: "#082065" },
-  { label: t('postulante.experience'), value: `${statsValues.value.experience} XP`, color: "#082065" },
-])
+  {
+    label: t("postulante.labyrinth_completed"),
+    value: "40%",
+    color: "#082065",
+  },
+  { label: t("postulante.log_entries_count"), value: "0", color: "#082065" },
+  { label: t("postulante.conversations"), value: "0", color: "#082065" },
+  { label: t("postulante.experience"), value: "0 XP", color: "#082065" },
+]);
 
 const fetchDashboardData = async () => {
   try {
@@ -210,7 +227,6 @@ onMounted(() => {
     moduleColor="#082065"
   >
     <div class="space-y-6">
-      <!-- Hero Section (Test NOT completed) -->
       <Card
         v-if="!auth.state.user?.careerSuggestion"
         class="bg-gradient-to-br from-[#082065] to-[#0D47A1] border-0 text-white overflow-hidden relative"
@@ -243,8 +259,10 @@ onMounted(() => {
           >
             <span
               class="text-[10px] uppercase font-bold text-blue-200 tracking-widest flex items-center gap-1.5"
-              >
-              <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+            >
+              <div
+                class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"
+              ></div>
               {{ $t("postulante.family_code") }}
             </span>
             <div class="flex items-center gap-2">
@@ -277,7 +295,6 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <!-- Hero Section (Test COMPLETED) -->
       <Card
         v-else
         class="bg-gradient-to-br from-blue-900 via-[#082065] to-indigo-900 border-0 text-white overflow-hidden relative shadow-lg"
@@ -293,8 +310,10 @@ onMounted(() => {
         >
           <div>
             <div class="flex items-center gap-2 mb-2">
-              <Badge class="bg-blue-500 text-white border-0 font-bold px-2.5 py-0.5 text-[11px] rounded-full">
-                {{ $t('postulante.test_completed') }}
+              <Badge
+                class="bg-blue-500 text-white border-0 font-bold px-2.5 py-0.5 text-[11px] rounded-full"
+              >
+                {{ $t("postulante.test_completed") }}
               </Badge>
               <span class="text-xs font-semibold text-blue-200">{{
                 $t("postulante.ai_recommendation")
@@ -324,8 +343,10 @@ onMounted(() => {
           >
             <span
               class="text-[10px] uppercase font-bold text-blue-200 tracking-widest flex items-center gap-1.5"
-              >
-              <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+            >
+              <div
+                class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"
+              ></div>
               {{ $t("postulante.family_code") }}
             </span>
             <div class="flex items-center gap-2">
@@ -347,8 +368,10 @@ onMounted(() => {
           </div>
         </CardHeader>
         <CardContent class="relative z-10 flex flex-wrap gap-3 pt-4">
-          <Button class="bg-white hover:bg-gray-100 text-[#082065] font-extrabold rounded-xl px-5 h-11 shadow-sm">
-            {{ $t('postulante.view_curriculum') }}
+          <Button
+            class="bg-white hover:bg-gray-100 text-[#082065] font-extrabold rounded-xl px-5 h-11 shadow-sm"
+          >
+            {{ $t("postulante.view_curriculum") }}
           </Button>
           <Button
             variant="outline"
@@ -360,12 +383,12 @@ onMounted(() => {
         </CardContent>
       </Card>
 
-      <!-- Main Features Grid -->
       <div class="grid gap-6 md:grid-cols-2">
-        <!-- Minijuego: Laberinto de Vocaciones -->
         <Card class="transition-shadow hover:shadow-lg">
           <CardHeader>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3">
+            <div
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3"
+            >
               <Gamepad2 class="w-6 h-6 text-white" />
             </div>
             <CardTitle>{{ $t("postulante.labyrinth") }}</CardTitle>
@@ -375,28 +398,30 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <div class="space-y-4">
-              <!-- Isometric Illustration Placeholder -->
+              <!-- Isometric Illustration -->
               <div
-                class="aspect-square rounded-xl bg-gradient-to-br from-[#F1F1F1] to-[#D9D9D9] flex items-center justify-center relative overflow-hidden"
+                class="relative flex items-center justify-center p-4 overflow-hidden bg-white border border-gray-100 shadow-sm aspect-square rounded-xl"
               >
-                <div class="absolute inset-0 grid grid-cols-3 gap-2 p-4">
-                  <div
-                    v-for="i in 9"
-                    :key="i"
-                    class="flex items-center justify-center rounded-lg bg-white/50 backdrop-blur-sm"
-                  >
-                    <Target v-if="i === 5" class="w-6 h-6 text-[#082065]" />
-                  </div>
-                </div>
+                <img
+                  src="/image/img-.png"
+                  alt="Laberinto de Vocaciones"
+                  class="object-contain w-full h-full transition-transform duration-300 drop-shadow-md hover:scale-105"
+                />
               </div>
 
               <!-- Tags -->
               <div class="flex flex-wrap gap-2">
-                <Badge variant="secondary" class="bg-[#082065]/10 text-[#082065] border-[#082065]/20">
+                <Badge
+                  variant="secondary"
+                  class="bg-[#082065]/10 text-[#082065] border-[#082065]/20"
+                >
                   <Brain class="w-3 h-3 mr-1" />
                   {{ $t("postulante.interests") }}
                 </Badge>
-                <Badge variant="secondary" class="bg-[#082065]/10 text-[#082065] border-[#082065]/20">
+                <Badge
+                  variant="secondary"
+                  class="bg-[#082065]/10 text-[#082065] border-[#082065]/20"
+                >
                   <Lightbulb class="w-3 h-3 mr-1" />
                   {{ $t("postulante.intelligences") }}
                 </Badge>
@@ -409,105 +434,251 @@ onMounted(() => {
                 </Badge>
               </div>
 
-              <Button class="w-full bg-[#082065] hover:bg-[#0D47A1]" @click="router.push('/postulante/laberinto')">
-                {{ $t('postulante.explore_labyrinth') }}
+              <Button
+                class="w-full bg-[#082065] hover:bg-[#0D47A1]"
+                @click="router.push('/postulante/laberinto')"
+              >
+                {{ $t("postulante.explore_labyrinth") }}
               </Button>
             </div>
+          </CardContent>
+        </Card>
+        <!-- Conexión P2P -->
+        <Card
+          class="flex flex-col transition-shadow border-gray-200 hover:shadow-lg"
+        >
+          <CardHeader>
+            <div
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3 shadow-sm"
+            >
+              <MessageCircle class="w-6 h-6 text-white" />
+            </div>
+            <CardTitle>{{ $t("postulante.p2p_connection") }}</CardTitle>
+            <CardDescription>
+              {{ $t("postulante.chat_mentors") }}
+            </CardDescription>
+          </CardHeader>
+          <CardContent class="flex flex-col justify-between flex-1">
+            <div class="mb-4 space-y-3">
+              <p
+                class="text-sm font-medium text-[#1F1F1F] flex items-center justify-between"
+              >
+                <span>{{ $t("postulante.available_mentors") }}</span>
+                <Badge variant="secondary" class="bg-blue-50 text-[#082065]">{{
+                  mentors.length
+                }}</Badge>
+              </p>
+              <div
+                v-for="(mentor, i) in mentors"
+                :key="i"
+                class="flex items-center gap-3 p-3 transition-colors border border-transparent cursor-pointer rounded-xl hover:bg-slate-50 hover:border-slate-200"
+              >
+                <div class="relative">
+                  <Avatar class="w-10 h-10 shadow-sm ring-2 ring-white">
+                    <AvatarImage src="" />
+                    <AvatarFallback class="bg-[#082065] text-white font-bold">
+                      {{ mentor.name[0] }}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Circle
+                    v-if="mentor.online"
+                    class="absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full fill-emerald-500 text-emerald-500"
+                  />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-gray-800 truncate">
+                    {{ mentor.name }}
+                  </p>
+                  <p class="text-xs font-medium text-gray-500 truncate">
+                    {{ mentor.career }}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  class="text-[#082065] hover:bg-blue-50 hover:text-[#0D47A1] shrink-0 h-8 w-8 p-0 rounded-full"
+                >
+                  <Send class="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              class="w-full font-semibold text-gray-700 border-gray-200 shadow-sm hover:bg-gray-50"
+              @click="router.push('/postulante/p2p')"
+            >
+              Ver comunidad estudiantil
+            </Button>
           </CardContent>
         </Card>
       </div>
 
       <!-- Bitácora Digital (Expanded) -->
-      <Card id="bitacora" class="w-full border-t-4 border-t-[#082065] shadow-lg">
-        <CardHeader class="bg-slate-50/50 pb-6 rounded-t-lg">
+      <Card
+        id="bitacora"
+        class="w-full border-t-4 border-t-[#082065] shadow-lg"
+      >
+        <CardHeader class="pb-6 rounded-t-lg bg-slate-50/50">
           <div class="flex items-start justify-between">
             <div class="flex gap-4">
-              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center shadow-md">
-                <BookOpen class="w-7 h-7 text-white" />
+              <div
+                class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center shadow-md"
+              >
+                <BookOpen class="text-white w-7 h-7" />
               </div>
               <div>
-                <CardTitle class="text-2xl">{{ $t("postulante.digital_log") || 'Bitácora Digital' }}</CardTitle>
-                <CardDescription class="text-base mt-1 text-gray-600">
-                  {{ $t("postulante.log_desc") || 'Registra tus reflexiones, descubrimientos y logros vocacionales.' }}
+                <CardTitle class="text-2xl">{{
+                  $t("postulante.digital_log") || "Bitácora Digital"
+                }}</CardTitle>
+                <CardDescription class="mt-1 text-base text-gray-600">
+                  {{
+                    $t("postulante.log_desc") ||
+                    "Registra tus reflexiones, descubrimientos y logros vocacionales."
+                  }}
                 </CardDescription>
               </div>
             </div>
-            <Badge variant="outline" class="bg-blue-50 text-[#082065] border-blue-200 px-3 py-1 text-sm hidden sm:inline-flex">
+            <Badge
+              variant="outline"
+              class="bg-blue-50 text-[#082065] border-blue-200 px-3 py-1 text-sm hidden sm:inline-flex"
+            >
               {{ entries.length }} entradas
             </Badge>
           </div>
         </CardHeader>
         <CardContent class="pt-6">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- Formulario de nueva entrada -->
-            <div class="lg:col-span-5 space-y-5 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-              <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+          <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div
+              class="p-5 space-y-5 bg-white border border-gray-100 shadow-sm lg:col-span-5 rounded-xl"
+            >
+              <h3
+                class="flex items-center gap-2 text-lg font-bold text-gray-800"
+              >
                 <Plus class="w-5 h-5 text-[#082065]" />
                 Nueva Entrada
               </h3>
               <div class="space-y-4">
                 <div>
-                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">Título del avance / logro</label>
-                  <Input v-model="bitacoraForm.titulo" :placeholder="$t('postulante.entry_title') || 'Ej. Terminé mi primer test'" class="bg-gray-50 focus-visible:ring-[#082065]" />
+                  <label class="text-sm font-medium text-gray-700 mb-1.5 block"
+                    >Título del avance / logro</label
+                  >
+                  <Input
+                    v-model="bitacoraForm.titulo"
+                    :placeholder="
+                      $t('postulante.entry_title') ||
+                      'Ej. Terminé mi primer test'
+                    "
+                    class="bg-gray-50 focus-visible:ring-[#082065]"
+                  />
                 </div>
                 <div>
-                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">Reflexión detallada</label>
+                  <label class="text-sm font-medium text-gray-700 mb-1.5 block"
+                    >Reflexión detallada</label
+                  >
                   <Textarea
                     v-model="bitacoraForm.descripcion"
-                    :placeholder="$t('postulante.describe_experience') || 'Me di cuenta de que disfruto mucho...'"
+                    :placeholder="
+                      $t('postulante.describe_experience') ||
+                      'Me di cuenta de que disfruto mucho...'
+                    "
                     class="min-h-[120px] bg-gray-50 focus-visible:ring-[#082065] resize-none"
                   />
                 </div>
                 <div>
-                  <label class="text-sm font-medium text-gray-700 mb-1.5 block">Tipo de registro</label>
+                  <label class="text-sm font-medium text-gray-700 mb-1.5 block"
+                    >Tipo de registro</label
+                  >
                   <div class="flex flex-wrap gap-2">
                     <button
                       v-for="tipo in ['EXPERIENCIA', 'REFLEXION', 'LOGRO']"
                       :key="tipo"
                       @click="bitacoraForm.tipoEntrada = tipo"
-                      :class="['px-3 py-1.5 text-xs font-semibold rounded-full border transition-all', bitacoraForm.tipoEntrada === tipo ? 'bg-[#082065] text-white border-[#082065]' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300']"
+                      :class="[
+                        'px-3 py-1.5 text-xs font-semibold rounded-full border transition-all',
+                        bitacoraForm.tipoEntrada === tipo
+                          ? 'bg-[#082065] text-white border-[#082065]'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300',
+                      ]"
                     >
                       {{ tipo }}
                     </button>
                   </div>
                 </div>
-                <Button :disabled="bitacoraSubmitting || !bitacoraForm.titulo || !bitacoraForm.descripcion" @click="saveBitacoraEntry" class="w-full bg-[#082065] hover:bg-[#0D47A1] mt-2 shadow-md">
+                <Button
+                  :disabled="
+                    bitacoraSubmitting ||
+                    !bitacoraForm.titulo ||
+                    !bitacoraForm.descripcion
+                  "
+                  @click="saveBitacoraEntry"
+                  class="w-full bg-[#082065] hover:bg-[#0D47A1] mt-2 shadow-md"
+                >
                   <span v-if="bitacoraSubmitting">Guardando...</span>
-                  <span v-else class="flex items-center gap-2">Guardar registro <ArrowRight class="w-4 h-4" /></span>
+                  <span v-else class="flex items-center gap-2"
+                    >Guardar registro <ArrowRight class="w-4 h-4"
+                  /></span>
                 </Button>
               </div>
             </div>
 
-            <!-- Historial -->
             <div class="lg:col-span-7">
-              <h3 class="font-bold text-lg text-gray-800 mb-4 flex items-center justify-between">
+              <h3
+                class="flex items-center justify-between mb-4 text-lg font-bold text-gray-800"
+              >
                 <span>Historial de avances</span>
-                <Button variant="ghost" size="sm" @click="fetchBitacora" :disabled="bitacoraLoading" class="text-gray-500 hover:text-[#082065]">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  @click="fetchBitacora"
+                  :disabled="bitacoraLoading"
+                  class="text-gray-500 hover:text-[#082065]"
+                >
                   Actualizar
                 </Button>
               </h3>
               <div v-if="bitacoraLoading" class="flex flex-col gap-3">
-                <div v-for="i in 3" :key="i" class="h-28 bg-gray-100 rounded-xl animate-pulse"></div>
+                <div
+                  v-for="i in 3"
+                  :key="i"
+                  class="bg-gray-100 h-28 rounded-xl animate-pulse"
+                ></div>
               </div>
-              <div v-else-if="entries.length === 0" class="flex flex-col items-center justify-center text-center p-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                <BookOpen class="w-12 h-12 text-gray-300 mb-3" />
-                <p class="text-gray-500 font-medium">Aún no tienes entradas en tu bitácora.</p>
-                <p class="text-gray-400 text-sm mt-1">Registra tu primer avance usando el formulario.</p>
+              <div
+                v-else-if="entries.length === 0"
+                class="flex flex-col items-center justify-center p-10 text-center border border-gray-200 border-dashed bg-gray-50 rounded-xl"
+              >
+                <BookOpen class="w-12 h-12 mb-3 text-gray-300" />
+                <p class="font-medium text-gray-500">
+                  Aún no tienes entradas en tu bitácora.
+                </p>
+                <p class="mt-1 text-sm text-gray-400">
+                  Registra tu primer avance usando el formulario.
+                </p>
               </div>
-              <div v-else class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+              <div
+                v-else
+                class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar"
+              >
                 <div
                   v-for="(entry, i) in entries"
                   :key="i"
-                  class="p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all group relative flex flex-col gap-2"
+                  class="relative flex flex-col gap-2 p-4 transition-all bg-white border border-gray-100 shadow-sm rounded-xl hover:shadow-md group"
                 >
                   <div class="flex items-start justify-between gap-4">
                     <div>
                       <div class="flex items-center gap-2 mb-1">
-                        <Badge variant="secondary" class="bg-blue-50 text-blue-700 hover:bg-blue-100 uppercase text-[10px] font-bold tracking-wider">
-                          {{ entry.tipoEntrada || 'ENTRADA' }}
+                        <Badge
+                          variant="secondary"
+                          class="bg-blue-50 text-blue-700 hover:bg-blue-100 uppercase text-[10px] font-bold tracking-wider"
+                        >
+                          {{ entry.tipoEntrada || "ENTRADA" }}
                         </Badge>
                         <p class="text-xs text-[#5F6368]">
-                          {{ entry.fecha ? new Date(entry.fecha).toLocaleDateString() : $t("postulante.recently") }}
+                          {{
+                            entry.fecha
+                              ? new Date(entry.fecha).toLocaleDateString()
+                              : $t("postulante.recently")
+                          }}
                         </p>
                       </div>
                       <p class="text-sm font-bold text-[#1F1F1F]">
@@ -516,19 +687,33 @@ onMounted(() => {
                     </div>
                     <Dialog v-if="entry.descripcion">
                       <DialogTrigger asChild>
-                        <Button variant="ghost" size="sm" class="h-8 w-8 p-0 text-gray-400 hover:text-[#082065] transition-colors rounded-full" :title="$t('postulante.view_details') || 'Ver detalles'">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          class="h-8 w-8 p-0 text-gray-400 hover:text-[#082065] transition-colors rounded-full"
+                          :title="
+                            $t('postulante.view_details') || 'Ver detalles'
+                          "
+                        >
                           <Eye class="w-4 h-4" />
                         </Button>
                       </DialogTrigger>
                       <DialogContent class="sm:max-w-md">
                         <DialogHeader>
                           <DialogTitle class="flex items-center gap-2">
-                            <Badge variant="secondary" class="bg-blue-50 text-blue-700 uppercase text-[10px] font-bold">
-                              {{ entry.tipoEntrada || 'ENTRADA' }}
+                            <Badge
+                              variant="secondary"
+                              class="bg-blue-50 text-blue-700 uppercase text-[10px] font-bold"
+                            >
+                              {{ entry.tipoEntrada || "ENTRADA" }}
                             </Badge>
-                            <span class="truncate">{{ entry.titulo || 'Entrada' }}</span>
+                            <span class="truncate">{{
+                              entry.titulo || "Entrada"
+                            }}</span>
                           </DialogTitle>
-                          <DialogDescription class="pt-4 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed text-left">
+                          <DialogDescription
+                            class="pt-4 text-sm leading-relaxed text-left text-gray-700 whitespace-pre-wrap"
+                          >
                             {{ entry.descripcion }}
                           </DialogDescription>
                         </DialogHeader>
@@ -539,58 +724,9 @@ onMounted(() => {
               </div>
             </div>
           </div>
-          </CardContent>
-        </Card>
-
-        <!-- Conexión P2P -->
-        <Card class="transition-shadow hover:shadow-lg md:col-span-2">
-          <CardHeader>
-            <div
-              class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3"
-            >
-              <MessageCircle class="w-6 h-6 text-white" />
-            </div>
-            <CardTitle>{{ $t("postulante.p2p_connection") }}</CardTitle>
-            <CardDescription>
-              {{ $t("postulante.chat_mentors") }}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div class="space-y-3">
-              <p class="text-sm font-medium text-[#1F1F1F]">
-                {{ $t("postulante.available_mentors") }}
-              </p>
-              <div
-                v-for="(mentor, i) in mentors"
-                :key="i"
-                class="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F1F1F1] transition-colors cursor-pointer"
-              >
-                <div class="relative">
-                  <Avatar class="w-10 h-10">
-                    <AvatarImage src="" />
-                    <AvatarFallback class="bg-[#082065] text-white">
-                      {{ mentor.name[0] }}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Circle
-                    v-if="mentor.online"
-                    class="absolute bottom-0 right-0 w-3 h-3 fill-[#2E7D32] text-[#2E7D32] border-2 border-white rounded-full"
-                  />
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-[#1F1F1F] truncate">
-                    {{ mentor.name }}
-                  </p>
-                  <p class="text-xs text-[#5F6368] truncate">
-                    {{ mentor.career }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
+        </CardContent>
       </Card>
 
-      <!-- Progress Section -->
       <Card>
         <CardHeader>
           <CardTitle>{{ $t("postulante.your_progress") }}</CardTitle>
@@ -625,10 +761,10 @@ onMounted(() => {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #E5E7EB;
+  background-color: #e5e7eb;
   border-radius: 20px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #D1D5DB;
+  background-color: #d1d5db;
 }
 </style>

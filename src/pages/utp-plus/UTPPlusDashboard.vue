@@ -1,387 +1,350 @@
 <script setup lang="ts">
-import { markRaw } from 'vue'
+import { markRaw, ref, computed } from 'vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Home,
-  Sparkles,
-  Network,
-  Brain,
-  GraduationCap,
-  Briefcase,
-  DollarSign,
-  Clock,
-  Star,
-  TrendingUp,
-  Users,
-  BookOpen,
-  Target,
   MessageSquare,
-  ChevronRight,
-  ArrowRight
+  ThumbsUp,
+  Search,
+  Filter,
+  Plus,
+  TrendingUp,
+  Award,
+  Users,
+  Sparkles,
+  Share2
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
-import { computed } from 'vue'
 
 const { t } = useI18n()
 
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: t('nav.home'), href: "/utp-plus" },
+  { icon: markRaw(Home), label: t('nav.home') || 'Inicio', href: "/utp-plus" },
 ])
 
-const careers = computed(() => [
+const categories = [
+  "Todos",
+  "Admisión",
+  "Vida Universitaria",
+  "Carreras",
+  "Mentorías",
+  "Dudas Generales"
+]
+const selectedCategory = ref("Todos")
+
+const posts = ref([
   {
-    name: t('utpplus.data.careers.c1'),
-    match: 92,
-    salary: "S/ 3,500 - S/ 6,000",
-    duration: t('utpplus.data.careers.years'),
-    field: t('utpplus.data.careers.f1'),
-    color: "#B50E30",
+    id: 1,
+    author: "María López",
+    avatar: "M",
+    role: "Estudiante de 5to ciclo",
+    time: "hace 2 horas",
+    title: "¿Cómo es el primer ciclo de Ingeniería de Sistemas?",
+    content: "Hola a todos, estoy pensando en postular a Sistemas y quería saber qué tan difíciles son los primeros cursos de programación. ¿Algún consejo para empezar a estudiar antes de entrar?",
+    category: "Carreras",
+    likes: 15,
+    comments: 8,
+    isLiked: false
   },
   {
-    name: t('utpplus.data.careers.c2'),
-    match: 88,
-    salary: "S/ 4,000 - S/ 7,500",
-    duration: t('utpplus.data.careers.years'),
-    field: t('utpplus.data.careers.f1'),
-    color: "#082065",
+    id: 2,
+    author: "Carlos Ruiz",
+    avatar: "C",
+    role: "Mentor UTP",
+    time: "hace 5 horas",
+    title: "Tips para organizar tu tiempo en la universidad",
+    content: "El cambio del colegio a la universidad puede ser fuerte. Aquí les dejo 3 técnicas que me ayudaron a sobrevivir los parciales sin morir en el intento. La clave está en la técnica Pomodoro y en no dejar todo para el final.",
+    category: "Vida Universitaria",
+    likes: 42,
+    comments: 12,
+    isLiked: true
   },
   {
-    name: t('utpplus.data.careers.c3'),
-    match: 75,
-    salary: "S/ 3,000 - S/ 5,500",
-    duration: t('utpplus.data.careers.years'),
-    field: t('utpplus.data.careers.f2'),
-    color: "#D4A017",
-  },
+    id: 3,
+    author: "Ana García",
+    avatar: "A",
+    role: "Postulante",
+    time: "hace 1 día",
+    title: "¿Qué documentos necesito para la matrícula?",
+    content: "Ya pasé el examen de admisión (¡yay!) pero no estoy segura de qué documentos debo llevar presencialmente a la sede. ¿Alguien sabe si el certificado de estudios debe estar visado?",
+    category: "Admisión",
+    likes: 5,
+    comments: 3,
+    isLiked: false
+  }
 ])
 
-const matchmakingNodes = computed(() => [
-  { type: "student", label: t('utpplus.you'), color: "#B50E30" },
-  { type: "mentor", label: "Ana García", color: "#082065" },
-  { type: "course", label: t('utpplus.data.nodes.n1'), color: "#D4A017" },
-  { type: "club", label: t('utpplus.data.nodes.n2'), color: "#2E7D32" },
-  { type: "resource", label: t('utpplus.data.nodes.n3'), color: "#F9A825" },
-])
+const filteredPosts = computed(() => {
+  if (selectedCategory.value === "Todos") return posts.value;
+  return posts.value.filter(p => p.category === selectedCategory.value);
+})
 
-const insights = computed(() => [
-  {
-    icon: markRaw(Brain),
-    title: t('utpplus.data.insights.t1'),
-    items: [t('utpplus.data.insights.t1_i1'), t('utpplus.data.insights.t1_i2'), t('utpplus.data.insights.t1_i3')],
-  },
-  {
-    icon: markRaw(Star),
-    title: t('utpplus.data.insights.t2'),
-    items: [t('utpplus.data.insights.t2_i1'), t('utpplus.data.insights.t2_i2'), t('utpplus.data.insights.t2_i3')],
-  },
-  {
-    icon: markRaw(Target),
-    title: t('utpplus.data.insights.t3'),
-    items: [t('utpplus.data.insights.t3_i1'), t('utpplus.data.insights.t3_i2'), t('utpplus.data.insights.t3_i3')],
-  },
-])
+const toggleLike = (id: number) => {
+  const post = posts.value.find(p => p.id === id)
+  if (post) {
+    post.isLiked = !post.isLiked
+    post.likes += post.isLiked ? 1 : -1
+  }
+}
 
-const actions = computed(() => [
-  {
-    icon: markRaw(BookOpen),
-    title: t('utpplus.data.actions.a1_t'),
-    description: t('utpplus.data.actions.a1_d'),
-    color: "#B50E30",
-  },
-  {
-    icon: markRaw(Users),
-    title: t('utpplus.data.actions.a2_t'),
-    description: t('utpplus.data.actions.a2_d'),
-    color: "#082065",
-  },
-  {
-    icon: markRaw(Target),
-    title: t('utpplus.data.actions.a3_t'),
-    description: t('utpplus.data.actions.a3_d'),
-    color: "#D4A017",
-  },
-])
+const isWriting = ref(false)
+const newPostTitle = ref("")
+const newPostContent = ref("")
+const newPostCategory = ref("Dudas Generales")
 
-const stats = computed(() => [
-  { label: t('utpplus.data.stats.s1'), value: "85%", icon: markRaw(TrendingUp) },
-  { label: t('utpplus.data.stats.s2'), value: "12", icon: markRaw(GraduationCap) },
-  { label: t('utpplus.data.stats.s3'), value: "8", icon: markRaw(Users) },
-])
+const submitPost = () => {
+  if (!newPostTitle.value || !newPostContent.value) return;
+  
+  posts.value.unshift({
+    id: Date.now(),
+    author: "Tú",
+    avatar: "T",
+    role: "Postulante",
+    time: "hace un momento",
+    title: newPostTitle.value,
+    content: newPostContent.value,
+    category: newPostCategory.value,
+    likes: 0,
+    comments: 0,
+    isLiked: false
+  });
+  
+  newPostTitle.value = "";
+  newPostContent.value = "";
+  isWriting.value = false;
+}
 </script>
 
 <template>
   <DashboardLayout
     :sidebarItems="sidebarItems"
-    :title="$t('utpplus.title')"
-    :subtitle="$t('utpplus.subtitle')"
+    :title="'Foro NEXUS UTP+'"
+    :subtitle="'La comunidad oficial para conectar, debatir y resolver tus dudas universitarias.'"
     :breadcrumbs="[
-      { label: $t('nav.home') }
+      { label: $t('nav.home') || 'Inicio', href: '/' },
+      { label: 'Foro UTP+' }
     ]"
     moduleColor="#082065"
   >
-    <div class="space-y-6">
-      <!-- AI Hero Banner -->
-      <Card class="bg-gradient-to-br from-[#082065] to-[#0D47A1] border-0 text-white overflow-hidden relative">
-        <div class="absolute top-0 right-0 -mt-48 -mr-48 rounded-full w-96 h-96 bg-white/10" />
-        <div class="absolute bottom-0 left-0 w-64 h-64 -mb-32 -ml-32 rounded-full bg-white/10" />
-        <CardHeader class="relative z-10">
-          <div class="flex items-center gap-2 mb-2">
-            <Sparkles class="w-5 h-5" />
-            <span class="text-sm font-medium">{{ $t('utpplus.ai_tag') }}</span>
-          </div>
-          <CardTitle class="text-3xl">{{ $t('utpplus.ai_title') }}</CardTitle>
-          <CardDescription class="text-white/90">
-            {{ $t('utpplus.ai_desc') }}
-          </CardDescription>
-        </CardHeader>
-        <CardContent class="relative z-10">
-          <div class="grid gap-4 md:grid-cols-3">
-            <div v-for="(stat, i) in stats" :key="i" class="p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-              <div class="flex items-center gap-3">
-                <component :is="stat.icon" class="w-5 h-5" />
-                <div>
-                  <p class="text-2xl font-bold">{{ stat.value }}</p>
-                  <p class="text-sm text-white/80">{{ stat.label }}</p>
-                </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Columna Principal: Lista de Posts -->
+      <div class="lg:col-span-8 space-y-6">
+        
+        <!-- Header del Foro y Buscador -->
+        <Card class="border-gray-200 shadow-sm bg-white overflow-hidden">
+          <div class="h-2 bg-gradient-to-r from-[#082065] to-[#0D47A1]"></div>
+          <CardContent class="p-5">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div class="relative w-full md:max-w-md">
+                <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input placeholder="Buscar discusiones, preguntas o temas..." class="pl-9 bg-gray-50 border-gray-200 focus-visible:ring-[#082065]" />
               </div>
+              <Button @click="isWriting = true" class="w-full md:w-auto bg-[#082065] hover:bg-[#0D47A1] text-white shadow-md">
+                <Plus class="w-4 h-4 mr-2" />
+                Nueva Publicación
+              </Button>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      <!-- Perfil de Carrera -->
-      <Card>
-        <CardHeader>
-          <div class="flex items-center justify-between">
+            <!-- Filtros de Categorías -->
+            <div class="flex flex-wrap gap-2 mt-5">
+              <button
+                v-for="cat in categories"
+                :key="cat"
+                @click="selectedCategory = cat"
+                class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all border"
+                :class="selectedCategory === cat ? 'bg-[#082065] text-white border-[#082065] shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+              >
+                {{ cat }}
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <!-- Formulario de Nueva Publicación (Expandible) -->
+        <Card v-if="isWriting" class="border-[#082065]/20 shadow-md bg-blue-50/30">
+          <CardHeader class="pb-3 border-b border-gray-100">
+            <CardTitle class="text-lg flex items-center gap-2">
+              <MessageSquare class="w-5 h-5 text-[#082065]" />
+              Crear nueva publicación
+            </CardTitle>
+          </CardHeader>
+          <CardContent class="pt-5 space-y-4">
             <div>
-              <CardTitle>{{ $t('utpplus.career_profile') }}</CardTitle>
-              <CardDescription>{{ $t('utpplus.career_desc') }}</CardDescription>
+              <label class="text-sm font-medium text-gray-700 mb-1 block">Título de tu publicación</label>
+              <Input v-model="newPostTitle" placeholder="Ej. ¿Alguien conoce buenos libros para cálculo?" class="bg-white border-gray-300" />
             </div>
-            <Button variant="outline">{{ $t('utpplus.view_all') }}</Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div class="space-y-4">
-            <Card v-for="(career, i) in careers" :key="i" class="transition-shadow border-l-4 hover:shadow-md" :style="{ borderLeftColor: career.color }">
-              <CardContent class="p-6">
-                <div class="flex items-start justify-between mb-4">
-                  <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-2">
-                      <h3 class="font-semibold text-lg text-[#1F1F1F]">{{ career.name }}</h3>
-                      <Badge class="text-white" :style="{ backgroundColor: career.color }">
-                        {{ career.match }}{{ $t('utpplus.match') }}
-                      </Badge>
-                    </div>
-                    <p class="text-sm text-[#5F6368]">{{ career.field }}</p>
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-4 mb-4">
-                  <div class="flex items-center gap-2">
-                    <DollarSign class="w-4 h-4 text-[#5F6368]" />
-                    <div>
-                      <p class="text-xs text-[#5F6368]">{{ $t('utpplus.salary') }}</p>
-                      <p class="text-sm font-medium text-[#1F1F1F]">{{ career.salary }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <Clock class="w-4 h-4 text-[#5F6368]" />
-                    <div>
-                      <p class="text-xs text-[#5F6368]">{{ $t('utpplus.duration') }}</p>
-                      <p class="text-sm font-medium text-[#1F1F1F]">{{ career.duration }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <Briefcase class="w-4 h-4 text-[#5F6368]" />
-                    <div>
-                      <p class="text-xs text-[#5F6368]">{{ $t('utpplus.field') }}</p>
-                      <p class="text-sm font-medium text-[#1F1F1F]">{{ $t('utpplus.field_wide') }}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between pt-4 border-t border-[#D9D9D9]">
-                  <div class="flex items-center gap-2 text-sm text-[#5F6368]">
-                    <Users class="w-4 h-4" />
-                    <span>3 {{ $t('utpplus.mentors_avail') }}</span>
-                  </div>
-                  <div class="flex gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Star class="w-4 h-4 mr-1" />
-                      {{ $t('utpplus.testimonials') }}
-                    </Button>
-                    <Button size="sm" :style="{ backgroundColor: career.color }" class="text-white hover:opacity-90">
-                      {{ $t('utpplus.view_details') }}
-                      <ChevronRight class="w-4 h-4 ml-1" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div class="grid gap-6 md:grid-cols-2">
-        <!-- Matchmaking -->
-        <Card>
-          <CardHeader>
-            <div class="flex items-center gap-2">
-              <Network class="w-5 h-5 text-[#082065]" />
-              <CardTitle>{{ $t('utpplus.matchmaking') }}</CardTitle>
+            <div>
+              <label class="text-sm font-medium text-gray-700 mb-1 block">Detalles</label>
+              <Textarea v-model="newPostContent" placeholder="Explica tu duda o comparte tu experiencia aquí..." class="min-h-[120px] bg-white border-gray-300 resize-none" />
             </div>
-            <CardDescription>{{ $t('utpplus.matchmaking_desc') }}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div class="relative aspect-square">
-              <!-- Central Node -->
-              <div class="absolute z-10 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">
-                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-[#B50E30] to-[#8F0B26] flex items-center justify-center text-white font-medium shadow-lg">
-                  {{ $t('utpplus.you') }}
-                </div>
+            <div class="flex items-center justify-between pt-2">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-600">Categoría:</span>
+                <select v-model="newPostCategory" class="text-sm border-gray-300 rounded-md bg-white py-1.5 px-3 focus:outline-none focus:ring-2 focus:ring-[#082065]">
+                  <option v-for="cat in categories.filter(c => c !== 'Todos')" :key="cat" :value="cat">{{ cat }}</option>
+                </select>
               </div>
-
-              <!-- Connected Nodes -->
-              <div v-for="(node, i) in matchmakingNodes.slice(1)" :key="i">
-                <!-- Connection Line -->
-                <svg
-                  class="absolute w-full h-full -translate-x-1/2 -translate-y-1/2 pointer-events-none top-1/2 left-1/2"
-                  style="z-index: 0;"
-                >
-                  <line
-                    x1="50%"
-                    y1="50%"
-                    :x2="`calc(50% + ${Math.cos((i * 360 / 4 * Math.PI) / 180) * 140}px)`"
-                    :y2="`calc(50% + ${Math.sin((i * 360 / 4 * Math.PI) / 180) * 140}px)`"
-                    :stroke="node.color"
-                    stroke-width="2"
-                    stroke-dasharray="4 4"
-                    opacity="0.3"
-                  />
-                </svg>
-
-                <!-- Node -->
-                <div
-                  class="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
-                  :style="{
-                    transform: `translate(-50%, -50%) translate(${Math.cos((i * 360 / 4 * Math.PI) / 180) * 140}px, ${Math.sin((i * 360 / 4 * Math.PI) / 180) * 140}px)`,
-                  }"
-                >
-                  <div
-                    class="flex items-center justify-center w-16 h-16 p-2 text-xs font-medium leading-tight text-center text-white rounded-full shadow-lg"
-                    :style="{ backgroundColor: node.color }"
-                  >
-                    {{ node.label }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-4 pt-4 border-t border-[#D9D9D9]">
-              <p class="text-sm text-[#5F6368] mb-3">{{ $t('utpplus.recommended_connections') }}</p>
-              <div class="space-y-2">
-                <div v-for="(node, i) in matchmakingNodes.slice(1)" :key="i" class="flex items-center gap-2 text-sm">
-                  <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: node.color }" />
-                  <span class="text-[#1F1F1F]">{{ node.label }}</span>
-                </div>
+              <div class="flex gap-2">
+                <Button variant="ghost" @click="isWriting = false" class="text-gray-500 hover:bg-gray-100">Cancelar</Button>
+                <Button @click="submitPost" class="bg-[#082065] hover:bg-[#0D47A1]">Publicar</Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <!-- Análisis de Bitácora -->
-        <Card>
-          <CardHeader>
-            <div class="flex items-center gap-2">
-              <Brain class="w-5 h-5 text-[#082065]" />
-              <CardTitle>{{ $t('utpplus.log_analysis') }}</CardTitle>
-            </div>
-            <CardDescription>{{ $t('utpplus.log_insights') }}</CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-6">
-            <!-- AI Chat Message -->
-            <div class="p-4 rounded-lg bg-gradient-to-br from-[#082065]/10 to-[#0D47A1]/10 border border-[#082065]/20">
-              <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center flex-shrink-0">
-                  <Sparkles class="w-4 h-4 text-white" />
-                </div>
-                <div class="flex-1">
-                  <p class="text-sm text-[#1F1F1F] mb-2" v-html="$t('utpplus.chat_message', { strong: '<strong>', '/strong': '</strong>' })"></p>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    class="text-[#082065] hover:bg-[#082065]/10 p-0 h-auto"
-                  >
-                    {{ $t('utpplus.view_explanation') }}
-                    <ArrowRight class="w-3 h-3 ml-1" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Insights Grid -->
-            <div class="space-y-4">
-              <div v-for="(insight, i) in insights" :key="i" class="space-y-2">
-                <div class="flex items-center gap-2">
-                  <component :is="insight.icon" class="w-4 h-4 text-[#082065]" />
-                  <h4 class="font-medium text-sm text-[#1F1F1F]">{{ insight.title }}</h4>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <Badge
-                    v-for="(item, j) in insight.items"
-                    :key="j"
-                    variant="secondary"
-                    class="bg-[#F1F1F1] text-[#1F1F1F]"
-                  >
-                    {{ item }}
-                  </Badge>
+        <!-- Lista de Publicaciones -->
+        <div class="space-y-4">
+          <Card v-for="post in filteredPosts" :key="post.id" class="border-gray-200 hover:border-gray-300 transition-all hover:shadow-md cursor-pointer group">
+            <CardContent class="p-5">
+              <div class="flex items-start gap-4">
+                <Avatar class="w-10 h-10 ring-2 ring-gray-100">
+                  <AvatarFallback class="bg-[#082065] text-white font-bold">{{ post.avatar }}</AvatarFallback>
+                </Avatar>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    <span class="font-bold text-gray-900">{{ post.author }}</span>
+                    <Badge variant="secondary" class="bg-blue-50 text-[#082065] hover:bg-blue-100 text-[10px] uppercase font-bold tracking-wider">
+                      {{ post.role }}
+                    </Badge>
+                    <span class="text-xs text-gray-500 flex items-center before:content-['•'] before:mr-2">{{ post.time }}</span>
+                  </div>
+                  
+                  <h3 class="text-lg font-bold text-gray-900 mt-2 mb-1 group-hover:text-[#082065] transition-colors">
+                    {{ post.title }}
+                  </h3>
+                  <p class="text-gray-600 text-sm leading-relaxed line-clamp-2">
+                    {{ post.content }}
+                  </p>
+                  
+                  <div class="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100">
+                    <button 
+                      @click.stop="toggleLike(post.id)" 
+                      class="flex items-center gap-1.5 text-sm font-medium transition-colors"
+                      :class="post.isLiked ? 'text-emerald-600' : 'text-gray-500 hover:text-emerald-600'"
+                    >
+                      <ThumbsUp class="w-4 h-4" :class="post.isLiked ? 'fill-emerald-600' : ''" />
+                      {{ post.likes }}
+                    </button>
+                    <button class="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-[#082065] transition-colors">
+                      <MessageSquare class="w-4 h-4" />
+                      {{ post.comments }} Respuestas
+                    </button>
+                    <Badge variant="outline" class="ml-auto text-xs font-semibold text-gray-500 border-gray-200">
+                      {{ post.category }}
+                    </Badge>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <Button class="w-full bg-[#082065] hover:bg-[#0D47A1]">
-              <MessageSquare class="w-4 h-4 mr-2" />
-              {{ $t('utpplus.chat_ai') }}
-            </Button>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+          
+          <div v-if="filteredPosts.length === 0" class="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+            <MessageSquare class="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <h3 class="text-lg font-bold text-gray-700">No hay publicaciones</h3>
+            <p class="text-gray-500 text-sm">Sé el primero en iniciar una discusión en esta categoría.</p>
+            <Button @click="isWriting = true" variant="outline" class="mt-4 border-[#082065] text-[#082065]">Crear publicación</Button>
+          </div>
+        </div>
       </div>
 
-      <!-- Recommended Actions -->
-      <Card>
-        <CardHeader>
-          <CardTitle>{{ $t('utpplus.next_steps') }}</CardTitle>
-          <CardDescription>{{ $t('utpplus.steps_desc') }}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div class="grid gap-4 md:grid-cols-3">
-            <Card v-for="(action, i) in actions" :key="i" class="transition-shadow cursor-pointer hover:shadow-md group">
-              <CardContent class="p-5">
-                <div
-                  class="flex items-center justify-center w-12 h-12 mb-3 transition-transform rounded-xl group-hover:scale-110"
-                  :style="{ backgroundColor: `${action.color}15` }"
-                >
-                  <component :is="action.icon" class="w-6 h-6" :style="{ color: action.color }" />
+      <!-- Columna Derecha: Sidebar del Foro -->
+      <div class="lg:col-span-4 space-y-6">
+        
+        <!-- Comunidad UTP+ -->
+        <Card class="border-gray-200 shadow-sm bg-gradient-to-br from-[#082065] to-[#0D47A1] text-white">
+          <CardContent class="p-6">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="p-2 bg-white/10 rounded-xl">
+                <Sparkles class="w-6 h-6 text-white" />
+              </div>
+              <h3 class="font-bold text-lg">Comunidad UTP+</h3>
+            </div>
+            <p class="text-blue-100 text-sm leading-relaxed mb-6">
+              El lugar perfecto para resolver tus dudas, compartir experiencias y conectar con futuros compañeros y mentores.
+            </p>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-black/20 p-3 rounded-lg text-center">
+                <div class="text-2xl font-black">2.4k</div>
+                <div class="text-xs text-blue-200 font-medium">Miembros</div>
+              </div>
+              <div class="bg-black/20 p-3 rounded-lg text-center">
+                <div class="text-2xl font-black">156</div>
+                <div class="text-xs text-blue-200 font-medium">Online</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <!-- Temas Populares -->
+        <Card class="border-gray-200 shadow-sm">
+          <CardHeader class="pb-3 border-b border-gray-100">
+            <CardTitle class="text-base flex items-center gap-2">
+              <TrendingUp class="w-4 h-4 text-[#082065]" />
+              Temas Populares
+            </CardTitle>
+          </CardHeader>
+          <CardContent class="p-0">
+            <div class="divide-y divide-gray-100">
+              <a href="#" class="block p-4 hover:bg-gray-50 transition-colors">
+                <h4 class="font-bold text-sm text-gray-800 mb-1 line-clamp-1">¿Qué laptop recomiendan para Ingeniería?</h4>
+                <p class="text-xs text-gray-500">45 respuestas • Carreras</p>
+              </a>
+              <a href="#" class="block p-4 hover:bg-gray-50 transition-colors">
+                <h4 class="font-bold text-sm text-gray-800 mb-1 line-clamp-1">Proceso de matrícula paso a paso</h4>
+                <p class="text-xs text-gray-500">32 respuestas • Admisión</p>
+              </a>
+              <a href="#" class="block p-4 hover:bg-gray-50 transition-colors">
+                <h4 class="font-bold text-sm text-gray-800 mb-1 line-clamp-1">Conociendo el campus central</h4>
+                <p class="text-xs text-gray-500">18 respuestas • Vida Universitaria</p>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+
+        <!-- Mentores Destacados -->
+        <Card class="border-gray-200 shadow-sm">
+          <CardHeader class="pb-3 border-b border-gray-100">
+            <CardTitle class="text-base flex items-center gap-2">
+              <Award class="w-4 h-4 text-amber-500" />
+              Mentores Destacados
+            </CardTitle>
+          </CardHeader>
+          <CardContent class="p-4 space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <Avatar class="w-8 h-8">
+                  <AvatarFallback class="bg-amber-100 text-amber-700 font-bold">C</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p class="text-sm font-bold text-gray-900">Carlos Ruiz</p>
+                  <p class="text-xs text-gray-500">Ing. de Sistemas</p>
                 </div>
-                <h4 class="font-medium text-[#1F1F1F] mb-2">{{ action.title }}</h4>
-                <p class="text-sm text-[#5F6368] mb-4">{{ action.description }}</p>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  class="h-auto p-0"
-                  :style="{ color: action.color }"
-                >
-                  {{ $t('utpplus.start') }}
-                  <ChevronRight class="w-4 h-4 ml-1" />
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+              <Badge variant="secondary" class="bg-amber-50 text-amber-700 text-[10px]">Top Contribuidor</Badge>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <Avatar class="w-8 h-8">
+                  <AvatarFallback class="bg-blue-100 text-blue-700 font-bold">S</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p class="text-sm font-bold text-gray-900">Sofía Mendoza</p>
+                  <p class="text-xs text-gray-500">Psicología</p>
+                </div>
+              </div>
+              <Badge variant="secondary" class="bg-gray-100 text-gray-600 text-[10px]">Mentor Activo</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+      </div>
     </div>
   </DashboardLayout>
 </template>

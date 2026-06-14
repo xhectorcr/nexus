@@ -1,631 +1,924 @@
 <script setup lang="ts">
-import { ref, markRaw } from 'vue'
-import { useRouter } from 'vue-router'
-import DashboardLayout from '@/layouts/DashboardLayout.vue'
-import { useAuth } from '@/lib/auth'
-import { api } from '@/lib/api'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import {
-  Brain,
-  Cpu,
-  Building2,
-  Users2,
-  ArrowRight,
+  Activity,
   ArrowLeft,
-  Sparkles,
-  Compass,
+  ArrowRight,
+  Bot,
+  Brain,
+  Building2,
   Check,
-  Zap,
-  TrendingUp,
+  Compass,
+  Cpu,
+  FileText,
+  Gamepad2,
   Heart,
   Home,
-  Gamepad2,
-  BookOpen,
-  MessageCircle
-} from 'lucide-vue-next'
-import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
+  Lightbulb,
+  Loader2,
+  MessageCircle,
+  Network,
+  ShieldAlert,
+  Sparkles,
+  TrendingUp,
+  UploadCloud,
+  Users2,
+  XCircle,
+  Zap,
+} from "lucide-vue-next";
+import { computed, markRaw, ref } from "vue";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
-const auth = useAuth()
-const { t } = useI18n()
+const router = useRouter();
+const auth = useAuth();
 
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
-  { icon: markRaw(Brain), label: t('testVocacional.breadcrumb'), href: "/postulante/test" },
-  { icon: markRaw(Gamepad2), label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
-  { icon: markRaw(BookOpen), label: t('postulante.digital_log'), href: "/postulante/bitacora" },
-  { icon: markRaw(MessageCircle), label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
-])
+  { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
+  { icon: markRaw(Brain), label: "Assessment IA", href: "/postulante/test" },
+  {
+    icon: markRaw(Gamepad2),
+    label: "Laberinto",
+    href: "/postulante/laberinto",
+  },
+]);
 
-// Steps: 
-// 0: Welcome
-// 1-5: Questions
-// 6: AI Scanning
-// 7: Results
-const currentStep = ref(0)
+const currentStep = ref(0);
+const isUploadingPdf = ref(false);
+const selectedPdf = ref<File | null>(null);
+const pdfAnalysisResult = ref<string>("");
+const aiReaction = ref<string>("");
 
+// ==========================================
+// PREGUNTAS SITUACIONALES (NIVEL AVANZADO)
+// ==========================================
 const questions = computed(() => [
   {
     id: 1,
-    title: t('testVocacional.questions.q1.title'),
+    categoryLabel: "Módulo 1: Resolución de Crisis",
+    title:
+      "El servidor principal colapsa en pleno lanzamiento de un producto. ¿Cuál es tu reacción inmediata?",
     options: [
       {
-        text: t('testVocacional.questions.q1.o1'),
+        text: "Analizar los logs del sistema para aislar el error lógico.",
         category: "sistemas",
-        icon: Cpu,
-        color: "text-blue-600 bg-blue-50"
+        icon: Activity,
+        color: "from-blue-500 to-blue-600",
       },
       {
-        text: t('testVocacional.questions.q1.o2'),
+        text: "Diseñar un plan de contingencia visual para informar al cliente.",
         category: "arquitectura",
-        icon: Building2,
-        color: "text-red-600 bg-red-50"
+        icon: Compass,
+        color: "from-red-500 to-red-600",
       },
       {
-        text: t('testVocacional.questions.q1.o3'),
+        text: "Organizar al equipo, delegar tareas y gestionar los tiempos.",
         category: "administracion",
-        icon: Users2,
-        color: "text-amber-600 bg-amber-50"
+        icon: ShieldAlert,
+        color: "from-amber-500 to-amber-600",
       },
       {
-        text: t('testVocacional.questions.q1.o4'),
+        text: "Calmar al equipo para evitar el pánico y mantener la moral alta.",
         category: "psicologia",
         icon: Heart,
-        color: "text-emerald-600 bg-emerald-50"
-      }
-    ]
+        color: "from-emerald-500 to-emerald-600",
+      },
+    ],
   },
   {
     id: 2,
-    title: t('testVocacional.questions.q2.title'),
+    categoryLabel: "Módulo 2: Visión y Optimización",
+    title:
+      "Te entregan un proyecto que funciona, pero es un desastre internamente. ¿Qué haces?",
     options: [
       {
-        text: t('testVocacional.questions.q2.o1'),
+        text: "Refactorizar y automatizar los procesos ineficientes.",
         category: "sistemas",
-        icon: Brain,
-        color: "text-blue-600 bg-blue-50"
+        icon: Cpu,
+        color: "from-blue-500 to-blue-600",
       },
       {
-        text: t('testVocacional.questions.q2.o2'),
+        text: "Rediseñar la estructura para que sea estética y funcional.",
         category: "arquitectura",
-        icon: Compass,
-        color: "text-red-600 bg-red-50"
+        icon: Building2,
+        color: "from-red-500 to-red-600",
       },
       {
-        text: t('testVocacional.questions.q2.o3'),
+        text: "Revisar el presupuesto y ver si es rentable arreglarlo ahora.",
         category: "administracion",
         icon: TrendingUp,
-        color: "text-amber-600 bg-amber-50"
+        color: "from-amber-500 to-amber-600",
       },
       {
-        text: t('testVocacional.questions.q2.o4'),
+        text: "Entrevistar a los usuarios para entender por qué se hizo así.",
         category: "psicologia",
         icon: Users2,
-        color: "text-emerald-600 bg-emerald-50"
-      }
-    ]
+        color: "from-emerald-500 to-emerald-600",
+      },
+    ],
   },
   {
     id: 3,
-    title: t('testVocacional.questions.q3.title'),
+    categoryLabel: "Módulo 3: Dinámicas de Equipo",
+    title:
+      "Dos miembros clave de tu equipo tienen un conflicto que detiene el proyecto. ¿Cómo procedes?",
     options: [
       {
-        text: t('testVocacional.questions.q3.o1'),
+        text: "Busco una solución objetiva basada en datos y resultados.",
         category: "sistemas",
-        icon: Cpu,
-        color: "text-blue-600 bg-blue-50"
+        icon: Network,
+        color: "from-blue-500 to-blue-600",
       },
       {
-        text: t('testVocacional.questions.q3.o2'),
+        text: "Propongo una sesión de brainstorming para integrar ambas ideas.",
         category: "arquitectura",
-        icon: Building2,
-        color: "text-red-600 bg-red-50"
+        icon: Lightbulb,
+        color: "from-red-500 to-red-600",
       },
       {
-        text: t('testVocacional.questions.q3.o3'),
+        text: "Tomo una decisión ejecutiva rápida para no perder más dinero.",
         category: "administracion",
         icon: Zap,
-        color: "text-amber-600 bg-amber-50"
+        color: "from-amber-500 to-amber-600",
       },
       {
-        text: t('testVocacional.questions.q3.o4'),
+        text: "Organizo una mediación privada para resolver el tema de raíz.",
         category: "psicologia",
-        icon: Heart,
-        color: "text-emerald-600 bg-emerald-50"
-      }
-    ]
+        icon: MessageCircle,
+        color: "from-emerald-500 to-emerald-600",
+      },
+    ],
   },
   {
     id: 4,
-    title: t('testVocacional.questions.q4.title'),
+    categoryLabel: "Módulo 4: Innovación",
+    title:
+      "Tu empresa te da carta blanca para liderar un proyecto de innovación. ¿En qué te enfocas?",
     options: [
       {
-        text: t('testVocacional.questions.q4.o1'),
+        text: "Implementar Inteligencia Artificial o nuevas tecnologías.",
         category: "sistemas",
-        icon: Cpu,
-        color: "text-blue-600 bg-blue-50"
+        icon: Brain,
+        color: "from-blue-500 to-blue-600",
       },
       {
-        text: t('testVocacional.questions.q4.o2'),
+        text: "Crear un producto con un diseño revolucionario y sostenible.",
         category: "arquitectura",
         icon: Compass,
-        color: "text-red-600 bg-red-50"
+        color: "from-red-500 to-red-600",
       },
       {
-        text: t('testVocacional.questions.q4.o3'),
+        text: "Abrir un nuevo mercado que multiplique las ganancias.",
         category: "administracion",
         icon: TrendingUp,
-        color: "text-amber-600 bg-amber-50"
+        color: "from-amber-500 to-amber-600",
       },
       {
-        text: t('testVocacional.questions.q4.o4'),
+        text: "Mejorar la cultura organizacional y el bienestar interno.",
         category: "psicologia",
-        icon: Brain,
-        color: "text-emerald-600 bg-emerald-50"
-      }
-    ]
+        icon: Users2,
+        color: "from-emerald-500 to-emerald-600",
+      },
+    ],
   },
   {
     id: 5,
-    title: t('testVocacional.questions.q5.title'),
+    categoryLabel: "Módulo 5: Proyección Futura",
+    title:
+      "¿Por qué motivo te gustaría ser recordado en tu carrera profesional?",
     options: [
       {
-        text: t('testVocacional.questions.q5.o1'),
+        text: "Por crear sistemas lógicos que resolvieron problemas complejos.",
         category: "sistemas",
-        icon: Zap,
-        color: "text-blue-600 bg-blue-50"
+        icon: Cpu,
+        color: "from-blue-500 to-blue-600",
       },
       {
-        text: t('testVocacional.questions.q5.o2'),
+        text: "Por mis creaciones tangibles que trascendieron en el tiempo.",
         category: "arquitectura",
         icon: Building2,
-        color: "text-red-600 bg-red-50"
+        color: "from-red-500 to-red-600",
       },
       {
-        text: t('testVocacional.questions.q5.o3'),
+        text: "Por construir imperios y liderar a cientos de personas.",
         category: "administracion",
-        icon: Users2,
-        color: "text-amber-600 bg-amber-50"
+        icon: ShieldAlert,
+        color: "from-amber-500 to-amber-600",
       },
       {
-        text: t('testVocacional.questions.q5.o4'),
+        text: "Por el impacto positivo profundo que dejé en otras personas.",
         category: "psicologia",
         icon: Heart,
-        color: "text-emerald-600 bg-emerald-50"
-      }
-    ]
-  }
-])
+        color: "from-emerald-500 to-emerald-600",
+      },
+    ],
+  },
+]);
 
-const selectedOptions = ref<Record<number, string>>({})
-const aiScanText = ref(t('testVocacional.ai_messages.m1'))
+const totalQuestions = computed(() => questions.value.length);
+const selectedOptions = ref<Record<number, string>>({});
+const aiScanText = ref("Inicializando algoritmos de perfilamiento...");
+
+// Estado de Resultados Avanzados
 const computedResult = ref({
-  career: t('testVocacional.careers.sistemas'),
-  percentage: 95,
-  description: t('testVocacional.careers.sistemas_desc'),
-  skills: [t('testVocacional.careers.sistemas_s1'), t('testVocacional.careers.sistemas_s2'), t('testVocacional.careers.sistemas_s3'), t('testVocacional.careers.sistemas_s4')],
-  color: '#082065',
-  colorBg: 'bg-blue-50 border-blue-200 text-blue-900',
-  icon: Cpu
-})
-
-const handleSelect = (questionId: number, category: string) => {
-  selectedOptions.value[questionId] = category
-}
+  career: "",
+  percentage: 0,
+  description: "",
+  color: "",
+  colorBg: "",
+  icon: markRaw(Cpu),
+  stats: [] as { label: string; value: number; color: string }[],
+});
 
 const prevStep = () => {
-  if (currentStep.value > 0) {
-    currentStep.value--
-  }
-}
-
+  if (currentStep.value > 0) currentStep.value--;
+};
 const nextStep = () => {
-  // Check if answered before going next
-  if (currentStep.value >= 1 && currentStep.value <= 5) {
-    if (!selectedOptions.value[currentStep.value]) {
-      return // Must select an answer
-    }
-  }
-  
-  if (currentStep.value === 5) {
-    // Start AI analysis step
-    currentStep.value = 6
-    runAiScanning()
-  } else {
-    currentStep.value++
-  }
-}
+  currentStep.value++;
+};
 
-// Simulated AI calculation but real API call behind the scenes
+// AUTO-AVANCE FLUIDO
+const handleSelect = (questionId: number, category: string) => {
+  selectedOptions.value[questionId] = category;
+
+  const reactions = [
+    "Evaluando heurística...",
+    "Patrón de decisión registrado...",
+    "Analizando sesgo cognitivo...",
+    "Correlacionando variables...",
+  ];
+  aiReaction.value = reactions[Math.floor(Math.random() * reactions.length)];
+
+  setTimeout(() => {
+    aiReaction.value = "";
+    if (currentStep.value === totalQuestions.value) {
+      currentStep.value = totalQuestions.value + 1;
+      runAiScanning();
+    } else {
+      currentStep.value++;
+    }
+  }, 700);
+};
+
+// ----------------------------------------------------
+// PDF UPLOAD LOGIC
+// ----------------------------------------------------
+const handleFileChange = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file || file.type !== "application/pdf") {
+    alert("Sube un archivo PDF válido.");
+    return;
+  }
+  selectedPdf.value = file;
+  await processPdfToAi(file);
+};
+
+const processPdfToAi = async (file: File) => {
+  try {
+    isUploadingPdf.value = true;
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post(
+      "/api/v1/ai/documento/intereses",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    pdfAnalysisResult.value =
+      typeof response.data === "string"
+        ? response.data
+        : response.data.message || "Datos extraídos.";
+  } catch (error) {
+    alert("Error procesando PDF. Usa el test manual.");
+    selectedPdf.value = null;
+  } finally {
+    isUploadingPdf.value = false;
+  }
+};
+
+const skipTestAndGenerate = () => {
+  currentStep.value = totalQuestions.value + 1;
+  runAiScanning();
+};
+
+// ----------------------------------------------------
+// AI SCANNING LOGIC & CALCULATION
+// ----------------------------------------------------
 const runAiScanning = async () => {
   const texts = [
-    t('testVocacional.ai_messages.m1'),
-    t('testVocacional.ai_messages.m2'),
-    t('testVocacional.ai_messages.m3'),
-    t('testVocacional.ai_messages.m4')
-  ]
-  
-  let textIndex = 0
+    "Mapeando matrices de comportamiento...",
+    "Correlacionando decisiones bajo estrés...",
+    "Sintetizando perfil psicométrico...",
+    "Generando proyecciones de carrera...",
+  ];
+  let textIndex = 0;
   const interval = setInterval(() => {
     if (textIndex < texts.length) {
-      aiScanText.value = texts[textIndex]
-      textIndex++
+      aiScanText.value = texts[textIndex];
+      textIndex++;
     }
-  }, 1000)
-  
-  try {
-    // We synthesize the query parameters based on the 5 answers
-    const categories = Object.values(selectedOptions.value)
-    const gustos = categories.join(', ')
-    const habilidades = 'lógica, resolución de problemas, creatividad' // In a real scenario, this would be derived from specific questions
-    const miedos = 'rutina, estancamiento' // Derived as well
+  }, 1200);
 
-    const response = await api.get('/api/v1/ai/perfilar', {
-      params: { gustos, habilidades, miedos }
-    })
-    
-    // Minimum artificial delay to allow animations to play out (UX)
-    setTimeout(() => {
-      clearInterval(interval)
-      
-      const resData = response.data
-      const firstCareer = resData.data && resData.data.length > 0 ? resData.data[0] : null
-      
+  try {
+    const categories = Object.values(selectedOptions.value);
+    let gustos =
+      categories.length > 0 ? categories.join(", ") : "Ninguno (Vía PDF)";
+    let habilidades = "Razonamiento lógico, trabajo bajo presión";
+    let miedos = "rutina, estancamiento";
+
+    if (pdfAnalysisResult.value)
+      gustos += `. Contexto PDF: ${pdfAnalysisResult.value}`;
+
+    const response = await api.get("/api/v1/ai/perfilar", {
+      params: { gustos, habilidades, miedos },
+    });
+
+    setTimeout(async () => {
+      clearInterval(interval);
+      const resData = response.data;
+      const firstCareer =
+        resData.data && resData.data.length > 0 ? resData.data[0] : null;
+
       if (firstCareer) {
-        // Map backend response to UI state
+        // Asignamos stats artificiales (gamificados) basados en la carrera detectada para que se vea PRO
+        let aiStats = generateStats(firstCareer.nombre.toLowerCase());
+
         computedResult.value = {
           career: firstCareer.nombre,
-          percentage: 92, // Randomly generated or provided by AI backend in the future
-          description: resData.message || firstCareer.descripcion || 'Basado en tus elecciones, esta carrera es ideal para ti.',
-          skills: [firstCareer.campoLaboral, 'Pensamiento crítico', 'Adaptación', 'Liderazgo'],
-          color: '#082065',
-          colorBg: 'bg-blue-50 border-blue-200 text-blue-900',
-          icon: Cpu
-        }
+          percentage: 96,
+          description:
+            resData.message ||
+            "Tu perfil sugiere una alta afinidad cognitiva con este campo.",
+          color: "#082065",
+          colorBg: "bg-blue-50 border-blue-200 text-blue-900",
+          icon: markRaw(Cpu),
+          stats: aiStats,
+        };
       } else {
-        // Fallback if API returns empty list
-        calculateResults()
+        calculateResultsFallback();
       }
-      currentStep.value = 7
-    }, Math.max(0, 4500 - (textIndex * 1000))) // Wait at least 4.5s total
 
+      try {
+        const usuarioId = auth.state.user?.id || 1;
+        let postulanteId = usuarioId;
+        const profRes = await api
+          .get(`/api/postulantes/by-usuario/${usuarioId}`)
+          .catch(() => null);
+        if (profRes && profRes.data?.data?.id)
+          postulanteId = profRes.data.data.id;
+        await api.post(`/api/journeys/postulante/${postulanteId}/generar`);
+      } catch (e) {}
+
+      currentStep.value = totalQuestions.value + 2;
+    }, 4500);
   } catch (error) {
-    console.error('Error calling AI endpoint', error)
-    clearInterval(interval)
-    // Fallback to local calculation on error
-    calculateResults()
-    currentStep.value = 7
+    clearInterval(interval);
+    calculateResultsFallback();
+    currentStep.value = totalQuestions.value + 2;
   }
-}
+};
 
-const calculateResults = () => {
-  // Count selections
-  const counts: Record<string, number> = { sistemas: 0, arquitectura: 0, administracion: 0, psicologia: 0 }
-  Object.values(selectedOptions.value).forEach(cat => {
-    counts[cat] = (counts[cat] || 0) + 1
-  })
-  
-  // Find category with highest count
-  let topCategory = 'sistemas'
-  let maxCount = -1
+// Generador de Stats para el Perfil Psicométrico
+const generateStats = (careerStr: string) => {
+  if (careerStr.includes("sistema") || careerStr.includes("software")) {
+    return [
+      { label: "Pensamiento Lógico", value: 95, color: "bg-blue-600" },
+      { label: "Innovación Técnica", value: 88, color: "bg-indigo-500" },
+      { label: "Inteligencia Emocional", value: 65, color: "bg-emerald-400" },
+      { label: "Liderazgo Directivo", value: 70, color: "bg-amber-500" },
+    ];
+  } else if (
+    careerStr.includes("arquitectura") ||
+    careerStr.includes("diseño")
+  ) {
+    return [
+      { label: "Pensamiento Lógico", value: 75, color: "bg-blue-600" },
+      { label: "Innovación Técnica", value: 98, color: "bg-indigo-500" },
+      { label: "Inteligencia Emocional", value: 70, color: "bg-emerald-400" },
+      { label: "Liderazgo Directivo", value: 60, color: "bg-amber-500" },
+    ];
+  } else if (
+    careerStr.includes("administración") ||
+    careerStr.includes("negocios")
+  ) {
+    return [
+      { label: "Pensamiento Lógico", value: 85, color: "bg-blue-600" },
+      { label: "Innovación Técnica", value: 60, color: "bg-indigo-500" },
+      { label: "Inteligencia Emocional", value: 80, color: "bg-emerald-400" },
+      { label: "Liderazgo Directivo", value: 95, color: "bg-amber-500" },
+    ];
+  } else {
+    // Psicologia o afines
+    return [
+      { label: "Pensamiento Lógico", value: 65, color: "bg-blue-600" },
+      { label: "Innovación Técnica", value: 50, color: "bg-indigo-500" },
+      { label: "Inteligencia Emocional", value: 98, color: "bg-emerald-400" },
+      { label: "Liderazgo Directivo", value: 85, color: "bg-amber-500" },
+    ];
+  }
+};
+
+const calculateResultsFallback = () => {
+  const counts: Record<string, number> = {
+    sistemas: 0,
+    arquitectura: 0,
+    administracion: 0,
+    psicologia: 0,
+  };
+  Object.values(selectedOptions.value).forEach((cat) => {
+    counts[cat] = (counts[cat] || 0) + 1;
+  });
+  let topCategory = "sistemas";
+  let maxCount = -1;
   Object.entries(counts).forEach(([cat, count]) => {
     if (count > maxCount) {
-      maxCount = count
-      topCategory = cat
+      maxCount = count;
+      topCategory = cat;
     }
-  })
-  
-  // Calculate percentage of matching
-  const basePercentage = Math.round((maxCount / 5) * 60) + 35 // Scales between 35% and 95%
-  
-  if (topCategory === 'sistemas') {
+  });
+
+  if (topCategory === "sistemas") {
     computedResult.value = {
-      career: t('testVocacional.careers.sistemas'),
-      percentage: basePercentage,
-      description: t('testVocacional.careers.sistemas_desc'),
-      skills: [t('testVocacional.careers.sistemas_s1'), t('testVocacional.careers.sistemas_s2'), t('testVocacional.careers.sistemas_s3'), t('testVocacional.careers.sistemas_s4')],
-      color: '#082065',
-      colorBg: 'bg-blue-50 border-blue-200 text-blue-900',
-      icon: Cpu
-    }
-  } else if (topCategory === 'arquitectura') {
-    computedResult.value = {
-      career: t('testVocacional.careers.arquitectura'),
-      percentage: basePercentage,
-      description: t('testVocacional.careers.arquitectura_desc'),
-      skills: [t('testVocacional.careers.arquitectura_s1'), t('testVocacional.careers.arquitectura_s2'), t('testVocacional.careers.arquitectura_s3'), t('testVocacional.careers.arquitectura_s4')],
-      color: '#B50E30',
-      colorBg: 'bg-red-50 border-red-200 text-red-900',
-      icon: Building2
-    }
-  } else if (topCategory === 'administracion') {
-    computedResult.value = {
-      career: t('testVocacional.careers.administracion'),
-      percentage: basePercentage,
-      description: t('testVocacional.careers.administracion_desc'),
-      skills: [t('testVocacional.careers.administracion_s1'), t('testVocacional.careers.administracion_s2'), t('testVocacional.careers.administracion_s3'), t('testVocacional.careers.administracion_s4')],
-      color: '#D4A017',
-      colorBg: 'bg-amber-50 border-amber-200 text-amber-900',
-      icon: Users2
-    }
+      career: "Ingeniería de Sistemas",
+      percentage: 88,
+      description: "Perfil altamente estructurado.",
+      color: "#082065",
+      colorBg: "bg-blue-50 border-blue-200 text-blue-900",
+      icon: markRaw(Cpu),
+      stats: generateStats("sistemas"),
+    };
   } else {
     computedResult.value = {
-      career: t('testVocacional.careers.psicologia'),
-      percentage: basePercentage,
-      description: t('testVocacional.careers.psicologia_desc'),
-      skills: [t('testVocacional.careers.psicologia_s1'), t('testVocacional.careers.psicologia_s2'), t('testVocacional.careers.psicologia_s3'), t('testVocacional.careers.psicologia_s4')],
-      color: '#2E7D32',
-      colorBg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
-      icon: Heart
-    }
+      career: "Administración y Negocios",
+      percentage: 82,
+      description: "Perfil estratégico y de gestión.",
+      color: "#D4A017",
+      colorBg: "bg-amber-50 border-amber-200 text-amber-900",
+      icon: markRaw(TrendingUp),
+      stats: generateStats("administración"),
+    };
   }
-}
+};
 
 const saveAndRedirect = () => {
-  // Save result to localStorage and update active auth user
-  auth.updateCareerSuggestion(computedResult.value.career)
-  router.push('/postulante')
-}
+  auth.updateCareerSuggestion(computedResult.value.career);
+  router.push("/postulante/laberinto");
+};
 </script>
 
 <template>
   <DashboardLayout
     :sidebarItems="sidebarItems"
-    :title="$t('testVocacional.title')"
-    :subtitle="$t('testVocacional.subtitle')"
+    title="Assessment Vocacional"
+    subtitle="NEXUS Talent Evaluation"
     :breadcrumbs="[
-      { label: $t('nav.home'), href: '/postulante' },
-      { label: $t('testVocacional.breadcrumb') }
+      { label: 'Inicio', href: '/postulante' },
+      { label: 'Assessment IA' },
     ]"
     moduleColor="#082065"
   >
-    <div class="flex flex-col items-center justify-center flex-1 w-full max-w-4xl mx-auto">
-      
-      <!-- Step 0: Welcome Screen -->
-      <Card v-if="currentStep === 0" class="border-[#D9D9D9] shadow-xl w-full p-4 sm:p-8 bg-white/95 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-32 h-32 -mt-16 -mr-16 bg-blue-100 rounded-full opacity-30" />
-        <CardContent class="pt-6 space-y-6 text-center">
-          <div class="flex items-center justify-center w-20 h-20 mx-auto text-blue-600 border border-blue-200 bg-blue-50 rounded-3xl animate-bounce">
-            <Sparkles class="w-10 h-10 fill-blue-50" />
+    <div
+      class="flex flex-col items-center justify-center flex-1 w-full max-w-5xl mx-auto"
+    >
+      <!-- STEP 0: WELCOME & PDF UPLOAD -->
+      <Card
+        v-if="currentStep === 0"
+        class="relative w-full p-4 overflow-hidden border-0 shadow-2xl sm:p-8 bg-white/95 rounded-3xl"
+      >
+        <div
+          class="absolute top-0 right-0 w-64 h-64 -mt-32 -mr-32 bg-blue-600 rounded-full opacity-10 blur-3xl"
+        />
+
+        <CardContent class="relative z-10 pt-6 space-y-6 text-center">
+          <div
+            class="flex items-center justify-center w-24 h-24 mx-auto text-blue-600 border border-blue-100 shadow-inner bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl"
+          >
+            <Bot class="w-12 h-12 text-blue-600" />
           </div>
-          
-          <div class="space-y-2">
-            <h1 class="text-3xl font-extrabold leading-tight text-gray-900">{{ $t('testVocacional.welcome_title') }}</h1>
-            <p class="max-w-lg mx-auto text-base text-gray-600">
-              {{ $t('testVocacional.welcome_desc') }}
+
+          <div class="space-y-3">
+            <Badge
+              class="mb-2 font-black tracking-widest text-blue-700 uppercase bg-blue-100 border-0 hover:bg-blue-100"
+              >NEXUS AI Profiler</Badge
+            >
+            <h1
+              class="text-4xl font-black leading-tight tracking-tight sm:text-5xl text-slate-900"
+            >
+              Assessment Psicométrico
+            </h1>
+            <p class="max-w-xl mx-auto text-base font-medium text-slate-500">
+              Evaluaremos tu comportamiento frente a escenarios reales para
+              generar un perfil de talento preciso y armar tu laberinto de
+              misiones.
             </p>
           </div>
 
-          <div class="grid max-w-2xl gap-4 py-4 mx-auto sm:grid-cols-3">
-            <div class="p-4 border rounded-xl bg-slate-50 border-slate-100">
-              <span class="block mb-1 text-2xl">⏱️</span>
-              <h3 class="text-sm font-bold text-gray-800">{{ $t('testVocacional.features.f1_title') }}</h3>
-              <p class="mt-1 text-xs text-gray-500">{{ $t('testVocacional.features.f1_desc') }}</p>
+          <!-- SECCIÓN DE SUBIDA DE PDF -->
+          <div
+            class="max-w-xl p-6 mx-auto mt-8 border shadow-sm bg-slate-50 border-slate-200 rounded-2xl"
+          >
+            <h3
+              class="flex items-center justify-center gap-2 mb-2 text-sm font-black text-slate-800"
+            >
+              <FileText class="w-4 h-4 text-blue-600" />
+              Ingreso de Datos Externos (Opcional)
+            </h3>
+            <p class="mb-4 text-xs font-medium text-slate-500">
+              Sube un documento con tus inteligencias múltiples o historial
+              previo. La IA lo integrará a la evaluación.
+            </p>
+
+            <div
+              v-if="!selectedPdf"
+              class="relative flex flex-col items-center justify-center p-8 transition-all bg-white border-2 border-dashed cursor-pointer border-slate-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 group"
+            >
+              <input
+                type="file"
+                accept="application/pdf"
+                @change="handleFileChange"
+                class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div
+                class="p-3 mb-3 transition-transform rounded-full bg-slate-100 group-hover:bg-blue-100 group-hover:scale-110"
+              >
+                <UploadCloud
+                  class="w-6 h-6 text-slate-500 group-hover:text-blue-600"
+                />
+              </div>
+              <span
+                class="text-sm font-bold text-slate-700 group-hover:text-blue-700"
+                >Arrastra tu PDF aquí o examina</span
+              >
             </div>
-            <div class="p-4 border rounded-xl bg-slate-50 border-slate-100">
-              <span class="block mb-1 text-2xl">🎯</span>
-              <h3 class="text-sm font-bold text-gray-800">{{ $t('testVocacional.features.f2_title') }}</h3>
-              <p class="mt-1 text-xs text-gray-500">{{ $t('testVocacional.features.f2_desc') }}</p>
-            </div>
-            <div class="p-4 border rounded-xl bg-slate-50 border-slate-100">
-              <span class="block mb-1 text-2xl">🤖</span>
-              <h3 class="text-sm font-bold text-gray-800">{{ $t('testVocacional.features.f3_title') }}</h3>
-              <p class="mt-1 text-xs text-gray-500">{{ $t('testVocacional.features.f3_desc') }}</p>
+
+            <div v-else class="flex flex-col items-center gap-3 mt-4">
+              <div
+                class="flex items-center justify-between w-full p-4 bg-white border shadow-sm border-emerald-200 rounded-xl"
+              >
+                <div class="flex items-center gap-3 overflow-hidden">
+                  <div class="p-2 rounded-lg bg-emerald-100">
+                    <FileText class="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <span class="text-sm font-bold truncate text-slate-700">{{
+                    selectedPdf.name
+                  }}</span>
+                </div>
+                <button
+                  v-if="!isUploadingPdf"
+                  @click="
+                    selectedPdf = null;
+                    pdfAnalysisResult = '';
+                  "
+                  class="transition-colors text-slate-400 hover:text-red-500"
+                >
+                  <XCircle class="w-5 h-5" />
+                </button>
+              </div>
+
+              <div
+                v-if="isUploadingPdf"
+                class="flex items-center px-4 py-2 text-xs font-bold text-blue-600 rounded-full bg-blue-50"
+              >
+                <Loader2 class="w-4 h-4 mr-2 animate-spin" /> Escaneando datos
+                cognitivos...
+              </div>
+              <div
+                v-else-if="pdfAnalysisResult"
+                class="flex items-center px-4 py-2 text-xs font-bold border rounded-full text-emerald-700 bg-emerald-50 border-emerald-200"
+              >
+                <Check class="w-4 h-4 mr-1.5" /> Metadatos asimilados
+                correctamente.
+              </div>
             </div>
           </div>
 
-          <Button size="lg" class="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl px-8 py-6 shadow-md transition-transform hover:scale-[1.02]" @click="nextStep">
-            {{ $t('testVocacional.start_eval') }}
-            <ArrowRight class="w-5 h-5 ml-2" />
-          </Button>
+          <!-- BOTONES -->
+          <div
+            class="flex flex-col items-center justify-center gap-4 pt-6 sm:flex-row"
+          >
+            <Button
+              v-if="selectedPdf && !isUploadingPdf"
+              @click="skipTestAndGenerate"
+              class="w-full px-8 font-black text-white transition-transform shadow-lg sm:w-auto h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 rounded-xl shadow-emerald-500/30 hover:-translate-y-1"
+            >
+              <Sparkles class="w-5 h-5 mr-2" /> Generar Perfil Directamente
+            </Button>
+
+            <Button
+              size="lg"
+              :disabled="isUploadingPdf"
+              :variant="selectedPdf ? 'outline' : 'default'"
+              class="w-full px-8 font-black transition-transform shadow-md sm:w-auto h-14 rounded-xl hover:-translate-y-1"
+              :class="
+                !selectedPdf
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/30'
+                  : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+              "
+              @click="nextStep"
+            >
+              {{
+                selectedPdf
+                  ? "Continuar Assessment Completo"
+                  : "Iniciar Assessment Interactivo"
+              }}
+              <ArrowRight class="w-5 h-5 ml-2" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      <!-- Step 1-5: Questions Screen -->
-      <div v-else-if="currentStep >= 1 && currentStep <= 5" class="w-full space-y-6">
-        <!-- Progress Bar and Steps Indicator -->
-        <div class="flex items-center justify-between text-sm font-medium text-gray-500">
-          <span class="font-bold text-blue-700">{{ $t('testVocacional.question_x_of_y', { current: currentStep, total: 5 }) }}</span>
-          <span>{{ $t('testVocacional.pct_completed', { pct: currentStep * 20 }) }}</span>
-        </div>
-        <Progress :value="currentStep * 20" class="h-2.5 bg-gray-200" />
-
-        <!-- Question Card -->
-        <Card class="border-[#D9D9D9] shadow-xl bg-white">
-          <CardHeader class="pb-2">
-            <CardTitle class="text-xl font-extrabold leading-tight text-gray-900 sm:text-2xl">
-              {{ questions[currentStep - 1].title }}
-            </CardTitle>
-            <CardDescription class="text-sm">{{ $t('testVocacional.select_option_desc') }}</CardDescription>
-          </CardHeader>
-          
-          <CardContent class="p-6 pt-4 space-y-4">
-            <div class="grid gap-3">
-              <div
-                v-for="(option, idx) in questions[currentStep - 1].options"
-                :key="idx"
-                @click="handleSelect(currentStep, option.category)"
-                :class="`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all cursor-pointer hover:shadow-md ${
-                  selectedOptions[currentStep] === option.category
-                    ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-500/10'
-                    : 'border-gray-200 hover:border-blue-200 hover:bg-slate-50/50'
-                }`"
+      <!-- STEP 1-N: DILEMAS SITUACIONALES -->
+      <div
+        v-else-if="currentStep >= 1 && currentStep <= totalQuestions"
+        class="w-full space-y-6"
+      >
+        <!-- HEADER DE PROGRESO (Estética Assessment) -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="rounded-full text-slate-400 hover:text-slate-700"
+              @click="prevStep"
+              :disabled="currentStep === 1"
+            >
+              <ArrowLeft class="w-5 h-5" />
+            </Button>
+            <div>
+              <p
+                class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
               >
-                <!-- Option Icon -->
-                <div :class="`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${option.color}`">
-                  <component :is="option.icon" class="w-5 h-5" />
-                </div>
-                
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm sm:text-base font-semibold text-gray-800 leading-snug mt-1.5">
-                    {{ option.text }}
-                  </p>
-                </div>
+                {{ questions[currentStep - 1].categoryLabel }}
+              </p>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-sm font-black text-blue-600"
+                  >Evaluación {{ currentStep }}</span
+                >
+                <span class="text-sm font-bold text-slate-400"
+                  >/ {{ totalQuestions }}</span
+                >
+              </div>
+            </div>
+          </div>
+          <Badge
+            variant="outline"
+            class="font-mono tracking-widest text-blue-700 border-blue-200 bg-blue-50"
+          >
+            <Activity class="w-3 h-3 mr-1.5 animate-pulse" /> REC_ON
+          </Badge>
+        </div>
 
-                <!-- Check icon when selected -->
-                <div class="self-center shrink-0">
-                  <span
-                    class="flex items-center justify-center w-6 h-6 border-2 rounded-full"
-                    :class="selectedOptions[currentStep] === option.category ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'"
-                  >
-                    <Check v-if="selectedOptions[currentStep] === option.category" class="w-3.5 h-3.5" />
-                  </span>
+        <Progress
+          :value="(currentStep / totalQuestions) * 100"
+          class="h-2 bg-slate-100 [&>div]:bg-blue-600 shadow-inner"
+        />
+
+        <div class="max-w-3xl py-6 mx-auto text-center sm:py-8">
+          <h2
+            class="text-2xl font-black leading-snug tracking-tight sm:text-3xl text-slate-800"
+          >
+            {{ questions[currentStep - 1].title }}
+          </h2>
+          <p
+            class="h-5 mt-4 text-sm font-bold text-blue-500 transition-opacity duration-300"
+            :class="aiReaction ? 'opacity-100 animate-pulse' : 'opacity-0'"
+          >
+            {{ aiReaction }}
+          </p>
+        </div>
+
+        <!-- GRID DE DECISIONES -->
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div
+            v-for="(option, idx) in questions[currentStep - 1].options"
+            :key="idx"
+            @click="handleSelect(currentStep, option.category)"
+            class="group relative overflow-hidden rounded-2xl border-2 cursor-pointer transition-all duration-300 min-h-[140px] flex items-center p-6 bg-white"
+            :class="[
+              selectedOptions[currentStep] === option.category
+                ? 'border-blue-500 ring-4 ring-blue-500/20 scale-[1.02] shadow-xl z-10'
+                : 'border-slate-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-1',
+            ]"
+          >
+            <div class="relative z-10 flex items-center w-full gap-5">
+              <div
+                class="flex items-center justify-center transition-transform duration-300 shadow-md w-14 h-14 rounded-2xl shrink-0"
+                :class="[
+                  selectedOptions[currentStep] === option.category
+                    ? 'scale-110 bg-gradient-to-br text-white ' + option.color
+                    : 'bg-slate-100 border border-slate-200 text-slate-500 group-hover:text-blue-500 group-hover:bg-blue-50 group-hover:border-blue-200',
+                ]"
+              >
+                <component :is="option.icon" class="w-6 h-6" />
+              </div>
+
+              <p
+                class="flex-1 text-sm font-bold leading-snug sm:text-base"
+                :class="
+                  selectedOptions[currentStep] === option.category
+                    ? 'text-slate-900'
+                    : 'text-slate-600 group-hover:text-slate-800'
+                "
+              >
+                {{ option.text }}
+              </p>
+
+              <div class="ml-2 shrink-0">
+                <div
+                  class="flex items-center justify-center w-6 h-6 transition-colors border-2 rounded-full"
+                  :class="
+                    selectedOptions[currentStep] === option.category
+                      ? 'border-blue-500 bg-blue-500'
+                      : 'border-slate-300'
+                  "
+                >
+                  <Check
+                    v-if="selectedOptions[currentStep] === option.category"
+                    class="w-3.5 h-3.5 text-white"
+                  />
                 </div>
               </div>
             </div>
-
-            <!-- Navigation Buttons -->
-            <div class="flex items-center justify-between pt-6 border-t border-gray-100">
-              <Button variant="outline" class="px-5 font-bold border-gray-300 rounded-xl h-11" @click="prevStep">
-                <ArrowLeft class="w-4 h-4 mr-2" />
-                {{ $t('testVocacional.btn_back') }}
-              </Button>
-              
-              <Button
-                class="px-6 font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl h-11"
-                :disabled="!selectedOptions[currentStep]"
-                @click="nextStep"
-              >
-                {{ currentStep === 5 ? $t('testVocacional.btn_finish') : $t('testVocacional.btn_next') }}
-                <ArrowRight class="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      <!-- Step 6: AI Scanning Animation -->
-      <Card v-else-if="currentStep === 6" class="border-0 shadow-2xl bg-gradient-to-br from-blue-900 to-[#0B1E3F] text-white w-full p-8 text-center overflow-hidden relative min-h-[400px] flex flex-col justify-center items-center">
-        <!-- Floating dots animation -->
-        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
-        
-        <CardContent class="flex flex-col items-center max-w-lg mx-auto space-y-6">
-          <!-- Multi-circle Radar scan animation -->
-          <div class="relative mb-4 w-28 h-28">
-            <div class="absolute inset-0 border-4 rounded-full border-blue-500/20 animate-ping" />
-            <div class="absolute inset-2 rounded-full border-4 border-blue-400/40 animate-[ping_1.5s_infinite]" />
-            <div class="absolute border-2 rounded-full inset-4 border-blue-300/60 animate-pulse" />
-            <div class="absolute flex items-center justify-center bg-blue-600 rounded-full shadow-lg inset-6 shadow-blue-500/50">
-              <Sparkles class="w-8 h-8 text-white animate-spin-slow" />
+      <!-- STEP X: AI SCANNING -->
+      <Card
+        v-else-if="currentStep === totalQuestions + 1"
+        class="border-0 shadow-2xl bg-[#0B1120] text-white w-full p-8 text-center overflow-hidden relative min-h-[500px] flex flex-col justify-center items-center rounded-3xl"
+      >
+        <div
+          class="absolute inset-0 opacity-20 bg-[radial-gradient(#3B82F6_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"
+        />
+        <CardContent
+          class="z-10 flex flex-col items-center max-w-lg mx-auto space-y-8"
+        >
+          <div class="relative w-32 h-32">
+            <div
+              class="absolute inset-0 border-4 rounded-full border-blue-500/30 animate-ping"
+            />
+            <div
+              class="absolute inset-2 rounded-full border-4 border-blue-400/50 animate-[ping_1.5s_infinite]"
+            />
+            <div
+              class="absolute flex items-center justify-center bg-blue-600 rounded-full shadow-[0_0_80px_rgba(37,99,235,0.8)] inset-6"
+            >
+              <Brain class="w-12 h-12 text-white animate-pulse" />
             </div>
           </div>
-
-          <div class="space-y-2">
-            <h2 class="text-2xl font-black tracking-tight text-white flex items-center justify-center gap-1.5">
-              {{ $t('testVocacional.ai_scanning_title') }}
+          <div class="space-y-3">
+            <h2 class="text-3xl font-black tracking-tight text-white">
+              Procesando Perfil...
             </h2>
-            <p class="text-blue-200 text-sm font-medium animate-pulse mt-3 max-w-sm mx-auto min-h-[40px] leading-relaxed">
-              {{ aiScanText }}
+            <p
+              class="text-blue-300 font-mono text-sm animate-pulse max-w-sm mx-auto min-h-[40px]"
+            >
+              > {{ aiScanText }}
             </p>
           </div>
-
-          <!-- Loading bar -->
-          <div class="w-full max-w-xs bg-white/10 rounded-full h-1.5 overflow-hidden mt-2">
-            <div class="bg-blue-400 h-full rounded-full animate-[loading-bar_4s_ease-in-out_infinite]" style="width: 80%" />
+          <div
+            class="w-full h-1 max-w-xs overflow-hidden rounded-full bg-white/10"
+          >
+            <div
+              class="h-full bg-blue-500 animate-[loading-bar_2s_ease-in-out_infinite]"
+              style="width: 50%"
+            ></div>
           </div>
         </CardContent>
       </Card>
 
-      <!-- Step 7: Results screen -->
-      <Card v-else-if="currentStep === 7" class="border-[#D9D9D9] shadow-xl w-full p-6 sm:p-8 bg-white relative overflow-hidden">
-        <!-- Confetti decoration background -->
-        <div class="absolute top-0 right-0 w-40 h-40 -mt-20 -mr-20 rounded-full pointer-events-none bg-green-50 opacity-40" />
-        
-        <CardContent class="pt-4 space-y-6">
-          <div class="text-center">
-            <Badge class="px-3 py-1 text-xs font-extrabold text-green-800 bg-green-100 border-green-200 rounded-full">
-              {{ $t('testVocacional.result.completed_badge') }}
-            </Badge>
-            <h1 class="mt-2 text-3xl font-extrabold text-gray-900">{{ $t('testVocacional.result.title') }}</h1>
-            <p class="max-w-md mx-auto mt-1 text-sm text-gray-500">
-              {{ $t('testVocacional.result.desc') }}
-            </p>
-          </div>
-
-          <!-- Recomendación Principal Card -->
-          <div :class="`border-2 rounded-2xl p-6 ${computedResult.colorBg} relative overflow-hidden`">
-            <div class="absolute top-0 right-0 w-24 h-24 -mt-10 -mr-10 rounded-full bg-white/20 opacity-30" />
-            <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-              <div class="flex items-center gap-4">
-                <div class="flex items-center justify-center text-blue-700 bg-white shadow-md w-14 h-14 rounded-2xl">
-                  <component :is="computedResult.icon" class="w-8 h-8" :style="{ color: computedResult.color }" />
-                </div>
+      <!-- STEP FINAL: PERFIL PSICOMÉTRICO -->
+      <Card
+        v-else-if="currentStep === totalQuestions + 2"
+        class="relative w-full overflow-hidden bg-white border-0 shadow-2xl rounded-3xl"
+      >
+        <CardContent class="p-0">
+          <!-- Top Banner Result -->
+          <div
+            :class="`p-8 sm:p-12 relative overflow-hidden ${computedResult.colorBg}`"
+          >
+            <div
+              class="absolute top-0 right-0 w-64 h-64 -mt-32 -mr-32 rounded-full pointer-events-none bg-white/30 blur-3xl"
+            />
+            <div
+              class="relative z-10 flex flex-col items-center justify-between gap-8 md:flex-row"
+            >
+              <div
+                class="flex flex-col items-center gap-4 text-center md:items-start md:text-left"
+              >
+                <Badge
+                  class="px-4 py-1.5 text-xs font-black text-emerald-700 bg-emerald-100 border-0 rounded-full shadow-sm"
+                >
+                  <CheckCircle2 class="w-4 h-4 mr-1.5 inline" /> Perfil Evaluado
+                  por NEXUS
+                </Badge>
                 <div>
-                  <span class="text-xs font-bold tracking-wider text-gray-500 uppercase">{{ $t('testVocacional.result.recommended_career_label') }}</span>
-                  <h2 class="text-2xl font-black leading-tight" :style="{ color: computedResult.color }">
+                  <span
+                    class="text-xs font-black tracking-widest uppercase text-slate-500"
+                    >Perfil Recomendado</span
+                  >
+                  <h2
+                    class="mt-1 text-4xl font-black leading-tight"
+                    :style="{ color: computedResult.color }"
+                  >
                     {{ computedResult.career }}
                   </h2>
                 </div>
+                <p
+                  class="max-w-lg mt-2 text-sm font-medium leading-relaxed text-slate-700"
+                >
+                  {{ computedResult.description }}
+                </p>
               </div>
-              
-              <div class="flex items-center self-stretch justify-between px-4 py-2 text-center bg-white border shadow-sm rounded-2xl sm:self-auto sm:flex-col sm:justify-center">
-                <span class="text-xs font-bold tracking-wide text-gray-500 uppercase">{{ $t('testVocacional.result.ai_affinity') }}</span>
-                <span class="text-3xl font-black" :style="{ color: computedResult.color }">
-                  {{ computedResult.percentage }}%
-                </span>
-              </div>
-            </div>
-
-            <p class="mt-4 text-sm font-medium leading-relaxed text-gray-700">
-              {{ computedResult.description }}
-            </p>
-          </div>
-
-          <!-- Competencias Clave -->
-          <div class="space-y-3">
-            <h3 class="text-base font-bold text-gray-800">{{ $t('testVocacional.result.key_skills') }}</h3>
-            <div class="grid gap-3 sm:grid-cols-2">
               <div
-                v-for="(skill, idx) in computedResult.skills"
-                :key="idx"
-                class="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100"
+                class="flex flex-col items-center justify-center p-8 bg-white shadow-xl rounded-[2rem] shrink-0 min-w-[200px] border border-white/50"
               >
-                <div class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-green-700">
-                  <Check class="w-3.5 h-3.5 stroke-[3]" />
+                <div
+                  class="flex items-center justify-center w-16 h-16 mb-3 shadow-inner rounded-2xl"
+                  :style="{ backgroundColor: `${computedResult.color}15` }"
+                >
+                  <component
+                    :is="computedResult.icon"
+                    class="w-8 h-8"
+                    :style="{ color: computedResult.color }"
+                  />
                 </div>
-                <span class="text-xs font-semibold leading-snug text-gray-700 sm:text-sm">{{ skill }}</span>
+                <span
+                  class="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-1"
+                  >Afinidad Cognitiva</span
+                >
+                <span
+                  class="text-5xl font-black"
+                  :style="{ color: computedResult.color }"
+                  >{{ computedResult.percentage }}%</span
+                >
               </div>
             </div>
           </div>
 
-          <!-- Acciones Finales -->
-          <div class="flex flex-col gap-3 pt-6 border-t border-gray-100 sm:flex-row">
-            <Button variant="outline" class="flex-1 h-12 font-bold border-gray-300 rounded-xl" @click="currentStep = 0">
-              {{ $t('testVocacional.result.btn_repeat') }}
-            </Button>
-            <Button
-              class="flex-1 h-12 gap-2 font-bold text-white bg-blue-600 shadow-md hover:bg-blue-700 rounded-xl"
-              @click="saveAndRedirect"
+          <!-- Bottom Stats (Radar / Barras) -->
+          <div class="p-8 bg-white sm:p-12">
+            <h3
+              class="flex items-center gap-2 mb-6 text-lg font-black text-slate-800"
             >
-              {{ $t('testVocacional.result.btn_save_go') }}
-              <ArrowRight class="w-4 h-4" />
-            </Button>
+              <Activity class="w-5 h-5 text-blue-600" /> Resultados del Mapeo
+              Cognitivo
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6">
+              <div
+                v-for="stat in computedResult.stats"
+                :key="stat.label"
+                class="space-y-2"
+              >
+                <div class="flex items-end justify-between">
+                  <span
+                    class="text-xs font-bold tracking-wide uppercase text-slate-600"
+                    >{{ stat.label }}</span
+                  >
+                  <span class="text-sm font-black text-slate-900"
+                    >{{ stat.value }}%</span
+                  >
+                </div>
+                <div
+                  class="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner"
+                >
+                  <div
+                    class="h-full transition-all duration-1000 ease-out rounded-full"
+                    :class="stat.color"
+                    :style="{ width: `${stat.value}%` }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="flex justify-center pt-10 mt-8 border-t border-slate-100"
+            >
+              <Button
+                class="w-full gap-3 px-12 text-lg font-black text-white transition-transform bg-blue-600 shadow-xl h-14 hover:bg-blue-700 shadow-blue-600/30 rounded-2xl hover:-translate-y-1 sm:w-auto"
+                @click="saveAndRedirect"
+              >
+                Iniciar mi Laberinto Personalizado
+                <ArrowRight class="w-6 h-6" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
-
     </div>
   </DashboardLayout>
 </template>
 
 <style scoped>
-/* Custom animations */
 .animate-spin-slow {
-  animation: spin 8s linear infinite;
+  animation: spin 4s linear infinite;
 }
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes loading-bar {
   0% {
     transform: translateX(-100%);
