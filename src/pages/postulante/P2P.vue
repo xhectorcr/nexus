@@ -56,6 +56,11 @@ const sidebarItems = computed(() => [
     label: t("postulante.p2p_connection") || "Conexión P2P",
     href: "/postulante/p2p",
   },
+  {
+    icon: markRaw(MessageSquare),
+    label: "Foro UTP+",
+    href: "/postulante/foro",
+  },
 ]);
 
 const activeTab = ref<"disponibles" | "mis_conexiones">("disponibles");

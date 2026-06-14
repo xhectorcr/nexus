@@ -21,16 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import {
-  ArrowRight,
-  BookOpen,
-  Brain,
-  Eye,
-  Gamepad2,
-  Home,
-  MessageSquare,
-  Plus,
-} from "lucide-vue-next";
+import { ArrowRight, BookOpen, Eye, Home, Map as MapIcon, Plus, MessageSquare } from "lucide-vue-next";
 import { computed, markRaw, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -38,30 +29,21 @@ const auth = useAuth();
 const { t } = useI18n();
 
 const sidebarItems = computed(() => [
+  { icon: markRaw(Home), label: t("nav.home") || "Inicio", href: "/estudiante" },
   {
-    icon: markRaw(Home),
-    label: t("nav.home") || "Inicio",
-    href: "/postulante",
-  },
-  {
-    icon: markRaw(Brain),
-    label: t("nav.vocational_tests") || "Tests",
-    href: "/postulante/test",
-  },
-  {
-    icon: markRaw(Gamepad2),
-    label: t("postulante.labyrinth") || "Laberinto",
-    href: "/postulante/laberinto",
+    icon: markRaw(MapIcon),
+    label: t("nav.learning_path") || "Ruta de Aprendizaje",
+    href: "/estudiante/ruta",
   },
   {
     icon: markRaw(BookOpen),
     label: t("postulante.digital_log") || "Bitácora",
-    href: "/postulante/bitacora",
+    href: "/estudiante/bitacora",
   },
   {
     icon: markRaw(MessageSquare),
     label: "Foro UTP+",
-    href: "/postulante/foro",
+    href: "/estudiante/foro",
   },
 ]);
 
@@ -78,8 +60,8 @@ const bitacoraSubmitting = ref(false);
 const fetchBitacora = async () => {
   bitacoraLoading.value = true;
   try {
-    const postulantId = auth.state.user?.id || 1;
-    const res = await api.get(`/api/bitacoras/postulante/${postulantId}`);
+    const userId = auth.state.user?.id || 1;
+    const res = await api.get(`/api/bitacoras/postulante/${userId}`);
     entries.value = res.data?.data || res.data || [];
   } catch (error) {
     console.error("No se pudo obtener la bitácora desde la BD", error);
@@ -93,10 +75,10 @@ const saveBitacoraEntry = async () => {
   bitacoraSubmitting.value = true;
 
   try {
-    const postulantId = auth.state.user?.id || 1;
+    const userId = auth.state.user?.id || 1;
     const payload = {
       ...bitacoraForm.value,
-      postulanteId: postulantId,
+      postulanteId: userId,
       emocion: "MOTIVADO",
       nivelConfianza: 8,
       nivelMotivacion: 10,
@@ -127,23 +109,20 @@ onMounted(() => {
   <DashboardLayout
     :sidebarItems="sidebarItems"
     :title="$t('postulante.digital_log') || 'Bitácora Digital'"
-    :subtitle="
-      $t('postulante.log_desc') ||
-      'Registra tus reflexiones, descubrimientos y logros vocacionales.'
-    "
+    :subtitle="$t('postulante.log_desc') || 'Registra tus reflexiones, descubrimientos y logros.'"
     :breadcrumbs="[
-      { label: $t('nav.home') || 'Inicio', href: '/postulante' },
-      { label: $t('postulante.digital_log') || 'Bitácora' },
+      { label: $t('nav.home') || 'Inicio', href: '/estudiante' },
+      { label: $t('postulante.digital_log') || 'Bitácora' }
     ]"
-    moduleColor="#082065"
+    moduleColor="#B50E30"
   >
     <div class="space-y-6">
-      <Card class="w-full border-t-4 border-t-[#082065] shadow-lg">
+      <Card class="w-full border-t-4 border-t-[#B50E30] shadow-lg">
         <CardHeader class="pb-6 rounded-t-lg bg-slate-50/50">
           <div class="flex items-start justify-between">
             <div class="flex gap-4">
               <div
-                class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center shadow-md"
+                class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#B50E30] to-[#8F0B26] flex items-center justify-center shadow-md"
               >
                 <BookOpen class="text-white w-7 h-7" />
               </div>
@@ -152,13 +131,13 @@ onMounted(() => {
                   $t("postulante.digital_log") || "Bitácora Digital"
                 }}</CardTitle>
                 <CardDescription class="mt-1 text-base text-gray-600">
-                  Historial de tus entradas vocacionales
+                  Historial de tus entradas
                 </CardDescription>
               </div>
             </div>
             <Badge
               variant="outline"
-              class="bg-blue-50 text-[#082065] border-blue-200 px-3 py-1 text-sm hidden sm:inline-flex"
+              class="bg-red-50 text-[#B50E30] border-red-200 px-3 py-1 text-sm hidden sm:inline-flex"
             >
               {{ entries.length }} entradas
             </Badge>
@@ -172,7 +151,7 @@ onMounted(() => {
               <h3
                 class="flex items-center gap-2 text-lg font-bold text-gray-800"
               >
-                <Plus class="w-5 h-5 text-[#082065]" />
+                <Plus class="w-5 h-5 text-[#B50E30]" />
                 Nueva Entrada
               </h3>
               <div class="space-y-4">
@@ -186,7 +165,7 @@ onMounted(() => {
                       $t('postulante.entry_title') ||
                       'Ej. Terminé mi primer test'
                     "
-                    class="bg-gray-50 focus-visible:ring-[#082065]"
+                    class="bg-gray-50 focus-visible:ring-[#B50E30]"
                   />
                 </div>
                 <div>
@@ -199,7 +178,7 @@ onMounted(() => {
                       $t('postulante.describe_experience') ||
                       'Me di cuenta de que disfruto mucho...'
                     "
-                    class="min-h-[120px] bg-gray-50 focus-visible:ring-[#082065] resize-none"
+                    class="min-h-[120px] bg-gray-50 focus-visible:ring-[#B50E30] resize-none"
                   />
                 </div>
                 <div>
@@ -214,7 +193,7 @@ onMounted(() => {
                       :class="[
                         'px-3 py-1.5 text-xs font-semibold rounded-full border transition-all',
                         bitacoraForm.tipoEntrada === tipo
-                          ? 'bg-[#082065] text-white border-[#082065]'
+                          ? 'bg-[#B50E30] text-white border-[#B50E30]'
                           : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300',
                       ]"
                     >
@@ -229,7 +208,7 @@ onMounted(() => {
                     !bitacoraForm.descripcion
                   "
                   @click="saveBitacoraEntry"
-                  class="w-full bg-[#082065] hover:bg-[#0D47A1] mt-2 shadow-md"
+                  class="w-full bg-[#B50E30] hover:bg-[#8F0B26] mt-2 shadow-md"
                 >
                   <span v-if="bitacoraSubmitting">Guardando...</span>
                   <span v-else class="flex items-center gap-2"
@@ -249,7 +228,7 @@ onMounted(() => {
                   size="sm"
                   @click="fetchBitacora"
                   :disabled="bitacoraLoading"
-                  class="text-gray-500 hover:text-[#082065]"
+                  class="text-gray-500 hover:text-[#B50E30]"
                 >
                   Actualizar
                 </Button>
@@ -287,7 +266,7 @@ onMounted(() => {
                       <div class="flex items-center gap-2 mb-1">
                         <Badge
                           variant="secondary"
-                          class="bg-blue-50 text-blue-700 hover:bg-blue-100 uppercase text-[10px] font-bold tracking-wider"
+                          class="bg-red-50 text-red-700 hover:bg-red-100 uppercase text-[10px] font-bold tracking-wider"
                         >
                           {{ entry.tipoEntrada || "ENTRADA" }}
                         </Badge>
@@ -308,7 +287,7 @@ onMounted(() => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          class="h-8 w-8 p-0 text-gray-400 hover:text-[#082065] transition-colors rounded-full"
+                          class="h-8 w-8 p-0 text-gray-400 hover:text-[#B50E30] transition-colors rounded-full"
                           :title="
                             $t('postulante.view_details') || 'Ver detalles'
                           "
@@ -321,7 +300,7 @@ onMounted(() => {
                           <DialogTitle class="flex items-center gap-2">
                             <Badge
                               variant="secondary"
-                              class="bg-blue-50 text-blue-700 uppercase text-[10px] font-bold"
+                              class="bg-red-50 text-red-700 uppercase text-[10px] font-bold"
                             >
                               {{ entry.tipoEntrada || "ENTRADA" }}
                             </Badge>

@@ -12,21 +12,7 @@ import {
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import {
-  ArrowRight,
-  BookOpen,
-  Brain,
-  Check,
-  Circle,
-  Copy,
-  Gamepad2,
-  Heart,
-  Home,
-  Lightbulb,
-  MessageCircle,
-  Send,
-  Sparkles,
-} from "lucide-vue-next";
+import { ArrowRight, BookOpen, Brain, Check, Circle, Copy, Gamepad2, Heart, Home, Lightbulb, MessageCircle, Send, Sparkles, MessageSquare } from "lucide-vue-next";
 import { computed, markRaw, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -61,6 +47,11 @@ const sidebarItems = computed(() => [
     icon: markRaw(MessageCircle),
     label: t("postulante.p2p_connection") || "Conexión P2P",
     href: "/postulante/p2p",
+  },
+  {
+    icon: markRaw(MessageSquare),
+    label: "Foro UTP+",
+    href: "/postulante/foro",
   },
 ]);
 

@@ -18,6 +18,7 @@ import {
   Lightbulb,
   Lock,
   MessageCircle,
+  MessageSquare,
   PlayCircle,
   Target,
   TrendingUp,
@@ -56,6 +57,11 @@ const sidebarItems = computed(() => [
     label: t("postulante.p2p_connection") || "Conexión P2P",
     href: "/postulante/p2p",
   },
+  {
+    icon: markRaw(MessageSquare),
+    label: "Foro UTP+",
+    href: "/postulante/foro",
+  },
 ]);
 
 const modules = ref<any[]>([]);
@@ -77,10 +83,10 @@ let resizeObserver: ResizeObserver | null = null;
 const generatePath = (fromIdx: number, toIdx: number, total: number) => {
   const w = svgWidth.value || 100;
   const h = svgHeight.value || 100;
-  
+
   const x1 = fromIdx % 2 === 0 ? w * 0.35 : w * 0.65;
   const y1 = h * ((fromIdx + 0.5) / total);
-  
+
   const x2 = toIdx % 2 === 0 ? w * 0.35 : w * 0.65;
   const y2 = h * ((toIdx + 0.5) / total);
 
@@ -307,7 +313,6 @@ onUnmounted(() => {
     />
   </DashboardLayout>
 
-  <!-- VISTA 2: BLOQUEO POR FALTA DE TEST VOCACIONAL -->
   <DashboardLayout
     v-else-if="needsVocationalTest"
     :sidebarItems="sidebarItems"
@@ -319,15 +324,25 @@ onUnmounted(() => {
     ]"
     moduleColor="#082065"
   >
-    <div class="flex flex-col items-center justify-center w-full min-h-[60vh] text-center">
+    <div
+      class="flex flex-col items-center justify-center w-full min-h-[60vh] text-center"
+    >
       <div class="p-6 mb-6 bg-red-100 rounded-full">
         <Lock class="w-16 h-16 text-red-600" />
       </div>
-      <h2 class="mb-4 text-3xl font-black text-slate-900">Aún no tienes un destino</h2>
+      <h2 class="mb-4 text-3xl font-black text-slate-900">
+        Aún no tienes un destino
+      </h2>
       <p class="max-w-md mb-8 font-medium text-slate-500">
-        Para poder armar tu Laberinto de Vocaciones y darte las misiones correctas, primero necesitamos conocerte. Por favor completa el Test Vocacional.
+        Para poder armar tu Laberinto de Vocaciones y darte las misiones
+        correctas, primero necesitamos conocerte. Por favor completa el Test
+        Vocacional.
       </p>
-      <Button @click="$router.push('/postulante/test')" size="lg" class="px-8 font-bold text-white transition-transform bg-blue-600 shadow-lg hover:bg-blue-700 h-14 rounded-xl shadow-blue-500/30 hover:scale-105">
+      <Button
+        @click="$router.push('/postulante/test')"
+        size="lg"
+        class="px-8 font-bold text-white transition-transform bg-blue-600 shadow-lg hover:bg-blue-700 h-14 rounded-xl shadow-blue-500/30 hover:scale-105"
+      >
         <Brain class="w-5 h-5 mr-2" />
         Ir al Test Vocacional
       </Button>
@@ -549,13 +564,23 @@ onUnmounted(() => {
           </CardHeader>
 
           <CardContent class="px-0 pb-0 bg-[#0B1120]">
-            <div class="relative min-h-[700px] w-full overflow-hidden" ref="svgContainer">
+            <div
+              class="relative min-h-[700px] w-full overflow-hidden"
+              ref="svgContainer"
+            >
               <div
                 class="absolute inset-0"
                 style="
                   background-image:
-                    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+                    linear-gradient(
+                      rgba(255, 255, 255, 0.02) 1px,
+                      transparent 1px
+                    ),
+                    linear-gradient(
+                      90deg,
+                      rgba(255, 255, 255, 0.02) 1px,
+                      transparent 1px
+                    );
                   background-size: 30px 30px;
                 "
               ></div>
@@ -565,9 +590,19 @@ onUnmounted(() => {
                 class="absolute inset-0 z-0 w-full h-full pointer-events-none"
               >
                 <defs>
-                  <filter id="glow-blue" x="-20%" y="-20%" width="140%" height="140%">
+                  <filter
+                    id="glow-blue"
+                    x="-20%"
+                    y="-20%"
+                    width="140%"
+                    height="140%"
+                  >
                     <feGaussianBlur stdDeviation="4" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    <feComposite
+                      in="SourceGraphic"
+                      in2="blur"
+                      operator="over"
+                    />
                   </filter>
                 </defs>
 
@@ -578,7 +613,8 @@ onUnmounted(() => {
                   :d="generatePath(i - 1, i, modules.length)"
                   fill="none"
                   :stroke="
-                    modules[i - 1].status !== 'locked' && modules[i].status !== 'locked'
+                    modules[i - 1].status !== 'locked' &&
+                    modules[i].status !== 'locked'
                       ? '#1E3A8A'
                       : '#1F2937'
                   "
@@ -589,7 +625,10 @@ onUnmounted(() => {
                 <path
                   v-for="i in modules.length - 1"
                   :key="'path-' + i"
-                  v-show="modules[i - 1].status !== 'locked' && modules[i].status !== 'locked'"
+                  v-show="
+                    modules[i - 1].status !== 'locked' &&
+                    modules[i].status !== 'locked'
+                  "
                   :d="generatePath(i - 1, i, modules.length)"
                   fill="none"
                   stroke="#38BDF8"
@@ -621,7 +660,9 @@ onUnmounted(() => {
                       left: idx % 2 === 0 ? '35%' : '65%',
                       top: `${(100 * (idx + 0.5)) / modules.length}%`,
                     }"
-                    @click="mod.status !== 'locked' ? selectedModule = mod : null"
+                    @click="
+                      mod.status !== 'locked' ? (selectedModule = mod) : null
+                    "
                   >
                     <!-- Node Icon Circle -->
                     <div
@@ -629,23 +670,32 @@ onUnmounted(() => {
                       :class="[
                         mod.status === 'completed'
                           ? 'bg-[#1E3A8A] border-4 border-[#3B82F6] shadow-blue-500/50'
-                          : mod.status === 'in_progress' || mod.status === 'available'
+                          : mod.status === 'in_progress' ||
+                              mod.status === 'available'
                             ? 'bg-gradient-to-tr from-[#3B82F6] to-[#0EA5E9] border-4 border-white shadow-cyan-500/50'
                             : 'bg-slate-800 border-4 border-slate-600',
                       ]"
                     >
                       <!-- Ping animation for active node -->
                       <div
-                        v-if="mod.status === 'in_progress' || mod.status === 'available'"
+                        v-if="
+                          mod.status === 'in_progress' ||
+                          mod.status === 'available'
+                        "
                         class="absolute inset-0 border-4 rounded-full opacity-50 border-cyan-400 animate-ping"
                       ></div>
 
                       <component
                         v-if="mod.status !== 'locked'"
-                        :is="mod.status === 'completed' ? CheckCircle2 : mod.icon"
+                        :is="
+                          mod.status === 'completed' ? CheckCircle2 : mod.icon
+                        "
                         class="relative z-10 w-8 h-8 text-white"
                       />
-                      <Lock v-else class="relative z-10 w-8 h-8 text-slate-400" />
+                      <Lock
+                        v-else
+                        class="relative z-10 w-8 h-8 text-slate-400"
+                      />
                     </div>
 
                     <!-- Node Tooltip/Label -->
@@ -659,29 +709,42 @@ onUnmounted(() => {
                     >
                       <p
                         class="max-w-[160px] text-sm font-bold truncate"
-                        :class="mod.status !== 'locked' ? 'text-white' : 'text-slate-400 blur-[2px]'"
+                        :class="
+                          mod.status !== 'locked'
+                            ? 'text-white'
+                            : 'text-slate-400 blur-[2px]'
+                        "
                       >
-                        {{ mod.status === 'locked' ? 'Desconocido' : mod.title }}
+                        {{
+                          mod.status === "locked" ? "Desconocido" : mod.title
+                        }}
                       </p>
                       <p
                         class="mt-1 text-[10px] font-black tracking-widest uppercase"
                         :class="[
-                          mod.status === 'completed' ? 'text-emerald-400' :
-                          mod.status === 'in_progress' || mod.status === 'available' ? 'text-cyan-400' :
-                          'text-slate-500'
+                          mod.status === 'completed'
+                            ? 'text-emerald-400'
+                            : mod.status === 'in_progress' ||
+                                mod.status === 'available'
+                              ? 'text-cyan-400'
+                              : 'text-slate-500',
                         ]"
                       >
                         {{
-                          mod.status === 'completed' ? 'COMPLETADO' :
-                          mod.status === 'in_progress' ? 'EN PROGRESO' :
-                          mod.status === 'available' ? 'DISPONIBLE' : 'BLOQUEADO'
+                          mod.status === "completed"
+                            ? "COMPLETADO"
+                            : mod.status === "in_progress"
+                              ? "EN PROGRESO"
+                              : mod.status === "available"
+                                ? "DISPONIBLE"
+                                : "BLOQUEADO"
                         }}
                       </p>
-                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
             <div class="px-5 py-4 border-t border-white/10 bg-black/20">
               <span class="text-xs font-medium text-white/50">
                 {{

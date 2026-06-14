@@ -22,7 +22,10 @@ import {
   Home,
   Info,
   KeyRound,
+  Lightbulb,
+  MessageCircle,
   Phone,
+  RefreshCw,
   Sparkles,
   TrendingUp,
   UserCheck,
@@ -36,6 +39,7 @@ const { t, te } = useI18n();
 
 const vistaFacil = ref(true);
 const reproduciendoText = ref("");
+const voiceVolume = ref(1);
 
 const isUnlinking = ref(false);
 
@@ -92,11 +96,13 @@ const handleUnlinkStudent = async () => {
 const hablar = (texto: string) => {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
+  if (voiceVolume.value === 0) return;
   reproduciendoText.value = texto;
   const utterance = new SpeechSynthesisUtterance(texto);
   utterance.lang = "es-PE";
   utterance.rate = 0.95;
   utterance.pitch = 1;
+  utterance.volume = voiceVolume.value;
   utterance.onend = () => {
     reproduciendoText.value = "";
   };
@@ -153,14 +159,14 @@ const studentMilestones = computed(() => [
 const applicantMilestones = ref([
   {
     title: t("familia.milestones.a1_t"),
-    completed: true,
-    date: "12 Jun 2026",
+    completed: false,
+    date: "Pendiente",
     desc: t("familia.milestones.a1_d"),
   },
   {
     title: t("familia.milestones.a2_t"),
-    completed: true,
-    date: "13 Jun 2026",
+    completed: false,
+    date: "Pendiente",
     desc: t("familia.milestones.a2_d"),
   },
   {
@@ -177,23 +183,81 @@ const applicantMilestones = ref([
   },
 ]);
 
-const applicantProgress = ref(100);
+const applicantProgress = ref(0);
 
 const fetchChildData = async () => {
   try {
     // 1. Obtener el progreso real
     const progresoRes = await api.get('/api/familiar/hijo-progreso');
     if (progresoRes.data?.success) {
-      applicantProgress.value = progresoRes.data.data.progresoGeneral || 0;
-    }
+      const data = progresoRes.data.data;
+      applicantProgress.value = data.progresoGeneral || 0;
 
-    // 2. Obtener los detalles del postulante (mantenemos esto para los hitos)
-    const childId = 1; // Podría venir dinámicamente según el usuario
-    const profileRes = await api.get(`/api/postulantes/${childId}`);
-    const profile = profileRes.data?.data;
+      const nombreCorto = data.nombreHijo ? data.nombreHijo.split(' ')[0] : 'tu hijo';
 
-    if (profile) {
-      applicantMilestones.value[0].completed = profile.cuestionarioCompletado;
+      // Actualizar FAQs dinámicamente según el progreso
+      if (isStudentLinked.value) {
+        studentFaqs.value = [
+          {
+            q: `¿Cómo va ${nombreCorto} hoy?`,
+            a: `Tiene un progreso general del ${data.progresoGeneral}% y ha completado ${data.temasCompletados}.`,
+            voiceText: `Tiene un progreso general del ${data.progresoGeneral} por ciento.`
+          },
+          {
+            q: `¿Qué carrera está estudiando?`,
+            a: `Actualmente cursa ${data.carreraRecomendada}.`,
+            voiceText: `Actualmente cursa ${data.carreraRecomendada}.`
+          },
+          {
+            q: `¿Qué tareas le faltan por terminar?`,
+            a: data.tareasPendientes,
+            voiceText: `Le faltan ${data.tareasPendientes}.`
+          }
+        ];
+      } else {
+        const progresoCero = data.progresoGeneral === 0;
+        applicantFaqs.value = [
+          {
+            q: `¿Cómo le va a ${nombreCorto} en su orientación?`,
+            a: progresoCero 
+                ? `Aún no ha comenzado su evaluación. Su progreso es del 0%.`
+                : `Va muy bien, ya tiene un progreso del ${data.progresoGeneral}%. Su carrera sugerida actual es: ${data.carreraRecomendada}.`,
+            voiceText: progresoCero 
+                ? `Aún no ha comenzado su evaluación.` 
+                : `Ya tiene un progreso del ${data.progresoGeneral} por ciento.`
+          },
+          {
+            q: `¿Cuál es el siguiente paso sugerido?`,
+            a: data.siguienteTarea || 'Esperar a que comience la evaluación.',
+            voiceText: `El siguiente paso es ${data.siguienteTarea || 'empezar'}.`
+          }
+        ];
+      }
+
+      // 2. Obtener los detalles reales del postulante usando hijoUsuarioId
+      if (data.hijoUsuarioId) {
+        const profileRes = await api.get(`/api/postulantes/by-usuario/${data.hijoUsuarioId}`);
+        const profile = profileRes.data?.data;
+
+        if (profile) {
+          // Paso 1: Test Vocacional y Configuración
+          applicantMilestones.value[0].completed = profile.cuestionarioCompletado;
+          if (profile.cuestionarioCompletado) {
+            applicantMilestones.value[0].desc = "Completó la evaluación vocacional básica.";
+            applicantMilestones.value[0].date = "Completado";
+          }
+
+          // Paso 2: Plan de Admisión UTP (Asignado al activar el laberinto o IA)
+          applicantMilestones.value[1].completed = profile.laboratorioActivo;
+          if (profile.laboratorioActivo) {
+            applicantMilestones.value[1].desc = "Se generó el plan de estudios adaptado a su perfil vocacional.";
+            applicantMilestones.value[1].date = "Completado";
+          }
+          
+          // Nota: Los pasos 3 y 4 (Certificado y Charla) se mantienen como pendientes por defecto 
+          // a menos que en un futuro se agreguen esos campos al modelo.
+        }
+      }
     }
   } catch (error) {
     console.warn("Error fetching child data:", error);
@@ -201,30 +265,17 @@ const fetchChildData = async () => {
 };
 
 onMounted(() => {
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+    reproduciendoText.value = "";
+  }
   if (isApplicantLinked.value) {
     fetchChildData();
   }
 });
 
-const studentFaqs = computed(() => [
-  {
-    q: t("familia.faqs.s1_q"),
-    a: t("familia.faqs.s1_a"),
-    voiceText: t("familia.faqs.s1_v"),
-  },
-  {
-    q: t("familia.faqs.s2_q"),
-    a: t("familia.faqs.s2_a"),
-    voiceText: t("familia.faqs.s2_v"),
-  },
-  {
-    q: t("familia.faqs.s3_q"),
-    a: t("familia.faqs.s3_a"),
-    voiceText: t("familia.faqs.s3_v"),
-  },
-]);
-
-const applicantFaqs = computed(() => [
+const studentFaqs = ref<any[]>([]);
+const applicantFaqs = ref<any[]>([
   {
     q: t("familia.faqs.a1_q"),
     a: t("familia.faqs.a1_a"),
@@ -260,27 +311,52 @@ const toggleInstrucciones = () => {
   }
 };
 
-const resources = computed(() => [
+const aiTips = [
   {
-    title: t("familia.resources.r1_t"),
-    description: t("familia.resources.r1_d"),
-    downloads: 1243,
-    icon: markRaw(FileText),
-    color: "#D4A017",
+    insight: "Elogiar el esfuerzo en lugar de la inteligencia construye resiliencia.",
+    action: "Felicita a tu hijo hoy por su constancia en NEXUS, independientemente de los resultados.",
+    question: "¿Qué fue lo más desafiante que aprendiste hoy y cómo lo superaste?"
   },
   {
-    title: t("familia.resources.r2_t"),
-    description: t("familia.resources.r2_d"),
-    downloads: 1567,
-    icon: markRaw(TrendingUp),
-    color: "#D4A017",
+    insight: "El autoconocimiento vocacional es un proceso que genera ansiedad en los jóvenes.",
+    action: "Brinda un espacio libre de juicios para que exprese sus dudas sobre el futuro.",
+    question: "Si no hubiera presiones económicas ni de notas, ¿qué estarías haciendo ahora mismo?"
   },
-]);
-
-const parentTips = [
-  "Felicita a tu hijo hoy por su esfuerzo. ¡Tu apoyo le dará más motivación!",
-  "Pregúntale qué descubrió sobre sí mismo en el Test Vocacional.",
+  {
+    insight: "Conocer experiencias reales ayuda a aterrizar las expectativas sobre una carrera.",
+    action: "Anímenlo a investigar entrevistas de profesionales reales en internet.",
+    question: "¿De qué profesión te gustaría ver un video de 'Un día en la vida de...'?"
+  },
+  {
+    insight: "Un ambiente de estudio adecuado mejora la concentración de forma dramática.",
+    action: "Revisa junto a tu hijo si su espacio actual tiene buena iluminación y pocas distracciones.",
+    question: "¿Sientes que hay algo en tu entorno físico que te distrae cuando estudias?"
+  },
+  {
+    insight: "Compartir tus propias dudas juveniles genera muchísima empatía y confianza.",
+    action: "Cuéntale a tu hijo cómo fue tu propio proceso y dudas para decidir a qué dedicarte.",
+    question: "¿Sabías que a tu edad yo también estaba muy confundido sobre qué hacer con mi futuro?"
+  }
 ];
+
+const currentTip = ref(aiTips[0]);
+const isGeneratingTip = ref(false);
+
+const generateTip = () => {
+  isGeneratingTip.value = true;
+  setTimeout(() => {
+    let newTip = currentTip.value;
+    while (newTip === currentTip.value) {
+      newTip = aiTips[Math.floor(Math.random() * aiTips.length)];
+    }
+    currentTip.value = newTip;
+    isGeneratingTip.value = false;
+  }, 600);
+};
+
+const getTipTextToSpeech = () => {
+  return `Aquí tienes un consejo. ¿Sabías que? ${currentTip.value.insight}. Acción recomendada: ${currentTip.value.action}. Pregunta para iniciar la conversación: ${currentTip.value.question}`;
+};
 
 const sidebarItems = computed(() => [
   {
@@ -348,6 +424,19 @@ const sidebarItems = computed(() => [
                 : $t("familia.big_text_off")
             }}
           </button>
+
+          <div class="flex items-center gap-2 bg-white px-3 h-11 rounded-xl border border-gray-200 shadow-sm">
+            <Volume2 class="w-4 h-4 text-gray-400" />
+            <input 
+              type="range" 
+              min="0" 
+              max="1" 
+              step="0.1" 
+              v-model.number="voiceVolume" 
+              class="w-20 accent-amber-600 cursor-pointer"
+              title="Volumen del Asistente"
+            />
+          </div>
 
           <Button
             @click="toggleInstrucciones"
@@ -756,64 +845,74 @@ const sidebarItems = computed(() => [
               </CardContent>
             </Card>
 
-            <!-- TARJETA: RECURSOS -->
-            <Card class="bg-white border-gray-200 shadow-sm rounded-2xl">
-              <CardHeader class="p-5 border-b border-gray-100">
-                <CardTitle class="text-lg font-black text-gray-900">{{
-                  $t("familia.help_title")
-                }}</CardTitle>
+            <!-- TARJETA: CONSEJOS IA -->
+            <Card class="bg-gradient-to-br from-amber-50 to-white border-amber-200 shadow-sm rounded-2xl">
+              <CardHeader class="p-5 border-b border-amber-100">
+                <CardTitle class="flex items-center gap-2 text-lg font-black text-amber-900">
+                  <Sparkles class="w-5 h-5 text-amber-600" />
+                  Consejo de NEXUS IA
+                </CardTitle>
               </CardHeader>
-              <CardContent class="p-0">
-                <div class="divide-y divide-gray-100">
-                  <div
-                    v-for="(res, idx) in resources"
-                    :key="idx"
-                    class="p-5 transition-colors hover:bg-gray-50"
-                  >
-                    <div class="flex gap-3">
-                      <div
-                        class="flex items-center justify-center w-10 h-10 rounded-xl shrink-0"
-                        :style="{
-                          backgroundColor: `${res.color}15`,
-                          color: res.color,
-                        }"
-                      >
-                        <component :is="res.icon" class="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 class="text-sm font-bold text-gray-900">
-                          {{ res.title }}
-                        </h4>
-                        <p class="mt-1 mb-2 text-xs text-gray-600">
-                          {{ res.description }}
+              <CardContent class="p-6">
+                <div class="flex items-start gap-4">
+                  <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 text-amber-600">
+                    <Lightbulb class="w-5 h-5" />
+                  </div>
+                  <div class="flex-1">
+                    <div class="mb-4 space-y-3">
+                      <!-- Dato Psicológico -->
+                      <div class="p-3 bg-white border border-amber-100 rounded-xl">
+                        <span class="block text-xs font-black tracking-wider text-amber-500 uppercase mb-1">
+                          🧠 Insight
+                        </span>
+                        <p class="text-sm font-medium text-gray-700 leading-relaxed">
+                          {{ currentTip.insight }}
                         </p>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          class="h-7 text-xs font-bold gap-1.5 rounded-lg border-gray-300"
-                        >
-                          <Download class="w-3 h-3" />
-                          {{ $t("familia.download_pdf") }}
-                        </Button>
+                      </div>
+
+                      <!-- Acción -->
+                      <div class="p-3 bg-white border border-emerald-100 rounded-xl">
+                        <span class="block text-xs font-black tracking-wider text-emerald-600 uppercase mb-1">
+                          🎯 Sugerencia de Acción
+                        </span>
+                        <p class="text-sm font-medium text-gray-700 leading-relaxed">
+                          {{ currentTip.action }}
+                        </p>
+                      </div>
+
+                      <!-- Rompehielos -->
+                      <div class="p-3 bg-white border border-blue-100 rounded-xl">
+                        <span class="flex items-center gap-1.5 text-xs font-black tracking-wider text-blue-600 uppercase mb-1">
+                          <MessageCircle class="w-3.5 h-3.5" /> Para romper el hielo
+                        </span>
+                        <p class="text-sm font-bold text-gray-800 italic leading-relaxed">
+                          "{{ currentTip.question }}"
+                        </p>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                <div
-                  class="flex items-center justify-between p-4 border-t bg-amber-50 rounded-b-2xl border-amber-100"
-                >
-                  <span
-                    class="text-xs font-black tracking-wider uppercase text-amber-800"
-                    >{{ $t("familia.quick_doubts") }}</span
-                  >
-                  <a
-                    href="tel:+51987654321"
-                    class="flex items-center gap-1.5 text-xs font-black text-amber-600 hover:text-amber-700 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-amber-200"
-                  >
-                    <Phone class="w-3.5 h-3.5" />
-                    {{ $t("familia.call_support") }}
-                  </a>
+                    <div class="flex items-center gap-3 pt-2 border-t border-amber-100/50">
+                      <Button
+                        @click="generateTip"
+                        variant="outline"
+                        size="sm"
+                        class="flex gap-2 font-bold transition-all border-amber-200 text-amber-700 hover:bg-amber-100"
+                        :disabled="isGeneratingTip"
+                      >
+                        <RefreshCw class="w-3.5 h-3.5" :class="{'animate-spin': isGeneratingTip}" />
+                        Generar otro consejo
+                      </Button>
+                      <Button
+                        @click="hablar(getTipTextToSpeech())"
+                        variant="ghost"
+                        size="sm"
+                        class="text-amber-600 hover:bg-amber-100/50 hover:text-amber-700"
+                        title="Escuchar consejo completo"
+                      >
+                        <Volume2 class="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
