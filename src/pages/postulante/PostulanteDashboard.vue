@@ -87,15 +87,6 @@ const fetchDashboardData = async () => {
     const dashboard = dashboardRes.data.data;
 
     if (dashboard) {
-      // Set stats from dashboard.progress and dashboard.perfil
-      // Using direct assignment won't work with computed directly if we mutate,
-      // but since we only read them or we can let them be reactive state.
-      // Wait, if it's computed, we shouldn't mutate it directly like this.
-      // Let's create reactive values for the numbers instead.
-      // We'll update the logic inside the fetch to just set ref variables.
-
-      // Update other details if necessary
-      // For connections, we'd need to either fetch them separately or add to BFF. Let's fetch separately for now
       try {
         const conexionesRes = await api.get(
           `/api/conexiones/postulante/${postulantId}`,
@@ -109,13 +100,11 @@ const fetchDashboardData = async () => {
           career: "Ingeniería de Sistemas",
           online: con.estado === "ACTIVA",
         }));
-        // stats.value[2].value = conexiones.length.toString()
       } catch (e) {
         console.warn("Could not fetch connections", e);
       }
     }
 
-    // If no data, provide fallbacks
     if (mentors.value.length === 0) {
       mentors.value = [
         { name: "Ana García", career: "Ingeniería de Sistemas", online: true },
@@ -311,7 +300,7 @@ onMounted(() => {
           </Button>
           <Button
             variant="outline"
-            class="px-5 font-bold text-white border-white/20 hover:bg-white/10 rounded-xl h-11"
+            class="px-5 font-bold text-black hover:text-black border-white/20 hover:bg-white/90 rounded-xl h-11"
             @click="router.push('/postulante/test')"
           >
             {{ $t("postulante.retake_test") }}

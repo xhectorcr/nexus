@@ -217,19 +217,11 @@ const loadJourneyData = async () => {
   try {
     isLoading.value = true;
     const usuarioId = auth.state.user?.id || 1;
-    let postulanteId = usuarioId;
-
-    try {
-      const profRes = await api.get(`/api/postulantes/by-usuario/${usuarioId}`);
-      if (profRes.data?.data?.id) postulanteId = profRes.data.data.id;
-    } catch (e) {
-      console.warn("Usando fallback ID para postulante");
-    }
 
     try {
       // 1. Intentamos buscar su ruta activa
       const journeyRes = await api.get(
-        `/api/journeys/postulante/${postulanteId}/activo`,
+        `/api/journeys/usuario/${usuarioId}/activo`,
       );
       if (journeyRes.data && journeyRes.data.success) {
         processJourneyData(journeyRes.data.data);
@@ -242,12 +234,12 @@ const loadJourneyData = async () => {
           isAiGeneratingInitial.value = true; // Mostramos pantalla de análisis IA
 
           await api.post(
-            `/api/v1/ai/ruta/generar-completa?postulanteId=${postulanteId}`,
+            `/api/v1/ai/ruta/generar-completa?usuarioId=${usuarioId}`,
           );
 
           // Una vez creada, la volvemos a buscar
           const newJourneyRes = await api.get(
-            `/api/journeys/postulante/${postulanteId}/activo`,
+            `/api/journeys/usuario/${usuarioId}/activo`,
           );
           if (newJourneyRes.data && newJourneyRes.data.success) {
             processJourneyData(newJourneyRes.data.data);
