@@ -75,7 +75,7 @@ const stats = computed(() => [
     label: t('dashboard.stats_avg'),
     value: "16.5",
     icon: markRaw(Star),
-    color: "#FFB20D",
+    color: "#B50E30",
   },
   {
     label: t('dashboard.stats_credits'),
@@ -187,14 +187,14 @@ onMounted(async () => {
                   alt="Avatar"
                 />
               </div>
-              <div class="absolute -bottom-2 -right-2 bg-[#FFB20D] text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg z-20 border-2 border-[#8F0B26]">
+              <div class="absolute -bottom-2 -right-2 bg-[#B50E30] text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg z-20 border-2 border-[#8F0B26]">
                 NIVEL 3
               </div>
             </div>
 
             <div>
               <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-red-100 mb-3 shadow-inner">
-                <Star class="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" /> {{ $t('dashboard.outstanding_student') }}
+                <Star class="w-3.5 h-3.5 text-[#B50E30] fill-[#B50E30]" /> {{ $t('dashboard.outstanding_student') }}
               </div>
               <CardTitle class="text-3xl font-extrabold tracking-tight md:text-4xl"
                 >{{ $t('dashboard.welcome', { name: auth.state.user?.name ? auth.state.user.name.split(" ")[0] : "Estudiante" }) }}</CardTitle
@@ -247,11 +247,7 @@ onMounted(async () => {
       </Card>
 
       <div class="grid grid-cols-2 gap-5 md:grid-cols-4">
-        <Card
-          v-for="(stat, i) in stats"
-          :key="i"
-          class="relative overflow-hidden transition-all duration-300 border group hover:-translate-y-1 hover:shadow-xl border-slate-100"
-        >
+        <Card v-for="(stat, i) in stats" :key="i" class="relative overflow-hidden transition-all duration-300 border border-black group hover:-translate-y-1 hover:shadow-xl">
           <!-- Subtle color glow background on hover -->
           <div
             class="absolute inset-0 transition-opacity duration-500 opacity-0 pointer-events-none group-hover:opacity-10"
@@ -305,7 +301,7 @@ onMounted(async () => {
               <div
                 v-for="(task, i) in upcomingTasks"
                 :key="i"
-                class="group flex items-start gap-4 p-4 rounded-xl border border-slate-200 hover:border-[#B50E30]/40 hover:shadow-md transition-all duration-300 bg-white relative overflow-hidden"
+                class="relative flex items-start gap-4 p-4 overflow-hidden transition-all duration-300 bg-white border border-black group rounded-xl hover:border-black hover:shadow-md"
               >
                 <!-- Urgent accent line -->
                 <div
@@ -364,7 +360,7 @@ onMounted(async () => {
           </CardHeader>
           <CardContent>
             <div
-              class="p-6 rounded-2xl border border-[#B50E30]/20 bg-gradient-to-br from-[#B50E30]/5 to-transparent relative overflow-hidden group"
+              class="p-6 rounded-2xl border border-black bg-gradient-to-br from-[#B50E30]/5 to-transparent relative overflow-hidden group"
             >
               <div
                 class="absolute top-0 right-0 w-32 h-32 bg-[#B50E30]/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-150 duration-700"

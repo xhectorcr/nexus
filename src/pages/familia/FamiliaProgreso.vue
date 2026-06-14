@@ -39,7 +39,6 @@ const { t } = useI18n();
 const vistaFacil = ref(true);
 const reproduciendoText = ref("");
 const mostrarExplicacionIA = ref(false);
-
 const textoExplicacionIA = ref("");
 const isGeneratingIA = ref(false);
 
@@ -106,7 +105,10 @@ const handleToggleIA = () => {
   }
 };
 
-// Cómputos dinámicos del Backend
+// ==========================================
+// Cómputos dinámicos del Backend + i18n
+// ==========================================
+
 const moduleProgress = computed(() => progresoHijo.value?.modulos || []);
 const overallPct = computed(() => progresoHijo.value?.progresoGeneral || 0);
 
@@ -176,13 +178,13 @@ const stats = computed(() => {
       color: "#2E7D32",
     },
     {
-      label: t("familia.progreso.tasks_today") || "Tareas pendientes",
+      label: t("familia.progreso.tasks_today") || "Tareas para hoy",
       value: progresoHijo.value?.tareasPendientes || "0 pendientes",
       icon: markRaw(Target),
       color: "#F9A825",
     },
     {
-      label: t("familia.progreso.avg_score") || "Calificación promedio",
+      label: t("familia.progreso.avg_score") || "Calificación",
       value: progresoHijo.value?.calificacionPromedio || "Sin calificar",
       icon: markRaw(Star),
       color: "#D4A017",
@@ -282,11 +284,11 @@ const sidebarItems = computed(() => [
           >
             <Sparkles class="w-6 h-6 fill-white" />
           </div>
-          <div class="w-full space-y-4">
+          <div class="space-y-4">
             <h3
               class="flex items-center gap-2 text-xl font-extrabold text-blue-900"
             >
-              {{ $t("familia.progreso.ai_title") || "Explicación de NEXUS IA" }}
+              {{ $t("familia.progreso.ai_title") || "Explicación IA" }}
             </h3>
             <p
               class="font-medium leading-relaxed text-gray-800"
@@ -339,10 +341,8 @@ const sidebarItems = computed(() => [
         </div>
       </Card>
 
-      <!-- #ffd54f 0%, -->
       <Card
         class="overflow-hidden border-0 shadow-lg"
-        
         style="
           background: linear-gradient(
             135deg,
@@ -378,7 +378,7 @@ const sidebarItems = computed(() => [
                 <p class="text-sm font-semibold text-white/90">
                   {{
                     $t("familia.progreso.recommended_career") ||
-                    "Carrera recomendada por IA:"
+                    "Carrera Recomendada:"
                   }}
                   <span
                     class="bg-white text-[#D4A017] px-2 py-0.5 rounded ml-1 font-extrabold text-xs"

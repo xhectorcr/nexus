@@ -150,13 +150,8 @@ const selectedModule = ref<any>(null)
                 <p class="text-white/70 text-xs">{{ $t('laberinto.explorer_role') }}</p>
                 <h2 class="font-semibold text-lg leading-tight">{{ auth.state.user?.name || 'Camila Postulante' }}</h2>
                 <div class="flex items-center gap-1.5 mt-1">
-<<<<<<< HEAD
-                  <Target class="w-3.5 h-3.5 text-[#FFB20D]" />
-                  <span class="text-[#FFB20D] text-xs font-medium">Buscando su camino</span>
-=======
                   <Target class="w-3.5 h-3.5 text-[#D4A017]" />
                   <span class="text-[#D4A017] text-xs font-medium">{{ $t('laberinto.searching_path') }}</span>
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
                 </div>
               </div>
               <div class="text-right text-white">

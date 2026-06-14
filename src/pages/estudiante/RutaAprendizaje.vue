@@ -106,10 +106,70 @@ const fetchNextIntelligentNode = async () => {
         });
       }
     } catch (e) {
-      console.error(
-        "No se encontro un journey activo, debes generar uno con IA.",
-      );
-      modules.value = []; // Empty UI until generation
+      console.error("No se encontro un journey activo, usando datos de prueba.")
+      totalProgress.value = 45;
+      modules.value = [
+        {
+          id: 1,
+          title: t('familia.progreso.modules.m1_name'),
+          description: t('familia.progreso.modules.m1_desc'),
+          icon: Target,
+          color: "#082065",
+          status: 'completed',
+          progress: 100,
+          xp: 100
+        },
+        {
+          id: 2,
+          title: t('familia.progreso.modules.m2_name'),
+          description: t('familia.progreso.modules.m2_desc'),
+          icon: MapIcon,
+          color: "#FFB20D",
+          status: 'available',
+          progress: 60,
+          xp: 150
+        },
+        {
+          id: 3,
+          title: t('familia.progreso.modules.m3_name'),
+          description: t('familia.progreso.modules.m3_desc'),
+          icon: Gamepad2,
+          color: "#B50E30",
+          status: 'locked',
+          progress: 0,
+          xp: 200
+        },
+        {
+          id: 4,
+          title: t('familia.progreso.modules.m4_name'),
+          description: t('familia.progreso.modules.m4_desc'),
+          icon: Target,
+          color: "#082065",
+          status: 'locked',
+          progress: 0,
+          xp: 200
+        },
+        {
+          id: 5,
+          title: t('familia.progreso.modules.m5_name'),
+          description: t('familia.progreso.modules.m5_desc'),
+          icon: Gamepad2,
+          color: "#B50E30",
+          status: 'locked',
+          progress: 0,
+          xp: 300
+        },
+        {
+          id: 6,
+          title: t('familia.progreso.modules.m6_name'),
+          description: t('familia.progreso.modules.m6_desc'),
+          icon: Star,
+          color: "#2E7D32",
+          status: 'locked',
+          progress: 0,
+          xp: 500
+        }
+      ]
     }
   } catch (error) {
     console.error("No se pudo obtener el nodo de la IA", error);
@@ -740,21 +800,13 @@ onMounted(() => {
         <!-- Stats -->
         <Card>
           <CardContent class="grid grid-cols-2 gap-3 p-4">
-            <div
-              v-for="s in [
+            <div v-for="s in [
               { label: $t('ruta.studied_hours'), value: '8.5h', icon: Clock, color: '#082065' },
               { label: $t('ruta.completed_modules'), value: '1', icon: CheckCircle2, color: '#2E7D32' },
               { label: $t('ruta.pending_activities'), value: '2', icon: Circle, color: '#F9A825' },
               { label: $t('ruta.average_score'), value: '8.4', icon: Star, color: '#D4A017' },
-            ]"
-              :key="s.label"
-              class="p-3 bg-secondary/50 rounded-xl"
-            >
-              <component
-                :is="s.icon"
-                class="w-4 h-4 mb-1.5"
-                :style="{ color: s.color }"
-              />
+            ]" :key="s.label" class="p-3 bg-secondary/50 rounded-xl">
+              <component :is="s.icon" class="w-4 h-4 mb-1.5" :style="{ color: s.color }" />
               <div class="text-lg font-bold leading-none">{{ s.value }}</div>
               <div class="text-xs text-muted-foreground mt-0.5 leading-tight">
                 {{ s.label }}
