@@ -32,6 +32,7 @@ const auth = useAuth()
 
 const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
+  { icon: markRaw(Brain), label: "Test Vocacional", href: "/postulante/test" },
 ]
 
 const mentors = ref<{name: string, career: string, online: boolean}[]>([])
