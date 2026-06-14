@@ -52,7 +52,7 @@ const props = withDefaults(
   },
 );
 
-const sidebarOpen = ref(true);
+const sidebarOpen = ref(typeof window !== "undefined" ? window.innerWidth >= 768 : true);
 const route = useRoute();
 const router = useRouter();
 const auth = useAuth();
@@ -79,16 +79,24 @@ const logoImage = computed(() => {
 
 <template>
   <div class="min-h-screen bg-[#FAF7F7]">
+    <!-- Mobile overlay -->
+    <div 
+      v-if="sidebarOpen" 
+      class="fixed inset-0 bg-black/20 z-30 md:hidden transition-opacity" 
+      @click="sidebarOpen = false"
+    ></div>
+
     <aside
-      :class="`fixed left-0 top-0 h-full bg-white border-r border-[#D9D9D9] transition-all duration-300 z-40 ${
-        sidebarOpen ? 'w-64' : 'w-20'
-      }`"
+      :class="[
+        'fixed left-0 top-0 h-full bg-white border-r border-[#D9D9D9] transition-all duration-300 z-40',
+        sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64 md:translate-x-0 md:w-20'
+      ]"
     >
       <div
         class="h-16 border-b border-[#D9D9D9] flex items-center justify-between px-4"
       >
         <template v-if="sidebarOpen">
-          <router-link to="/" class="flex items-center w-full">
+          <div class="flex items-center w-full">
             <div class="flex items-center justify-start w-full h-14">
               <img
                 :src="logoImage"
@@ -96,10 +104,10 @@ const logoImage = computed(() => {
                 class="h-full w-auto max-w-[200px] object-contain drop-shadow-sm transition-transform hover:scale-105"
               />
             </div>
-          </router-link>
+          </div>
         </template>
         <template v-else>
-          <router-link to="/" class="flex justify-center w-full">
+          <div class="flex justify-center w-full">
             <div class="flex items-center justify-center w-12 h-12 mx-auto">
               <img
                 :src="logoImage"
@@ -107,7 +115,7 @@ const logoImage = computed(() => {
                 class="object-contain w-full h-full transition-transform drop-shadow-sm hover:scale-105"
               />
             </div>
-          </router-link>
+          </div>
         </template>
       </div>
 
@@ -150,7 +158,7 @@ const logoImage = computed(() => {
       <!-- Collapse Button -->
       <button
         @click="sidebarOpen = !sidebarOpen"
-        class="absolute bottom-6 left-4 right-4 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#F1F1F1] hover:bg-[#D9D9D9] transition-colors"
+        class="absolute bottom-6 left-4 right-4 hidden md:flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#F1F1F1] hover:bg-[#D9D9D9] transition-colors"
       >
         <X v-if="sidebarOpen" class="w-4 h-4" />
         <Menu v-else class="w-4 h-4" />
@@ -162,20 +170,29 @@ const logoImage = computed(() => {
 
     <!-- Main Content -->
     <div
-      :class="`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`"
+      :class="[
+        'transition-all duration-300',
+        sidebarOpen ? 'ml-0 md:ml-64' : 'ml-0 md:ml-20'
+      ]"
     >
       <!-- Top Navbar -->
       <header class="h-16 bg-white border-b border-[#D9D9D9] sticky top-0 z-30">
-        <div class="flex items-center justify-between h-full px-6">
+        <div class="flex items-center justify-between h-full px-4 md:px-6">
           <!-- Search -->
-          <div class="flex-1 max-w-md">
-            <div class="relative">
+          <div class="flex items-center flex-1 max-w-md gap-3">
+            <button 
+              @click="sidebarOpen = !sidebarOpen"
+              class="p-2 -ml-2 text-[#5F6368] hover:bg-[#F1F1F1] rounded-lg md:hidden"
+            >
+              <Menu class="w-5 h-5" />
+            </button>
+            <div class="relative flex-1">
               <Search
                 class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5F6368]"
               />
               <Input
                 :placeholder="$t('layout.search')"
-                class="pl-10 bg-[#F1F1F1] border-transparent focus:bg-white"
+                class="pl-10 bg-[#F1F1F1] border-transparent focus:bg-white w-full"
               />
             </div>
           </div>

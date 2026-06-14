@@ -52,14 +52,37 @@ export interface PerfilPostulante {
   misiones: Mision[];
 }
 
+export interface AutorInfo {
+  id: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+}
+
+export interface ComentarioForo {
+  id: number;
+  contenido: string;
+  autor: AutorInfo;
+  conteoLikes: number;
+  likedByCurrentUser: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+}
+
 export interface PublicacionForo {
   id: number;
-  autorId: number;
-  autorNombre: string;
-  autorRol: string;
+  titulo: string;
   contenido: string;
-  fechaPublicacion: string;
-  respuestas: number;
+  autor: AutorInfo;
+  carrera: string;
+  conteoLikes: number;
+  likedByCurrentUser: boolean;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  comentarios: ComentarioForo[];
+  etiquetas: string[];
+  nivelAutor: number;
+  reputacion: number;
 }
 
 export interface ConexionP2P {
