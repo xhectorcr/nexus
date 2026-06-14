@@ -80,20 +80,6 @@ const logoImage = computed(() => {
       <div
         class="h-16 border-b border-[#D9D9D9] flex items-center justify-between px-4"
       >
-        <template if="sidebarOpen">
-          <router-link
-            to="/"
-            class="flex items-center gap-2"
-            v-if="sidebarOpen"
-          >
-            <div
-              class="flex items-center justify-center w-10 h-10 rounded-xl"
-              :style="{ background: logoGradient }"
-            >
-              <GraduationCap class="w-6 h-6 text-white" />
-            </div>
-          </router-link>
-        </template>
         <template v-if="sidebarOpen">
           <router-link to="/" class="flex items-center w-full">
             <div class="flex items-center justify-start w-full h-14">
@@ -104,14 +90,6 @@ const logoImage = computed(() => {
               />
             </div>
           </router-link>
-        </template>
-        <template v-if="!sidebarOpen">
-          <div
-            class="flex items-center justify-center w-10 h-10 mx-auto rounded-xl"
-            :style="{ background: logoGradient }"
-          >
-            <GraduationCap class="w-6 h-6 text-white" />
-          </div>
         </template>
         <template v-else>
           <router-link to="/" class="flex justify-center w-full">
