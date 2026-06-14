@@ -20,6 +20,7 @@ import {
   Map as MapIcon,
   Star,
   TrendingUp,
+  ArrowRight,
 } from "lucide-vue-next";
 import { markRaw } from "vue";
 
@@ -125,77 +126,96 @@ onMounted(() => {
     moduleColor="#B50E30"
   >
     <div class="space-y-6">
+      <!-- Premium Hero Section -->
       <Card
-        class="bg-gradient-to-br from-[#B50E30] to-[#8F0B26] border-0 text-white overflow-hidden relative"
+        class="bg-gradient-to-br from-[#B50E30] via-[#8F0B26] to-[#5C0517] border-0 text-white overflow-hidden relative shadow-2xl shadow-red-900/20"
       >
-        <div
-          class="absolute top-0 right-0 w-64 h-64 -mt-32 -mr-32 rounded-full bg-white/10"
-        />
-        <div
-          class="absolute bottom-0 left-0 w-48 h-48 -mb-24 -ml-24 rounded-full bg-white/10"
-        />
+        <!-- Decorative abstract shapes -->
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-2xl translate-y-1/3 -translate-x-1/4 pointer-events-none" />
+        
         <CardHeader
-          class="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+          class="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between pt-8 px-8"
         >
-          <div>
-            <CardTitle class="text-3xl"
-              >¡Hola de nuevo,
-              {{
-                auth.state.user?.name
-                  ? auth.state.user.name.split(" ")[0]
-                  : "Estudiante"
-              }}!</CardTitle
-            >
-            <CardDescription class="mt-1 text-white/90">
-              Tienes 1 tarea importante pendiente para mañana. Mantén el buen
-              ritmo.
-            </CardDescription>
+          <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
+            <!-- User Avatar -->
+            <div class="relative group hidden sm:block">
+              <div class="absolute inset-0 bg-white/30 rounded-2xl blur-lg group-hover:bg-white/40 transition-all duration-300"></div>
+              <div class="w-20 h-20 bg-gradient-to-tr from-white to-red-50 rounded-2xl p-1 relative z-10 shadow-xl overflow-hidden flex items-center justify-center">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop" class="w-full h-full object-cover rounded-xl" alt="Avatar" />
+              </div>
+              <div class="absolute -bottom-2 -right-2 bg-[#D4A017] text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg z-20 border-2 border-[#8F0B26]">
+                NIVEL 3
+              </div>
+            </div>
+
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-red-100 mb-3 shadow-inner">
+                <Star class="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" /> Alumno Destacado
+              </div>
+              <CardTitle class="text-3xl md:text-4xl font-extrabold tracking-tight"
+                >¡Hola,
+                {{
+                  auth.state.user?.name
+                    ? auth.state.user.name.split(" ")[0]
+                    : "Estudiante"
+                }}!</CardTitle
+              >
+              <CardDescription class="mt-2 text-red-100/90 text-base max-w-md leading-relaxed font-medium">
+                Tienes <span class="text-white font-bold bg-white/20 px-1.5 py-0.5 rounded">1 tarea importante</span> pendiente para mañana. Mantén el buen ritmo y sigue acumulando XP.
+              </CardDescription>
+            </div>
           </div>
           <div
-            class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0"
+            class="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:bg-white/15 transition-all cursor-default group"
           >
             <span
-              class="text-[10px] uppercase font-bold text-red-200 tracking-wider"
-              >Código de Vinculación Familiar</span
-            >
+              class="text-[10px] uppercase font-bold text-red-200 tracking-widest flex items-center gap-1.5"
+              >
+              <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+              Vínculo Familiar Activo
+            </span>
             <span
-              class="font-mono text-lg font-black tracking-widest text-white"
+              class="font-mono text-xl font-black tracking-[0.2em] text-white group-hover:scale-105 transition-transform inline-block"
               >NEX-ALE-2026</span
             >
           </div>
         </CardHeader>
-        <CardContent class="relative z-10 flex gap-4">
-          <Button class="bg-white text-[#B50E30] hover:bg-white/90">
+        <CardContent class="relative z-10 flex flex-wrap gap-4 px-8 pb-8 pt-4">
+          <Button class="bg-white text-[#B50E30] hover:bg-red-50 hover:scale-105 transition-all duration-300 font-bold px-6 shadow-xl shadow-black/10">
             Ver horario de hoy
           </Button>
           <Button
             variant="outline"
-            class="text-white border-white/20 hover:bg-white/10"
+            class="text-white border-white/30 hover:bg-white/15 hover:border-white/50 backdrop-blur-md font-semibold px-6 transition-all duration-300 hover:scale-105"
             @click="$router.push('/estudiante/ruta')"
           >
-            Ir a mi Ruta
+            Ir a mi Ruta IA
           </Button>
         </CardContent>
       </Card>
 
-      <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card v-for="(stat, i) in stats" :key="i">
+      <div class="grid grid-cols-2 gap-5 md:grid-cols-4">
+        <Card v-for="(stat, i) in stats" :key="i" class="group hover:-translate-y-1 hover:shadow-xl transition-all duration-300 border border-slate-100 overflow-hidden relative">
+          <!-- Subtle color glow background on hover -->
+          <div class="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none" :style="{ backgroundColor: stat.color }"></div>
+          
           <CardContent
-            class="flex flex-col items-center justify-center p-6 text-center"
+            class="flex flex-col items-center justify-center p-6 text-center relative z-10"
           >
             <div
-              class="flex items-center justify-center w-12 h-12 mb-3 rounded-full"
-              :style="{ backgroundColor: `${stat.color}15` }"
+              class="flex items-center justify-center w-14 h-14 mb-4 rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+              :style="{ backgroundColor: `${stat.color}15`, color: stat.color }"
             >
               <component
                 :is="stat.icon"
-                class="w-6 h-6"
+                class="w-7 h-7"
                 :style="{ color: stat.color }"
               />
             </div>
-            <p class="text-3xl font-bold text-[#1F1F1F]">{{ stat.value }}</p>
+            <p class="text-3xl font-black text-slate-800 tracking-tight">{{ stat.value }}</p>
             <p
-              class="text-xs text-[#5F6368] mt-1 uppercase tracking-wide font-medium"
+              class="text-xs text-slate-500 mt-1.5 uppercase tracking-wider font-bold"
             >
               {{ stat.label }}
             </p>
@@ -221,37 +241,42 @@ onMounted(() => {
             </Button>
           </CardHeader>
           <CardContent>
-            <div class="mt-2 space-y-4">
+            <div class="mt-4 space-y-3">
               <div
                 v-for="(task, i) in upcomingTasks"
                 :key="i"
-                class="flex items-start gap-4 p-3 rounded-lg border border-[#D9D9D9] hover:border-[#B50E30] hover:shadow-sm transition-all bg-white"
+                class="group flex items-start gap-4 p-4 rounded-xl border border-slate-200 hover:border-[#B50E30]/40 hover:shadow-md transition-all duration-300 bg-white relative overflow-hidden"
               >
+                <!-- Urgent accent line -->
+                <div v-if="task.urgent" class="absolute left-0 top-0 bottom-0 w-1 bg-[#B50E30]"></div>
+                
                 <div
-                  :class="`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${task.urgent ? 'bg-[#B50E30]/10' : 'bg-[#F1F1F1]'}`"
+                  :class="`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${task.urgent ? 'bg-red-50 group-hover:bg-red-100' : 'bg-slate-50 group-hover:bg-slate-100'}`"
                 >
                   <Clock
-                    :class="`w-5 h-5 ${task.urgent ? 'text-[#B50E30]' : 'text-[#5F6368]'}`"
+                    :class="`w-6 h-6 ${task.urgent ? 'text-[#B50E30]' : 'text-slate-400'}`"
                   />
                 </div>
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between mb-1">
-                    <h4 class="font-medium text-[#1F1F1F] truncate">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <h4 class="font-bold text-slate-800 truncate text-sm">
                       {{ task.title }}
                     </h4>
                     <Badge
-                      :variant="task.urgent ? 'default' : 'secondary'"
-                      :class="task.urgent ? 'bg-[#B50E30] text-white' : ''"
+                      :class="task.urgent ? 'bg-[#B50E30] text-white border-0 shadow-sm' : 'bg-slate-100 text-slate-600 border-0'"
                     >
                       {{ task.type }}
                     </Badge>
                   </div>
-                  <p class="text-sm text-[#5F6368]">{{ task.course }}</p>
-                  <p
-                    :class="`text-xs font-medium mt-1 ${task.urgent ? 'text-[#B50E30]' : 'text-[#5F6368]'}`"
-                  >
-                    Vence: {{ task.date }}
-                  </p>
+                  <p class="text-xs text-slate-500 font-medium">{{ task.course }}</p>
+                  <div class="flex items-center gap-1.5 mt-2">
+                    <div v-if="task.urgent" class="w-1.5 h-1.5 rounded-full bg-[#B50E30] animate-pulse"></div>
+                    <p
+                      :class="`text-xs font-bold ${task.urgent ? 'text-[#B50E30]' : 'text-slate-500'}`"
+                    >
+                      Vence: {{ task.date }}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -267,23 +292,43 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <div
-              class="p-4 rounded-xl border border-[#B50E30]/20 bg-[#B50E30]/5"
+              class="p-6 rounded-2xl border border-[#B50E30]/20 bg-gradient-to-br from-[#B50E30]/5 to-transparent relative overflow-hidden group"
             >
-              <div class="flex items-center justify-between mb-2">
-                <h4 class="font-medium text-[#B50E30]">
-                  Módulo 1: Fundamentos de Programación
-                </h4>
-                <span class="text-sm font-bold text-[#B50E30]">72%</span>
+              <div class="absolute top-0 right-0 w-32 h-32 bg-[#B50E30]/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-150 duration-700"></div>
+              
+              <div class="flex items-start justify-between mb-4 relative z-10">
+                <div>
+                  <Badge class="bg-red-100 text-[#B50E30] hover:bg-red-100 border-0 mb-2 text-[10px] font-black uppercase tracking-widest">En curso</Badge>
+                  <h4 class="font-bold text-slate-800 text-sm">
+                    Módulo 1: Fundamentos de Programación
+                  </h4>
+                </div>
+                <div class="bg-white px-2 py-1 rounded-lg border shadow-sm">
+                  <span class="text-sm font-black text-[#B50E30]">72%</span>
+                </div>
               </div>
-              <Progress :value="72" class="h-2 mb-4 bg-white" />
-              <p class="text-sm text-[#5F6368] mb-4">
-                Te faltan 2 actividades para desbloquear el siguiente módulo.
+              
+              <div class="relative z-10 mb-5">
+                <div class="flex justify-between text-xs text-slate-500 font-medium mb-1.5">
+                  <span>Progreso del módulo</span>
+                  <span>4/6 nodos</span>
+                </div>
+                <div class="h-2.5 w-full bg-slate-200/60 rounded-full overflow-hidden shadow-inner">
+                  <div class="h-full bg-gradient-to-r from-[#B50E30] to-red-400 rounded-full w-[72%] shadow-[0_0_10px_rgba(181,14,48,0.5)]"></div>
+                </div>
+              </div>
+              
+              <p class="text-xs text-slate-600 font-medium mb-5 relative z-10 flex items-center gap-1.5">
+                <Award class="w-4 h-4 text-amber-500" />
+                Desbloqueas <strong class="text-slate-800">Lógica Avanzada</strong> en 2 actividades.
               </p>
+              
               <Button
-                class="bg-[#B50E30] hover:bg-[#8F0B26] text-white"
+                class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white shadow-lg shadow-red-900/20 transition-all hover:-translate-y-0.5 relative z-10 font-bold"
                 @click="$router.push('/estudiante/ruta')"
               >
-                Continuar ruta
+                Continuar Ruta Inteligente
+                <ArrowRight class="w-4 h-4 ml-2" />
               </Button>
             </div>
           </CardContent>

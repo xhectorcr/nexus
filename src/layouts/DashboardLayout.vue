@@ -61,6 +61,14 @@ const handleLogout = () => {
 }
 
 const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor} 0%, ${props.moduleColor}DD 100%)`)
+
+const logoImage = computed(() => {
+  const color = props.moduleColor.toUpperCase()
+  if (color === '#B50E30') return '/image/UTP-rojo.webp'
+  if (color === '#1565C0') return '/image/UTP-azul.png'
+  if (color === '#D4A017') return '/image/UTP-dorado.png'
+  return '/image/UTP-rojo.webp'
+})
 </script>
 
 <template>
@@ -73,24 +81,19 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
     >
       <!-- Logo -->
       <div class="h-16 border-b border-[#D9D9D9] flex items-center justify-between px-4">
-        <template if="sidebarOpen">
-          <router-link to="/" class="flex items-center gap-2" v-if="sidebarOpen">
-            <div
-              class="w-10 h-10 rounded-xl flex items-center justify-center"
-              :style="{ background: logoGradient }"
-            >
-              <GraduationCap class="w-6 h-6 text-white" />
+        <template v-if="sidebarOpen">
+          <router-link to="/" class="flex items-center w-full">
+            <div class="h-14 w-full flex items-center justify-start">
+              <img :src="logoImage" alt="UTP NEXUS" class="h-full w-auto max-w-[200px] object-contain drop-shadow-sm transition-transform hover:scale-105" />
             </div>
-            <span class="font-semibold text-lg text-[#1F1F1F]">NEXUS</span>
           </router-link>
         </template>
-        <template v-if="!sidebarOpen">
-          <div
-            class="w-10 h-10 rounded-xl flex items-center justify-center mx-auto"
-            :style="{ background: logoGradient }"
-          >
-            <GraduationCap class="w-6 h-6 text-white" />
-          </div>
+        <template v-else>
+          <router-link to="/" class="flex justify-center w-full">
+            <div class="w-12 h-12 flex items-center justify-center mx-auto">
+              <img :src="logoImage" alt="UTP NEXUS" class="w-full h-full object-contain drop-shadow-sm transition-transform hover:scale-105" />
+            </div>
+          </router-link>
         </template>
       </div>
 

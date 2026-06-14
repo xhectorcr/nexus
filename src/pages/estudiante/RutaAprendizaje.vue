@@ -24,6 +24,8 @@ import {
   Award,
   Flame,
   TrendingUp,
+  GraduationCap,
+  Sparkles
 } from 'lucide-vue-next'
 import ModuleDetail from '@/components/ruta/ModuleDetail.vue'
 import { useAuth } from '@/lib/auth'
@@ -152,64 +154,71 @@ onMounted(() => {
     <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
       <!-- Left: Map + Modules -->
       <div class="space-y-4">
-        <!-- Student Header Card -->
-        <Card class="overflow-hidden border-0" style="background: linear-gradient(135deg, #B50E30 0%, #8F0B26 60%, #1565C0 100%)">
-          <CardContent class="p-5">
-            <div class="flex items-center gap-4">
-              <div class="relative">
-                <Avatar class="w-16 h-16 ring-2 ring-white/40">
-                  <AvatarImage src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop" />
-                  <AvatarFallback class="text-white bg-white/20">AL</AvatarFallback>
+        <!-- Premium Student Header Card -->
+        <Card class="overflow-hidden border-0 shadow-xl shadow-red-900/10 relative" style="background: linear-gradient(135deg, #B50E30 0%, #8F0B26 60%, #5C0517 100%)">
+          <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+          <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+          <CardContent class="p-6 relative z-10">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+              <div class="relative group">
+                <div class="absolute inset-0 bg-white/30 blur-lg rounded-xl group-hover:bg-white/40 transition-all duration-300"></div>
+                <Avatar class="w-20 h-20 ring-4 ring-white/20 shadow-xl relative z-10">
+                  <AvatarImage src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop" />
+                  <AvatarFallback class="text-white bg-[#B50E30]">AL</AvatarFallback>
                 </Avatar>
-                <div class="absolute -bottom-1 -right-1 bg-[#D4A017] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                  Nv.3
+                <div class="absolute -bottom-2 -right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-lg border-2 border-[#8F0B26] shadow-lg z-20">
+                  NIVEL 3
                 </div>
               </div>
               <div class="flex-1 text-white">
-                <p class="text-xs text-white/70">Bienvenido de vuelta</p>
-                <h2 class="text-lg font-semibold leading-tight">{{ auth.state.user?.name || 'Alejandro Lastra' }}</h2>
-                <div class="flex items-center gap-1.5 mt-1">
-                  <GraduationCap class="w-3.5 h-3.5 text-[#D4A017]" />
-                  <span class="text-[#D4A017] text-xs font-medium">Ingeniería de Sistemas - V Ciclo</span>
+                <p class="text-[11px] font-bold text-red-200 tracking-widest uppercase mb-1">Bienvenido de vuelta</p>
+                <h2 class="text-2xl font-black leading-tight tracking-tight">{{ auth.state.user?.name || 'Alejandro Lastra' }}</h2>
+                <div class="flex items-center gap-1.5 mt-2 bg-white/10 w-fit px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10">
+                  <GraduationCap class="w-4 h-4 text-amber-300" />
+                  <span class="text-amber-100 text-xs font-semibold">Ingeniería de Sistemas - V Ciclo</span>
                 </div>
               </div>
-              <div class="text-right text-white">
-                <div class="text-2xl font-bold">72%</div>
-                <div class="text-xs text-white/60">completado</div>
-                <div class="flex items-center justify-end gap-1 mt-1.5">
-                  <Flame class="w-3.5 h-3.5 text-orange-400" />
-                  <span class="text-xs text-orange-300">12 días seguidos</span>
+              <div class="text-left sm:text-right text-white mt-4 sm:mt-0 bg-black/20 p-3 rounded-xl border border-white/10 backdrop-blur-md">
+                <div class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-red-200">{{ Math.round(totalProgress) }}%</div>
+                <div class="text-[10px] uppercase tracking-wider text-red-200 font-bold mb-1">Completado</div>
+                <div class="flex items-center justify-start sm:justify-end gap-1.5 mt-2">
+                  <Flame class="w-4 h-4 text-orange-400 animate-pulse" />
+                  <span class="text-xs font-bold text-orange-200">12 días en racha</span>
                 </div>
               </div>
             </div>
 
-            <div class="mt-4">
-              <div class="flex justify-between text-xs text-white/70 mb-1.5">
-                <span>Progreso General</span>
-                <span>{{ Math.round(totalProgress) }}% total</span>
+            <div class="mt-6">
+              <div class="flex justify-between text-[11px] font-bold text-red-100 uppercase tracking-wider mb-2">
+                <span>Tu Progreso en NEXUS</span>
+                <span>{{ Math.round(totalProgress) }}% TOTAL</span>
               </div>
-              <div class="w-full h-2 rounded-full bg-white/20">
+              <div class="w-full h-2.5 rounded-full bg-black/30 shadow-inner overflow-hidden border border-white/5">
                 <div
-                  class="h-2 transition-all duration-700 rounded-full"
-                  :style="{ width: `${totalProgress}%`, background: 'linear-gradient(90deg, #D4A017, #F0C040)' }"
-                />
+                  class="h-full transition-all duration-1000 ease-out rounded-full relative"
+                  :style="{ width: `${totalProgress}%`, background: 'linear-gradient(90deg, #F59E0B, #FCD34D)' }"
+                >
+                  <div class="absolute inset-0 bg-white/20 animate-[pulse_2s_ease-in-out_infinite]"></div>
+                </div>
               </div>
             </div>
 
-            <div class="flex gap-2 mt-3">
-              <div
-                v-for="b in badges"
-                :key="b.name"
-                :title="b.name"
-                :class="`text-lg w-8 h-8 flex items-center justify-center rounded-full ${
-                  b.earned ? 'bg-white/20' : 'bg-white/5 grayscale opacity-40'
-                }`"
-              >
-                {{ b.icon }}
+            <div class="flex items-center gap-3 mt-5 pt-5 border-t border-white/10">
+              <div class="flex gap-2">
+                <div
+                  v-for="b in badges"
+                  :key="b.name"
+                  :title="b.name"
+                  :class="`text-xl w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 hover:scale-110 ${
+                    b.earned ? 'bg-gradient-to-br from-white/20 to-white/5 border border-white/20 shadow-lg backdrop-blur-sm' : 'bg-black/20 border border-white/5 grayscale opacity-50'
+                  }`"
+                >
+                  {{ b.icon }}
+                </div>
               </div>
               <div class="ml-auto">
-                <Badge class="text-xs text-white border-0 bg-white/20">
-                  <TrendingUp class="w-3 h-3 mr-1" />
+                <Badge class="text-sm font-black px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white border-0 shadow-lg shadow-amber-900/50 hover:from-amber-400 hover:to-amber-500 transition-all">
+                  <TrendingUp class="w-4 h-4 mr-1.5" />
                   450 XP
                 </Badge>
               </div>
@@ -372,24 +381,34 @@ onMounted(() => {
 
       <!-- Right Sidebar -->
       <div class="space-y-4">
-        <!-- Continue Card -->
-        <Card class="border border-[#B50E30]/20 bg-[#B50E30]/3">
-          <CardContent class="p-4">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="w-8 h-8 bg-[#B50E30] rounded-lg flex items-center justify-center">
-                <PlayCircle class="w-4 h-4 text-white" />
+        <!-- AI Continue Card -->
+        <Card class="border-0 shadow-lg relative overflow-hidden group bg-white">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#B50E30] via-red-500 to-[#B50E30] opacity-80"></div>
+          <div class="absolute -right-10 -top-10 w-32 h-32 bg-red-50 rounded-full blur-3xl group-hover:bg-red-100 transition-colors duration-500 pointer-events-none"></div>
+          
+          <CardContent class="p-5 relative z-10">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="relative">
+                <div class="absolute inset-0 bg-[#B50E30] blur-sm opacity-40 rounded-xl group-hover:opacity-60 transition-opacity"></div>
+                <div class="w-10 h-10 bg-gradient-to-br from-[#B50E30] to-[#8F0B26] rounded-xl flex items-center justify-center relative z-10 shadow-sm">
+                  <PlayCircle class="w-5 h-5 text-white" />
+                </div>
               </div>
-              <div>
-                <p class="text-xs text-muted-foreground">Recomendación Actual de la IA</p>
-                <p class="text-sm font-semibold">{{ nextNodeRef ? nextNodeRef.tituloNodo : 'Calculando...' }}</p>
+              <div class="flex-1">
+                <p class="text-[10px] font-black text-[#B50E30] uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                  <Sparkles class="w-3 h-3" /> Recomendación IA
+                </p>
+                <p class="text-sm font-bold text-slate-800 leading-tight">{{ nextNodeRef ? nextNodeRef.tituloNodo : 'Calculando...' }}</p>
               </div>
             </div>
-            <div class="mb-3">
-              <p class="text-xs italic text-muted-foreground line-clamp-3">
-                {{ nextNodeRef ? nextNodeRef.justificacionIA : 'NEXUS está evaluando tu Perfil Inteligente...' }}
+            
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 shadow-inner">
+              <p class="text-xs text-slate-600 font-medium italic line-clamp-3 leading-relaxed">
+                "{{ nextNodeRef ? nextNodeRef.justificacionIA : 'NEXUS está evaluando tu Perfil Inteligente...' }}"
               </p>
             </div>
-            <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white text-sm gap-2">
+            
+            <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white text-sm gap-2 shadow-lg shadow-red-900/20 font-bold h-11 transition-all hover:-translate-y-0.5">
               <PlayCircle class="w-4 h-4" />
               Iniciar Experiencia (+{{ nextNodeRef?.xpRecompensa || 0 }} XP)
             </Button>
