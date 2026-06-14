@@ -372,16 +372,16 @@ const saveAndRedirect = () => {
       { label: 'Inicio', href: '/postulante' },
       { label: 'Test Vocacional' }
     ]"
-    moduleColor="#B50E30"
+    moduleColor="#1565C0"
   >
     <div class="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full">
       
       <!-- Step 0: Welcome Screen -->
       <Card v-if="currentStep === 0" class="border-[#D9D9D9] shadow-xl w-full p-4 sm:p-8 bg-white/95 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-red-100 rounded-full -mr-16 -mt-16 opacity-30" />
+        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -mr-16 -mt-16 opacity-30" />
         <CardContent class="space-y-6 pt-6 text-center">
-          <div class="w-20 h-20 bg-red-50 border border-red-200 rounded-3xl flex items-center justify-center mx-auto text-[#B50E30] animate-bounce">
-            <Sparkles class="w-10 h-10 fill-red-50" />
+          <div class="w-20 h-20 bg-blue-50 border border-blue-200 rounded-3xl flex items-center justify-center mx-auto text-blue-600 animate-bounce">
+            <Sparkles class="w-10 h-10 fill-blue-50" />
           </div>
           
           <div class="space-y-2">
@@ -409,7 +409,7 @@ const saveAndRedirect = () => {
             </div>
           </div>
 
-          <Button size="lg" class="bg-[#B50E30] hover:bg-[#8F0B26] text-white font-bold rounded-xl px-8 py-6 shadow-md transition-transform hover:scale-[1.02]" @click="nextStep">
+          <Button size="lg" class="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl px-8 py-6 shadow-md transition-transform hover:scale-[1.02]" @click="nextStep">
             Comenzar Evaluación
             <ArrowRight class="w-5 h-5 ml-2" />
           </Button>
@@ -420,7 +420,7 @@ const saveAndRedirect = () => {
       <div v-else-if="currentStep >= 1 && currentStep <= 5" class="w-full space-y-6">
         <!-- Progress Bar and Steps Indicator -->
         <div class="flex items-center justify-between text-sm text-gray-500 font-medium">
-          <span class="text-[#B50E30] font-bold">Pregunta {{ currentStep }} de 5</span>
+          <span class="text-blue-700 font-bold">Pregunta {{ currentStep }} de 5</span>
           <span>{{ currentStep * 20 }}% completado</span>
         </div>
         <Progress :value="currentStep * 20" class="h-2.5 bg-gray-200" />
@@ -442,8 +442,8 @@ const saveAndRedirect = () => {
                 @click="handleSelect(currentStep, option.category)"
                 :class="`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all cursor-pointer hover:shadow-md ${
                   selectedOptions[currentStep] === option.category
-                    ? 'border-[#B50E30] bg-red-50/40 ring-1 ring-[#B50E30]/10'
-                    : 'border-gray-200 hover:border-red-200 hover:bg-slate-50/50'
+                    ? 'border-blue-600 bg-blue-50/40 ring-1 ring-blue-500/10'
+                    : 'border-gray-200 hover:border-blue-200 hover:bg-slate-50/50'
                 }`"
               >
                 <!-- Option Icon -->
@@ -461,7 +461,7 @@ const saveAndRedirect = () => {
                 <div class="shrink-0 self-center">
                   <span
                     class="w-6 h-6 rounded-full flex items-center justify-center border-2"
-                    :class="selectedOptions[currentStep] === option.category ? 'border-[#B50E30] bg-[#B50E30] text-white' : 'border-gray-300'"
+                    :class="selectedOptions[currentStep] === option.category ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'"
                   >
                     <Check v-if="selectedOptions[currentStep] === option.category" class="w-3.5 h-3.5" />
                   </span>
@@ -477,7 +477,7 @@ const saveAndRedirect = () => {
               </Button>
               
               <Button
-                class="bg-[#B50E30] hover:bg-[#8F0B26] text-white font-bold rounded-xl px-6 h-11"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl px-6 h-11"
                 :disabled="!selectedOptions[currentStep]"
                 @click="nextStep"
               >
@@ -490,17 +490,17 @@ const saveAndRedirect = () => {
       </div>
 
       <!-- Step 6: AI Scanning Animation -->
-      <Card v-else-if="currentStep === 6" class="border-0 shadow-2xl bg-gradient-to-br from-[#8F0B26] to-[#4A0311] text-white w-full p-8 text-center overflow-hidden relative min-h-[400px] flex flex-col justify-center items-center">
+      <Card v-else-if="currentStep === 6" class="border-0 shadow-2xl bg-gradient-to-br from-blue-900 to-[#0B1E3F] text-white w-full p-8 text-center overflow-hidden relative min-h-[400px] flex flex-col justify-center items-center">
         <!-- Floating dots animation -->
         <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
         
         <CardContent class="space-y-6 flex flex-col items-center max-w-lg mx-auto">
           <!-- Multi-circle Radar scan animation -->
           <div class="relative w-28 h-28 mb-4">
-            <div class="absolute inset-0 rounded-full border-4 border-red-500/20 animate-ping" />
-            <div class="absolute inset-2 rounded-full border-4 border-red-400/40 animate-[ping_1.5s_infinite]" />
-            <div class="absolute inset-4 rounded-full border-2 border-red-300/60 animate-pulse" />
-            <div class="absolute inset-6 rounded-full bg-[#B50E30] flex items-center justify-center shadow-lg shadow-red-500/50">
+            <div class="absolute inset-0 rounded-full border-4 border-blue-500/20 animate-ping" />
+            <div class="absolute inset-2 rounded-full border-4 border-blue-400/40 animate-[ping_1.5s_infinite]" />
+            <div class="absolute inset-4 rounded-full border-2 border-blue-300/60 animate-pulse" />
+            <div class="absolute inset-6 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/50">
               <Sparkles class="w-8 h-8 text-white animate-spin-slow" />
             </div>
           </div>
@@ -509,14 +509,14 @@ const saveAndRedirect = () => {
             <h2 class="text-2xl font-black tracking-tight text-white flex items-center justify-center gap-1.5">
               NEXUS Inteligencia Artificial
             </h2>
-            <p class="text-red-200 text-sm font-medium animate-pulse mt-3 max-w-sm mx-auto min-h-[40px] leading-relaxed">
+            <p class="text-blue-200 text-sm font-medium animate-pulse mt-3 max-w-sm mx-auto min-h-[40px] leading-relaxed">
               {{ aiScanText }}
             </p>
           </div>
 
           <!-- Loading bar -->
           <div class="w-full max-w-xs bg-white/10 rounded-full h-1.5 overflow-hidden mt-2">
-            <div class="bg-red-400 h-full rounded-full animate-[loading-bar_4s_ease-in-out_infinite]" style="width: 80%" />
+            <div class="bg-blue-400 h-full rounded-full animate-[loading-bar_4s_ease-in-out_infinite]" style="width: 80%" />
           </div>
         </CardContent>
       </Card>
@@ -589,7 +589,7 @@ const saveAndRedirect = () => {
               Repetir Evaluación
             </Button>
             <Button
-              class="bg-[#B50E30] hover:bg-[#8F0B26] text-white font-bold rounded-xl h-12 flex-1 gap-2 shadow-md"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl h-12 flex-1 gap-2 shadow-md"
               @click="saveAndRedirect"
             >
               Guardar en Perfil e Ir al Dashboard

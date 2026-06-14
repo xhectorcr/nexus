@@ -101,11 +101,11 @@ onMounted(() => {
     :breadcrumbs="[
       { label: 'Inicio' }
     ]"
-    moduleColor="#B50E30"
+    moduleColor="#1565C0"
   >
     <div class="space-y-6">
       <!-- Hero Section (Test NOT completed) -->
-      <Card v-if="!auth.state.user?.careerSuggestion" class="bg-gradient-to-br from-[#B50E30] to-[#8F0B26] border-0 text-white overflow-hidden relative">
+      <Card v-if="!auth.state.user?.careerSuggestion" class="bg-gradient-to-br from-[#1565C0] to-[#0D47A1] border-0 text-white overflow-hidden relative">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
         <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24" />
         <CardHeader class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -120,12 +120,12 @@ onMounted(() => {
             </CardDescription>
           </div>
           <div class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0">
-            <span class="text-[10px] uppercase font-bold text-red-200 tracking-wider">Código de Vinculación Familiar</span>
+            <span class="text-[10px] uppercase font-bold text-blue-200 tracking-wider">Código de Vinculación Familiar</span>
             <span class="font-mono font-black text-white text-lg tracking-widest">NEX-CAM-2026</span>
           </div>
         </CardHeader>
         <CardContent class="relative z-10">
-          <Button size="lg" class="bg-white text-[#B50E30] hover:bg-white/90" @click="router.push('/postulante/test')">
+          <Button size="lg" class="bg-white text-[#1565C0] hover:bg-white/90" @click="router.push('/postulante/test')">
             Comenzar evaluación
             <ArrowRight class="w-5 h-5 ml-2" />
           </Button>
@@ -287,7 +287,7 @@ onMounted(() => {
                 <div class="relative">
                   <Avatar class="w-10 h-10">
                     <AvatarImage src="" />
-                    <AvatarFallback class="bg-[#B50E30] text-white">
+                    <AvatarFallback class="bg-[#1565C0] text-white">
                       {{ mentor.name[0] }}
                     </AvatarFallback>
                   </Avatar>
