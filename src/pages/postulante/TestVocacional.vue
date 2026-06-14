@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/lib/auth'
+import { api } from '@/lib/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -223,8 +224,8 @@ const nextStep = () => {
   }
 }
 
-// Simulated AI calculation
-const runAiScanning = () => {
+// Simulated AI calculation but real API call behind the scenes
+const runAiScanning = async () => {
   const texts = [
     'NEXUS IA está analizando la frecuencia de tus patrones de decisión...',
     'Evaluando competencias contra la malla académica de la UTP...',
@@ -240,11 +241,49 @@ const runAiScanning = () => {
     }
   }, 1000)
   
-  setTimeout(() => {
+  try {
+    // We synthesize the query parameters based on the 5 answers
+    const categories = Object.values(selectedOptions.value)
+    const gustos = categories.join(', ')
+    const habilidades = 'lógica, resolución de problemas, creatividad' // In a real scenario, this would be derived from specific questions
+    const miedos = 'rutina, estancamiento' // Derived as well
+
+    const response = await api.get('/api/v1/ai/perfilar', {
+      params: { gustos, habilidades, miedos }
+    })
+    
+    // Minimum artificial delay to allow animations to play out (UX)
+    setTimeout(() => {
+      clearInterval(interval)
+      
+      const resData = response.data
+      const firstCareer = resData.data && resData.data.length > 0 ? resData.data[0] : null
+      
+      if (firstCareer) {
+        // Map backend response to UI state
+        computedResult.value = {
+          career: firstCareer.nombre,
+          percentage: 92, // Randomly generated or provided by AI backend in the future
+          description: resData.message || firstCareer.descripcion || 'Basado en tus elecciones, esta carrera es ideal para ti.',
+          skills: [firstCareer.campoLaboral, 'Pensamiento crítico', 'Adaptación', 'Liderazgo'],
+          color: '#1565C0',
+          colorBg: 'bg-blue-50 border-blue-200 text-blue-900',
+          icon: Cpu
+        }
+      } else {
+        // Fallback if API returns empty list
+        calculateResults()
+      }
+      currentStep.value = 7
+    }, Math.max(0, 4500 - (textIndex * 1000))) // Wait at least 4.5s total
+
+  } catch (error) {
+    console.error('Error calling AI endpoint', error)
     clearInterval(interval)
+    // Fallback to local calculation on error
     calculateResults()
     currentStep.value = 7
-  }, 4500)
+  }
 }
 
 const calculateResults = () => {

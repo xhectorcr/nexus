@@ -9,6 +9,7 @@ import FamiliaProgreso from '@/pages/familia/FamiliaProgreso.vue'
 import UTPPlusDashboard from '@/pages/utp-plus/UTPPlusDashboard.vue'
 import LoginPage from '@/pages/login/LoginPage.vue'
 import TestVocacional from '@/pages/postulante/TestVocacional.vue'
+import LaberintoVocaciones from '@/pages/postulante/LaberintoVocaciones.vue'
 import { useAuth } from '@/lib/auth'
 
 const router = createRouter({
@@ -48,6 +49,13 @@ const router = createRouter({
           path: 'postulante/test',
           name: 'postulante-test',
           component: TestVocacional,
+          meta: { requiresAuth: true, role: 'postulante' }
+        },
+        {
+          // Postulante Laberinto Vocaciones
+          path: 'postulante/laberinto',
+          name: 'postulante-laberinto',
+          component: LaberintoVocaciones,
           meta: { requiresAuth: true, role: 'postulante' }
         },
         {

@@ -1,184 +1,161 @@
 <script setup lang="ts">
-import { ref, markRaw, onMounted } from 'vue'
+import { ref } from 'vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useRouter } from 'vue-router'
+import { useAuth } from '@/lib/auth'
 import {
   Home,
   Map as MapIcon,
   Star,
   Lock,
   CheckCircle2,
-  Circle,
   PlayCircle,
-  Clock,
-  Zap,
   Brain,
   Target,
   Heart,
   Gamepad2,
   ArrowLeft,
-  Award,
   Flame,
   TrendingUp,
+  Lightbulb,
 } from 'lucide-vue-next'
-import ModuleDetail from '@/components/ruta/ModuleDetail.vue'
-import { useAuth } from '@/lib/auth'
-import { api } from '@/lib/api'
 
+const router = useRouter()
 const auth = useAuth()
 
-const modules = ref<any[]>([])
+const sidebarItems = [
+  { icon: Home, label: "Inicio", href: "/postulante" },
+]
+
+const modules = [
+  {
+    id: 1,
+    title: "Test de Intereses Vocacionales",
+    description: "Evaluación inicial completada con éxito.",
+    icon: Brain,
+    color: "#2E7D32",
+    status: "available",
+    progress: 100,
+    xp: 50,
+    badge: "Explorador",
+    position: { x: 10, side: "left" },
+  },
+  {
+    id: 2,
+    title: "Test de Inteligencias Múltiples",
+    description: "Descubre tus tipos de inteligencia dominantes.",
+    icon: Lightbulb,
+    color: "#B50E30",
+    status: "available",
+    progress: 0,
+    xp: 100,
+    badge: "Pensador",
+    position: { x: 55, side: "right" },
+  },
+  {
+    id: 3,
+    title: "Test de Personalidad y Valores",
+    description: "Conoce tu perfil psicológico y ético.",
+    icon: Heart,
+    color: "#D4A017",
+    status: "locked",
+    progress: 0,
+    xp: 150,
+    badge: "Empático",
+    position: { x: 10, side: "left" },
+  },
+  {
+    id: 4,
+    title: "Simulador de Situaciones",
+    description: "Juego de rol para toma de decisiones.",
+    icon: Gamepad2,
+    color: "#1565C0",
+    status: "locked",
+    progress: 0,
+    xp: 200,
+    badge: "Estratega",
+    position: { x: 55, side: "right" },
+  },
+  {
+    id: 5,
+    title: "Resultado Vocacional",
+    description: "Tu perfil completo y recomendación NEXUS IA.",
+    icon: Target,
+    color: "#B50E30",
+    status: "locked",
+    progress: 0,
+    xp: 500,
+    badge: "Vocación Encontrada",
+    position: { x: 10, side: "left" },
+  },
+]
 
 const badges = [
-  { name: "Explorador", icon: "🧭", earned: true },
+  { name: "Curioso", icon: "🔍", earned: true },
   { name: "Constante", icon: "🔥", earned: true },
   { name: "Pensador", icon: "🧠", earned: false },
-  { name: "Visionario", icon: "👁️", earned: false },
 ]
 
-const sidebarItems = [
-  { icon: markRaw(Home), label: "Inicio", href: "/estudiante" },
-  { icon: markRaw(MapIcon), label: "Ruta de Aprendizaje", href: "/estudiante/ruta" },
-]
-
-const selectedModule = ref<any>(null)
 const totalProgress = ref(20)
-const nextNodeRef = ref<any>(null)
-const isGenerating = ref(false)
-
-const fetchNextIntelligentNode = async () => {
-  try {
-    const postulanteId = 1 // Mock ID
-    // Get Current Journey
-    try {
-      const journeyRes = await api.get(`/api/journeys/postulante/${postulanteId}/activo`)
-      if (journeyRes.data && journeyRes.data.success) {
-        const journey = journeyRes.data.data
-        totalProgress.value = journey.porcentajeProgreso || 0
-        
-        // Map nodes to UI modules
-        modules.value = journey.nodos.map((nodo: any, i: number) => {
-          let color = "#1565C0"
-          let icon = Target
-          if (nodo.tipo === 'FORO') { color = "#D4A017"; icon = MapIcon }
-          if (nodo.tipo === 'LABERINTO') { color = "#B50E30"; icon = Gamepad2 }
-          if (nodo.tipo === 'MENTORIA') { color = "#2E7D32"; icon = Star }
-          
-          return {
-            id: nodo.id,
-            title: nodo.titulo,
-            description: nodo.descripcion,
-            icon,
-            color,
-            status: nodo.estado === 'COMPLETADO' ? 'completed' : (nodo.estado === 'PENDIENTE' && (i===0 || journey.nodos[i-1].estado === 'COMPLETADO') ? 'available' : 'locked'),
-            progress: nodo.estado === 'COMPLETADO' ? 100 : 0,
-            xp: nodo.xp
-          }
-        })
-      }
-    } catch (e) {
-      console.error("No se encontro un journey activo, debes generar uno con IA.")
-      modules.value = [] // Empty UI until generation
-    }
-  } catch (error) {
-    console.error("No se pudo obtener el nodo de la IA", error)
-  }
-}
-
-const generarNuevaRutaCompleta = async () => {
-  try {
-    isGenerating.value = true
-    const postulanteId = 1 // Mock ID
-    const res = await api.post(`/api/v1/ai/ruta/generar-completa?postulanteId=${postulanteId}`)
-    if (res.data && res.data.success) {
-      // Reload the page or fetch new nodes
-      alert("¡Ruta completa generada exitosamente con IA!")
-      await fetchNextIntelligentNode()
-    }
-  } catch (error) {
-    console.error("Error generando ruta completa", error)
-    alert("Ocurrió un error generando la ruta.")
-  } finally {
-    isGenerating.value = false
-  }
-}
-
-onMounted(() => {
-  fetchNextIntelligentNode()
-})
+const selectedModule = ref<any>(null)
 </script>
 
 <template>
   <DashboardLayout
-    v-if="selectedModule"
     :sidebarItems="sidebarItems"
-    title="NEXUS Estudiante"
-    subtitle="Ruta de Aprendizaje"
+    title="NEXUS Postulante"
+    subtitle="Tu Laberinto de Vocaciones y Experiencias"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/estudiante' },
-      { label: 'Ruta de Aprendizaje', href: '/estudiante/ruta' },
-      { label: selectedModule.title },
+      { label: 'Inicio', href: '/postulante' },
+      { label: 'Laberinto de Vocaciones' },
     ]"
     moduleColor="#B50E30"
   >
     <div class="mb-4">
       <Button
         variant="ghost"
-        @click="selectedModule = null"
+        @click="router.push('/postulante')"
         class="flex items-center gap-2 text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft class="w-4 h-4" />
-        Volver a la Ruta
+        Volver al Dashboard
       </Button>
     </div>
-    <ModuleDetail :module="selectedModule" />
-  </DashboardLayout>
 
-  <DashboardLayout
-    v-else
-    :sidebarItems="sidebarItems"
-    title="NEXUS Estudiante"
-    subtitle="Tu Ruta Dinámica generada por Inteligencia Artificial"
-    :breadcrumbs="[
-      { label: 'Inicio', href: '/estudiante' },
-      { label: 'Tu Camino NEXUS' },
-    ]"
-    moduleColor="#B50E30"
-  >
     <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
       <!-- Left: Map + Modules -->
       <div class="space-y-4">
         <!-- Student Header Card -->
-        <Card class="overflow-hidden border-0" style="background: linear-gradient(135deg, #B50E30 0%, #8F0B26 60%, #1565C0 100%)">
+        <Card class="border-0 overflow-hidden" style="background: linear-gradient(135deg, #B50E30 0%, #8F0B26 60%, #1565C0 100%)">
           <CardContent class="p-5">
             <div class="flex items-center gap-4">
               <div class="relative">
                 <Avatar class="w-16 h-16 ring-2 ring-white/40">
-                  <AvatarImage src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop" />
-                  <AvatarFallback class="text-white bg-white/20">AL</AvatarFallback>
+                  <AvatarImage src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop" />
+                  <AvatarFallback class="bg-white/20 text-white">CP</AvatarFallback>
                 </Avatar>
                 <div class="absolute -bottom-1 -right-1 bg-[#D4A017] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                  Nv.3
+                  Nv.1
                 </div>
               </div>
               <div class="flex-1 text-white">
-                <p class="text-xs text-white/70">Bienvenido de vuelta</p>
-                <h2 class="text-lg font-semibold leading-tight">{{ auth.state.user?.name || 'Alejandro Lastra' }}</h2>
+                <p class="text-white/70 text-xs">Explorador de Vocaciones</p>
+                <h2 class="font-semibold text-lg leading-tight">{{ auth.state.user?.name || 'Camila Postulante' }}</h2>
                 <div class="flex items-center gap-1.5 mt-1">
-                  <GraduationCap class="w-3.5 h-3.5 text-[#D4A017]" />
-                  <span class="text-[#D4A017] text-xs font-medium">Ingeniería de Sistemas - V Ciclo</span>
+                  <Target class="w-3.5 h-3.5 text-[#D4A017]" />
+                  <span class="text-[#D4A017] text-xs font-medium">Buscando su camino</span>
                 </div>
               </div>
               <div class="text-right text-white">
-                <div class="text-2xl font-bold">72%</div>
-                <div class="text-xs text-white/60">completado</div>
+                <div class="text-2xl font-bold">20%</div>
+                <div class="text-white/60 text-xs">completado</div>
                 <div class="flex items-center justify-end gap-1 mt-1.5">
                   <Flame class="w-3.5 h-3.5 text-orange-400" />
-                  <span class="text-xs text-orange-300">12 días seguidos</span>
+                  <span class="text-xs text-orange-300">2 días seguidos</span>
                 </div>
               </div>
             </div>
@@ -188,9 +165,9 @@ onMounted(() => {
                 <span>Progreso General</span>
                 <span>{{ Math.round(totalProgress) }}% total</span>
               </div>
-              <div class="w-full h-2 rounded-full bg-white/20">
+              <div class="w-full bg-white/20 rounded-full h-2">
                 <div
-                  class="h-2 transition-all duration-700 rounded-full"
+                  class="h-2 rounded-full transition-all duration-700"
                   :style="{ width: `${totalProgress}%`, background: 'linear-gradient(90deg, #D4A017, #F0C040)' }"
                 />
               </div>
@@ -208,9 +185,9 @@ onMounted(() => {
                 {{ b.icon }}
               </div>
               <div class="ml-auto">
-                <Badge class="text-xs text-white border-0 bg-white/20">
+                <Badge class="bg-white/20 text-white border-0 text-xs">
                   <TrendingUp class="w-3 h-3 mr-1" />
-                  450 XP
+                  50 XP
                 </Badge>
               </div>
             </div>
@@ -223,39 +200,26 @@ onMounted(() => {
             <div class="flex items-center justify-between">
               <div>
                 <CardTitle class="flex items-center gap-2 text-white">
-                  <MapIcon class="w-5 h-5 text-[#B50E30]" />
-                  Tu Camino de Experiencias NEXUS
+                  <Gamepad2 class="w-5 h-5 text-[#B50E30]" />
+                  Laberinto de Vocaciones
                 </CardTitle>
-                <p class="text-sm text-white/50 mt-0.5 font-mono">El siguiente nodo es dinámico y se adapta a tu perfil actual.</p>
+                <p class="text-sm text-white/50 mt-0.5 font-mono">Supera cada etapa para desbloquear tu perfil completo.</p>
               </div>
-              <div class="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  class="text-white border-white/20 bg-white/5 hover:bg-white/10"
-                  @click="generarNuevaRutaCompleta"
-                  :disabled="isGenerating"
-                >
-                  <Sparkles v-if="!isGenerating" class="w-4 h-4 mr-2 text-yellow-400" />
-                  <span v-if="isGenerating">Calculando con NEXUS...</span>
-                  <span v-else>Generar Nueva Ruta IA</span>
-                </Button>
-                <Badge variant="outline" class="text-white border-white/20 bg-white/5">
-                  1 / 6 módulos
-                </Badge>
-              </div>
+              <Badge variant="outline" class="text-white border-white/20 bg-white/5">
+                1 / 5 etapas
+              </Badge>
             </div>
           </CardHeader>
           <CardContent class="px-0 pb-0 bg-[#121826]">
-            <div class="relative min-h-[800px] w-full overflow-hidden">
-              <!-- Background grid (optional cyber look) -->
+            <div class="relative min-h-[700px] w-full overflow-hidden">
+              <!-- Background grid -->
               <div
                 class="absolute inset-0"
                 style="background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 30px 30px;"
               />
 
               <!-- Path Lines SVG -->
-              <svg v-if="modules.length > 1" class="absolute inset-0 z-0 w-full h-full pointer-events-none">
+              <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
                 <defs>
                   <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="4" result="blur" />
@@ -282,10 +246,10 @@ onMounted(() => {
               </svg>
 
               <!-- Modules -->
-              <div class="relative z-10 flex flex-col justify-between w-full h-full py-12" :style="{ minHeight: `${modules.length * 150}px` }">
-                <div v-for="(mod, idx) in modules" :key="mod.id" class="relative flex items-center flex-1 w-full">
+              <div class="relative z-10 w-full h-full flex flex-col justify-between py-12" :style="{ minHeight: `${modules.length * 150}px` }">
+                <div v-for="(mod, idx) in modules" :key="mod.id" class="flex-1 flex items-center relative w-full">
                   <div
-                    class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2 group"
+                    class="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group"
                     :class="mod.status === 'available' ? 'cursor-pointer' : 'cursor-not-allowed'"
                     :style="{
                       left: idx % 2 === 0 ? '35%' : '65%',
@@ -294,14 +258,14 @@ onMounted(() => {
                     @click="mod.status === 'available' && (selectedModule = mod)"
                   >
                     <!-- Current Module Indicator -->
-                    <div v-if="mod.status === 'available' && mod.progress > 0 && mod.progress < 100" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#EF4444] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-red-500/30 whitespace-nowrap z-30 tracking-wide uppercase transition-transform group-hover:-translate-y-2">
-                      Continuar Ruta
+                    <div v-if="mod.status === 'available' && mod.progress < 100" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#EF4444] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-red-500/30 whitespace-nowrap z-30 tracking-wide uppercase transition-transform group-hover:-translate-y-2">
+                      Continuar Laberinto
                       <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#EF4444]"></div>
                     </div>
 
                     <!-- Isometric Platform SVG -->
                     <div class="relative z-20">
-                      <svg width="150" height="120" viewBox="0 0 150 120" class="overflow-visible drop-shadow-2xl">
+                      <svg width="150" height="120" viewBox="0 0 150 120" class="drop-shadow-2xl overflow-visible">
                         <g>
                           <!-- Base Shadow -->
                           <ellipse cx="75" cy="100" rx="45" ry="15" fill="black" fill-opacity="0.5" class="transition-transform duration-500 group-hover:scale-90 opacity-60" />
@@ -350,7 +314,7 @@ onMounted(() => {
                         mod.status === 'available' ? 'group-hover:-translate-y-4' : ''
                       ]"
                     >
-                      <p class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider">Módulo {{ idx + 1 }}</p>
+                      <p class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider">Etapa {{ idx + 1 }}</p>
                       <h3 :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status === 'available' ? 'text-white drop-shadow-md' : 'text-gray-500'}`">
                         {{ mod.title }}
                       </h3>
@@ -380,93 +344,42 @@ onMounted(() => {
                 <PlayCircle class="w-4 h-4 text-white" />
               </div>
               <div>
-                <p class="text-xs text-muted-foreground">Recomendación Actual de la IA</p>
-                <p class="text-sm font-semibold">{{ nextNodeRef ? nextNodeRef.tituloNodo : 'Calculando...' }}</p>
+                <p class="text-xs text-muted-foreground">Siguiente desafío</p>
+                <p class="text-sm font-semibold">Test de Inteligencias Múltiples</p>
               </div>
             </div>
             <div class="mb-3">
-              <p class="text-xs italic text-muted-foreground line-clamp-3">
-                {{ nextNodeRef ? nextNodeRef.justificacionIA : 'NEXUS está evaluando tu Perfil Inteligente...' }}
+              <p class="text-xs text-muted-foreground italic line-clamp-3">
+                Avanza a la segunda etapa para que NEXUS evalúe tus inteligencias dominantes.
               </p>
             </div>
             <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white text-sm gap-2">
               <PlayCircle class="w-4 h-4" />
-              Iniciar Experiencia (+{{ nextNodeRef?.xpRecompensa || 0 }} XP)
+              Iniciar Etapa (+100 XP)
             </Button>
           </CardContent>
         </Card>
 
         <!-- Stats -->
         <Card>
-          <CardContent class="grid grid-cols-2 gap-3 p-4">
-            <div v-for="s in [
-              { label: 'Horas estudiadas', value: '8.5h', icon: Clock, color: '#1565C0' },
-              { label: 'Módulos completados', value: '1', icon: CheckCircle2, color: '#2E7D32' },
-              { label: 'Actividades pendientes', value: '2', icon: Circle, color: '#F9A825' },
-              { label: 'Promedio evaluaciones', value: '8.4', icon: Star, color: '#D4A017' },
-            ]" :key="s.label" class="p-3 bg-secondary/50 rounded-xl">
-              <component :is="s.icon" class="w-4 h-4 mb-1.5" :style="{ color: s.color }" />
-              <div class="text-lg font-bold leading-none">{{ s.value }}</div>
-              <div class="text-xs text-muted-foreground mt-0.5 leading-tight">{{ s.label }}</div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <!-- Module Overview -->
-        <Card>
-          <CardHeader class="px-4 pt-4 pb-2">
-            <CardTitle class="text-sm">Estado de Módulos</CardTitle>
+          <CardHeader class="pb-2 pt-4 px-4">
+            <CardTitle class="text-sm">Estado del Laberinto</CardTitle>
           </CardHeader>
           <CardContent class="px-4 pb-4 space-y-2">
             <div v-for="m in modules" :key="m.id" class="flex items-center gap-2.5">
               <div
-                class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full"
+                class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                 :style="{ background: m.status === 'available' ? m.color : '#e5e7eb' }"
               >
                 <CheckCircle2 v-if="m.status === 'available'" class="w-3.5 h-3.5 text-white" />
                 <Lock v-else class="w-3 h-3 text-gray-400" />
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium truncate">{{ m.title.split(' ').slice(0, 3).join(' ') }}</p>
-                <div v-if="m.status === 'available' && m.progress > 0" class="w-full bg-gray-100 rounded-full h-1 mt-0.5">
-                  <div
-                    class="h-1 rounded-full"
-                    :style="{ width: `${m.progress}%`, backgroundColor: m.color }"
-                  />
-                </div>
+                <p class="text-xs font-medium truncate">{{ m.title }}</p>
               </div>
-              <span class="flex-shrink-0 text-xs text-muted-foreground">
+              <span class="text-xs text-muted-foreground flex-shrink-0">
                 {{ m.status === 'available' ? `${m.progress}%` : '—' }}
               </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <!-- Next objective -->
-        <Card class="border-[#D4A017]/30 bg-amber-50/50">
-          <CardContent class="p-4">
-            <div class="flex items-start gap-3">
-              <div class="w-8 h-8 bg-[#D4A017] rounded-lg flex items-center justify-center flex-shrink-0">
-                <Target class="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p class="text-xs text-muted-foreground">Completado ayer</p>
-                <p class="text-sm font-medium mt-0.5">Completar el Laboratorio de Programación</p>
-                <p class="mt-1 text-xs text-muted-foreground">+50 XP al completar</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <!-- Estimated completion -->
-        <Card>
-          <CardContent class="flex items-center gap-3 p-4">
-            <div class="w-8 h-8 bg-[#1565C0]/10 rounded-lg flex items-center justify-center">
-              <Award class="w-4 h-4 text-[#1565C0]" />
-            </div>
-            <div>
-              <p class="text-xs text-muted-foreground">Fecha estimada de finalización</p>
-              <p class="text-sm font-semibold">15 de Agosto, 2026</p>
             </div>
           </CardContent>
         </Card>
