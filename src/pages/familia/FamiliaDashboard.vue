@@ -39,6 +39,7 @@ const { t, te } = useI18n();
 
 const vistaFacil = ref(true);
 const reproduciendoText = ref("");
+const voiceVolume = ref(1);
 
 const isUnlinking = ref(false);
 
@@ -95,11 +96,13 @@ const handleUnlinkStudent = async () => {
 const hablar = (texto: string) => {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
+  if (voiceVolume.value === 0) return;
   reproduciendoText.value = texto;
   const utterance = new SpeechSynthesisUtterance(texto);
   utterance.lang = "es-PE";
   utterance.rate = 0.95;
   utterance.pitch = 1;
+  utterance.volume = voiceVolume.value;
   utterance.onend = () => {
     reproduciendoText.value = "";
   };
@@ -262,6 +265,10 @@ const fetchChildData = async () => {
 };
 
 onMounted(() => {
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+    reproduciendoText.value = "";
+  }
   if (isApplicantLinked.value) {
     fetchChildData();
   }
@@ -417,6 +424,19 @@ const sidebarItems = computed(() => [
                 : $t("familia.big_text_off")
             }}
           </button>
+
+          <div class="flex items-center gap-2 bg-white px-3 h-11 rounded-xl border border-gray-200 shadow-sm">
+            <Volume2 class="w-4 h-4 text-gray-400" />
+            <input 
+              type="range" 
+              min="0" 
+              max="1" 
+              step="0.1" 
+              v-model.number="voiceVolume" 
+              class="w-20 accent-amber-600 cursor-pointer"
+              title="Volumen del Asistente"
+            />
+          </div>
 
           <Button
             @click="toggleInstrucciones"
