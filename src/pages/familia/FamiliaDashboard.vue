@@ -239,7 +239,7 @@ const resources = [
     description: "Cómo organizar un lugar tranquilo para que tu hijo estudie.",
     downloads: 1567,
     icon: markRaw(TrendingUp),
-    color: "#1565C0",
+    color: "#082065",
   },
 ];
 

@@ -73,7 +73,7 @@ const modules = [
     title: "Simulador de Situaciones",
     description: "Juego de rol para toma de decisiones.",
     icon: Gamepad2,
-    color: "#1565C0",
+    color: "#082065",
     status: "locked",
     progress: 0,
     xp: 200,
@@ -130,7 +130,7 @@ const selectedModule = ref<any>(null)
       <!-- Left: Map + Modules -->
       <div class="space-y-4">
         <!-- Student Header Card -->
-        <Card class="border-0 overflow-hidden" style="background: linear-gradient(135deg, #B50E30 0%, #8F0B26 60%, #1565C0 100%)">
+        <Card class="border-0 overflow-hidden" style="background: linear-gradient(135deg, #B50E30 0%, #8F0B26 60%, #082065 100%)">
           <CardContent class="p-5">
             <div class="flex items-center gap-4">
               <div class="relative">

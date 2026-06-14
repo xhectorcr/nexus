@@ -141,7 +141,7 @@ const router = useRouter()
         <router-link to="/utp-plus">
           <Card class="h-full hover:shadow-xl transition-all duration-300 border-[#D9D9D9] group cursor-pointer">
             <CardHeader>
-              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1565C0] to-[#0D47A1] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Sparkles class="w-7 h-7 text-white" />
               </div>
               <CardTitle class="text-[#1F1F1F]">NEXUS UTP+</CardTitle>
@@ -152,19 +152,19 @@ const router = useRouter()
             <CardContent>
               <ul class="space-y-2 text-sm text-[#5F6368]">
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#1565C0]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#082065]" />
                   Perfil de Carrera
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#1565C0]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#082065]" />
                   Matchmaking IA
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#1565C0]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#082065]" />
                   Análisis de Bitácora
                 </li>
               </ul>
-              <Button variant="ghost" class="w-full mt-6 text-[#1565C0] group-hover:bg-[#1565C0]/10">
+              <Button variant="ghost" class="w-full mt-6 text-[#082065] group-hover:bg-[#082065]/10">
                 Explorar módulo
                 <ArrowRight class="w-4 h-4 ml-2" />
               </Button>

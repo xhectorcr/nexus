@@ -42,7 +42,7 @@ const careers = [
     salary: "S/ 4,000 - S/ 7,500",
     duration: "5 años",
     field: "Tecnología",
-    color: "#1565C0",
+    color: "#082065",
   },
   {
     name: "Ingeniería Industrial",
@@ -56,7 +56,7 @@ const careers = [
 
 const matchmakingNodes = [
   { type: "student", label: "Tú", color: "#B50E30" },
-  { type: "mentor", label: "Ana García", color: "#1565C0" },
+  { type: "mentor", label: "Ana García", color: "#082065" },
   { type: "course", label: "Intro a Programación", color: "#D4A017" },
   { type: "club", label: "Club de Robótica", color: "#2E7D32" },
   { type: "resource", label: "Taller IA", color: "#F9A825" },
@@ -91,7 +91,7 @@ const actions = [
     icon: markRaw(Users),
     title: "Conectar con Ana García",
     description: "Mentor en Ingeniería de Sistemas",
-    color: "#1565C0",
+    color: "#082065",
   },
   {
     icon: markRaw(Target),
@@ -116,11 +116,11 @@ const stats = [
     :breadcrumbs="[
       { label: 'Inicio' }
     ]"
-    moduleColor="#1565C0"
+    moduleColor="#082065"
   >
     <div class="space-y-6">
       <!-- AI Hero Banner -->
-      <Card class="bg-gradient-to-br from-[#1565C0] to-[#0D47A1] border-0 text-white overflow-hidden relative">
+      <Card class="bg-gradient-to-br from-[#082065] to-[#0D47A1] border-0 text-white overflow-hidden relative">
         <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-48 -mt-48" />
         <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full -ml-32 -mb-32" />
         <CardHeader class="relative z-10">
@@ -226,7 +226,7 @@ const stats = [
         <Card>
           <CardHeader>
             <div class="flex items-center gap-2">
-              <Network class="w-5 h-5 text-[#1565C0]" />
+              <Network class="w-5 h-5 text-[#082065]" />
               <CardTitle>Matchmaking IA</CardTitle>
             </div>
             <CardDescription>Conexiones inteligentes para tu desarrollo</CardDescription>
@@ -292,16 +292,16 @@ const stats = [
         <Card>
           <CardHeader>
             <div class="flex items-center gap-2">
-              <Brain class="w-5 h-5 text-[#1565C0]" />
+              <Brain class="w-5 h-5 text-[#082065]" />
               <CardTitle>Análisis de Bitácora</CardTitle>
             </div>
             <CardDescription>Insights generados por IA de tus registros</CardDescription>
           </CardHeader>
           <CardContent class="space-y-6">
             <!-- AI Chat Message -->
-            <div class="p-4 rounded-lg bg-gradient-to-br from-[#1565C0]/10 to-[#0D47A1]/10 border border-[#1565C0]/20">
+            <div class="p-4 rounded-lg bg-gradient-to-br from-[#082065]/10 to-[#0D47A1]/10 border border-[#082065]/20">
               <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#1565C0] to-[#0D47A1] flex items-center justify-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center flex-shrink-0">
                   <Sparkles class="w-4 h-4 text-white" />
                 </div>
                 <div class="flex-1">
@@ -313,7 +313,7 @@ const stats = [
                   <Button
                     size="sm"
                     variant="ghost"
-                    class="text-[#1565C0] hover:bg-[#1565C0]/10 p-0 h-auto"
+                    class="text-[#082065] hover:bg-[#082065]/10 p-0 h-auto"
                   >
                     Ver explicación completa
                     <ArrowRight class="w-3 h-3 ml-1" />
@@ -326,7 +326,7 @@ const stats = [
             <div class="space-y-4">
               <div v-for="(insight, i) in insights" :key="i" class="space-y-2">
                 <div class="flex items-center gap-2">
-                  <component :is="insight.icon" class="w-4 h-4 text-[#1565C0]" />
+                  <component :is="insight.icon" class="w-4 h-4 text-[#082065]" />
                   <h4 class="font-medium text-sm text-[#1F1F1F]">{{ insight.title }}</h4>
                 </div>
                 <div class="flex flex-wrap gap-2">
@@ -342,7 +342,7 @@ const stats = [
               </div>
             </div>
 
-            <Button class="w-full bg-[#1565C0] hover:bg-[#0D47A1]">
+            <Button class="w-full bg-[#082065] hover:bg-[#0D47A1]">
               <MessageSquare class="w-4 h-4 mr-2" />
               Chatear con el asistente IA
             </Button>

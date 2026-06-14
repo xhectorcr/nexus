@@ -199,7 +199,7 @@ const toggle = (id: string) => {
       <Card>
         <CardContent class="p-4 flex items-center gap-3">
           <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-            <Clock class="w-5 h-5 text-[#1565C0]" />
+            <Clock class="w-5 h-5 text-[#082065]" />
           </div>
           <div>
             <p class="text-xs text-muted-foreground">Tiempo estimado restante</p>

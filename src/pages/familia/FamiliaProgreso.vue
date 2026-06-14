@@ -107,7 +107,7 @@ const statusConfig: Record<string, any> = {
 
 const stats = computed(() => {
   return [
-    { label: "Horas dedicadas a estudiar", value: "8 horas y media", icon: markRaw(Clock), color: "#1565C0" },
+    { label: "Horas dedicadas a estudiar", value: "8 horas y media", icon: markRaw(Clock), color: "#082065" },
     { label: "Temas completados", value: "2 de 6 listos", icon: markRaw(CheckCircle2), color: "#2E7D32" },
     { label: "Tareas para hacer hoy", value: "5 pendientes", icon: markRaw(Target), color: "#F9A825" },
     { label: "Calificación promedio", value: "8.4 (Muy buena)", icon: markRaw(Star), color: "#D4A017" },
@@ -117,7 +117,7 @@ const stats = computed(() => {
 const timeline = computed(() => {
   return [
     { event: "Completó el test de Intereses Profesionales", time: "hace 2 horas", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-    { event: "Vio el video explicativo de Personalidad", time: "hace 5 horas", icon: markRaw(Clock), color: "#1565C0" },
+    { event: "Vio el video explicativo de Personalidad", time: "hace 5 horas", icon: markRaw(Clock), color: "#082065" },
     { event: "Ganó la medalla virtual 'Explorador'", time: "ayer", icon: markRaw(Star), color: "#D4A017" },
     { event: "Completó el tema de Inteligencias Múltiples", time: "hace 3 días", icon: markRaw(CheckCircle2), color: "#2E7D32" },
   ]
@@ -219,7 +219,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
       </Card>
 
       <!-- Tarjeta Resumen del Alumno -->
-      <Card class="border-0 overflow-hidden shadow-lg" style="background: linear-gradient(135deg, #D4A017 0%, #B8870F 50%, #1565C0 100%)">
+      <Card class="border-0 overflow-hidden shadow-lg" style="background: linear-gradient(135deg, #D4A017 0%, #B8870F 50%, #082065 100%)">
         <CardContent class="p-6">
           <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div class="flex items-center gap-4">

@@ -65,7 +65,7 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
 const logoImage = computed(() => {
   const color = props.moduleColor.toUpperCase()
   if (color === '#B50E30') return '/image/UTP-rojo.webp'
-  if (color === '#1565C0') return '/image/UTP-azul.png'
+  if (color === '#082065') return '/image/UTP-azul.png'
   if (color === '#D4A017') return '/image/UTP-dorado.png'
   return '/image/UTP-rojo.webp'
 })

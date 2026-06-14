@@ -64,7 +64,7 @@ const fetchNextIntelligentNode = async () => {
         
         // Map nodes to UI modules
         modules.value = journey.nodos.map((nodo: any, i: number) => {
-          let color = "#1565C0"
+          let color = "#082065"
           let icon = Target
           if (nodo.tipo === 'FORO') { color = "#D4A017"; icon = MapIcon }
           if (nodo.tipo === 'LABERINTO') { color = "#B50E30"; icon = Gamepad2 }
@@ -419,7 +419,7 @@ onMounted(() => {
         <Card>
           <CardContent class="grid grid-cols-2 gap-3 p-4">
             <div v-for="s in [
-              { label: 'Horas estudiadas', value: '8.5h', icon: Clock, color: '#1565C0' },
+              { label: 'Horas estudiadas', value: '8.5h', icon: Clock, color: '#082065' },
               { label: 'Módulos completados', value: '1', icon: CheckCircle2, color: '#2E7D32' },
               { label: 'Actividades pendientes', value: '2', icon: Circle, color: '#F9A825' },
               { label: 'Promedio evaluaciones', value: '8.4', icon: Star, color: '#D4A017' },
@@ -480,8 +480,8 @@ onMounted(() => {
         <!-- Estimated completion -->
         <Card>
           <CardContent class="flex items-center gap-3 p-4">
-            <div class="w-8 h-8 bg-[#1565C0]/10 rounded-lg flex items-center justify-center">
-              <Award class="w-4 h-4 text-[#1565C0]" />
+            <div class="w-8 h-8 bg-[#082065]/10 rounded-lg flex items-center justify-center">
+              <Award class="w-4 h-4 text-[#082065]" />
             </div>
             <div>
               <p class="text-xs text-muted-foreground">Fecha estimada de finalización</p>

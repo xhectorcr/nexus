@@ -178,12 +178,12 @@ const themeColors = computed(() => {
       };
     case "postulante":
       return {
-        primary: "#1565C0",
+        primary: "#082065",
         hover: "#0D47A1",
-        bgLight: "bg-[#1565C0]/5",
-        border: "border-[#1565C0]/20",
-        gradient: "from-[#1565C0] to-[#0D47A1]",
-        text: "text-[#1565C0]",
+        bgLight: "bg-[#082065]/5",
+        border: "border-[#082065]/20",
+        gradient: "from-[#082065] to-[#0D47A1]",
+        text: "text-[#082065]",
       };
   }
 });
@@ -198,7 +198,7 @@ const themeColors = computed(() => {
       class="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-[#B50E30]/5 blur-3xl pointer-events-none"
     />
     <div
-      class="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-[#1565C0]/5 blur-3xl pointer-events-none"
+      class="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-[#082065]/5 blur-3xl pointer-events-none"
     />
 
     <div class="relative z-10 sm:mx-auto sm:w-full sm:max-w-md">

@@ -199,7 +199,7 @@ const computedResult = ref({
   percentage: 95,
   description: 'Te apasiona la tecnología, la lógica algorítmica y la resolución de problemas abstractos. Tienes aptitudes innatas para liderar el cambio tecnológico a través del desarrollo de software y la Inteligencia Artificial.',
   skills: ['Pensamiento lógico y abstracto', 'Resolución de problemas complejos', 'Aptitud para el aprendizaje tecnológico rápido', 'Habilidades de automatización y optimización'],
-  color: '#1565C0',
+  color: '#082065',
   colorBg: 'bg-blue-50 border-blue-200 text-blue-900',
   icon: Cpu
 })
@@ -273,7 +273,7 @@ const runAiScanning = async () => {
           percentage: 92, // Randomly generated or provided by AI backend in the future
           description: resData.message || firstCareer.descripcion || 'Basado en tus elecciones, esta carrera es ideal para ti.',
           skills: [firstCareer.campoLaboral, 'Pensamiento crítico', 'Adaptación', 'Liderazgo'],
-          color: '#1565C0',
+          color: '#082065',
           colorBg: 'bg-blue-50 border-blue-200 text-blue-900',
           icon: Cpu
         }
@@ -319,7 +319,7 @@ const calculateResults = () => {
       percentage: basePercentage,
       description: 'Muestras una alta preferencia por el análisis lógico, la tecnología informática y el desarrollo de soluciones de software. Eres ideal para liderar la transformación digital mediante algoritmos, bases de datos e inteligencia artificial.',
       skills: ['Pensamiento lógico y algorítmico', 'Desarrollo y diseño de software', 'Análisis de datos y analítica web', 'Adaptación a tecnologías emergentes'],
-      color: '#1565C0',
+      color: '#082065',
       colorBg: 'bg-blue-50 border-blue-200 text-blue-900',
       icon: Cpu
     }
@@ -372,7 +372,7 @@ const saveAndRedirect = () => {
       { label: 'Inicio', href: '/postulante' },
       { label: 'Test Vocacional' }
     ]"
-    moduleColor="#1565C0"
+    moduleColor="#082065"
   >
     <div class="flex-1 flex flex-col items-center justify-center max-w-4xl mx-auto w-full">
       

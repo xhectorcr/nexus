@@ -41,7 +41,7 @@ const entries = ref<any[]>([])
 const stats = ref([
   { label: "Laberinto completado", value: "40%", color: "#B50E30" },
   { label: "Entradas en bitácora", value: "0", color: "#D4A017" },
-  { label: "Conversaciones", value: "0", color: "#1565C0" },
+  { label: "Conversaciones", value: "0", color: "#082065" },
   { label: "Experiencia (XP)", value: "0 XP", color: "#2E7D32" },
 ])
 
@@ -101,11 +101,11 @@ onMounted(() => {
     :breadcrumbs="[
       { label: 'Inicio' }
     ]"
-    moduleColor="#1565C0"
+    moduleColor="#082065"
   >
     <div class="space-y-6">
       <!-- Hero Section (Test NOT completed) -->
-      <Card v-if="!auth.state.user?.careerSuggestion" class="bg-gradient-to-br from-[#1565C0] to-[#0D47A1] border-0 text-white overflow-hidden relative">
+      <Card v-if="!auth.state.user?.careerSuggestion" class="bg-gradient-to-br from-[#082065] to-[#0D47A1] border-0 text-white overflow-hidden relative">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
         <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24" />
         <CardHeader class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -125,7 +125,7 @@ onMounted(() => {
           </div>
         </CardHeader>
         <CardContent class="relative z-10">
-          <Button size="lg" class="bg-white text-[#1565C0] hover:bg-white/90" @click="router.push('/postulante/test')">
+          <Button size="lg" class="bg-white text-[#082065] hover:bg-white/90" @click="router.push('/postulante/test')">
             Comenzar evaluación
             <ArrowRight class="w-5 h-5 ml-2" />
           </Button>
@@ -133,7 +133,7 @@ onMounted(() => {
       </Card>
 
       <!-- Hero Section (Test COMPLETED) -->
-      <Card v-else class="bg-gradient-to-br from-blue-900 via-[#1565C0] to-indigo-900 border-0 text-white overflow-hidden relative shadow-lg">
+      <Card v-else class="bg-gradient-to-br from-blue-900 via-[#082065] to-indigo-900 border-0 text-white overflow-hidden relative shadow-lg">
         <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-xl" />
         <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24 blur-xl" />
         <CardHeader class="relative z-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-2">
@@ -205,7 +205,7 @@ onMounted(() => {
                   <Lightbulb class="w-3 h-3 mr-1" />
                   Inteligencias
                 </Badge>
-                <Badge variant="secondary" class="bg-[#1565C0]/10 text-[#1565C0] border-[#1565C0]/20">
+                <Badge variant="secondary" class="bg-[#082065]/10 text-[#082065] border-[#082065]/20">
                   <Heart class="w-3 h-3 mr-1" />
                   Personalidad
                 </Badge>
@@ -268,7 +268,7 @@ onMounted(() => {
         <!-- Conexión P2P -->
         <Card class="hover:shadow-lg transition-shadow">
           <CardHeader>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#1565C0] to-[#0D47A1] flex items-center justify-center mb-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3">
               <MessageCircle class="w-6 h-6 text-white" />
             </div>
             <CardTitle>Conexión P2P</CardTitle>
@@ -287,7 +287,7 @@ onMounted(() => {
                 <div class="relative">
                   <Avatar class="w-10 h-10">
                     <AvatarImage src="" />
-                    <AvatarFallback class="bg-[#1565C0] text-white">
+                    <AvatarFallback class="bg-[#082065] text-white">
                       {{ mentor.name[0] }}
                     </AvatarFallback>
                   </Avatar>

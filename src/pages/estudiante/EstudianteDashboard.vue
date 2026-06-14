@@ -50,7 +50,7 @@ const stats = [
     label: "Créditos Aprobados",
     value: "45",
     icon: markRaw(Award),
-    color: "#1565C0",
+    color: "#082065",
   },
   {
     label: "Cursos Actuales",
