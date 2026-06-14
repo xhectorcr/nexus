@@ -34,7 +34,7 @@ import { useI18n } from "vue-i18n";
 
 const auth = useAuth();
 const router = useRouter();
-const { t } = useI18n();
+const { t, te } = useI18n();
 
 const vistaFacil = ref(true);
 const reproduciendoText = ref("");
@@ -193,10 +193,16 @@ const stats = computed(() => {
 });
 
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: t("nav.home") || "Inicio", href: "/familia" },
+  {
+    icon: markRaw(Home),
+    label: te("nav.home") ? t("nav.home") : "Inicio",
+    href: "/familia",
+  },
   {
     icon: markRaw(TrendingUp),
-    label: t("nav.child_progress") || "Progreso de tu hijo",
+    label: te("nav.child_progress")
+      ? t("nav.child_progress")
+      : "Progreso de tu hijo",
     href: "/familia/progreso",
   },
 ]);
@@ -205,12 +211,16 @@ const sidebarItems = computed(() => [
 <template>
   <DashboardLayout
     :sidebarItems="sidebarItems"
-    :title="$t('familia.progreso.title')"
-    :subtitle="$t('familia.progreso.subtitle')"
-    :breadcrumbs="[
-      { label: $t('nav.home'), href: '/familia' },
-      { label: $t('nav.child_progress') },
-    ]"
+    :title="
+      $te('familia.progreso.title')
+        ? $t('familia.progreso.title')
+        : 'Notas y Progreso'
+    "
+    :subtitle="
+      $te('familia.progreso.subtitle')
+        ? $t('familia.progreso.subtitle')
+        : 'Mira en detalle lo que tu hijo ha avanzado en NEXUS'
+    "
     moduleColor="#FFB20D"
   >
     <div class="space-y-6">

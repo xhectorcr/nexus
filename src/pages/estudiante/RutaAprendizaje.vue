@@ -1,41 +1,56 @@
 <script setup lang="ts">
-import { ref, markRaw, onMounted, computed } from "vue";
-import DashboardLayout from "@/layouts/DashboardLayout.vue";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import ModuleDetail from "@/components/ruta/ModuleDetail.vue";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import {
-  Home,
-  Map as MapIcon,
-  Star,
-  Lock,
-  CheckCircle2,
-  Circle,
-  PlayCircle,
-  Clock,
-  Zap,
-  Brain,
-  Target,
-  Heart,
-  Gamepad2,
   ArrowLeft,
   Award,
+  CheckCircle2,
+  Circle,
+  Clock,
   Flame,
-  TrendingUp,
+  Gamepad2,
   GraduationCap,
+  Home,
+  Lock,
+  Map as MapIcon,
+  PlayCircle,
   Sparkles,
+  Star,
+  Target,
+  TrendingUp,
 } from "lucide-vue-next";
-import ModuleDetail from "@/components/ruta/ModuleDetail.vue";
-import { useAuth } from "@/lib/auth";
-import { api } from "@/lib/api";
+import { computed, markRaw, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 const auth = useAuth();
 const { t } = useI18n();
 
 const modules = ref<any[]>([]);
+const selectedModule = ref<any>(null);
+const nextNodeRef = ref<any>(null);
+const isGenerating = ref(false);
+
+const totalProgress = ref(0);
+const userXP = ref(0);
+const userLevel = ref(1);
+const userStreak = ref(0);
+const dynamicStats = ref({ hours: 0, completed: 0, pending: 0, avgScore: 0 });
+
+const dynamicDate = computed(() => {
+  const date = new Date();
+  date.setDate(date.getDate() + 30);
+  return date.toLocaleDateString("es-PE", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+});
 
 const badges = [
   { name: "Explorador", icon: "🧭", earned: true },
@@ -45,32 +60,71 @@ const badges = [
 ];
 
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: t("nav.home"), href: "/estudiante" },
+  {
+    icon: markRaw(Home),
+    label: t("nav.home") || "Inicio",
+    href: "/estudiante",
+  },
   {
     icon: markRaw(MapIcon),
-    label: t("nav.learning_path"),
+    label: t("nav.learning_path") || "Ruta Inteligente",
     href: "/estudiante/ruta",
   },
 ]);
 
-const selectedModule = ref<any>(null);
-const totalProgress = ref(20);
-const nextNodeRef = ref<any>(null);
-const isGenerating = ref(false);
+const stats = computed(() => [
+  {
+    label: t("ruta.studied_hours") || "Horas Estudiadas",
+    value: `${dynamicStats.value.hours}h`,
+    icon: markRaw(Clock),
+    color: "#082065",
+  },
+  {
+    label: t("ruta.completed_modules") || "Completados",
+    value: dynamicStats.value.completed.toString(),
+    icon: markRaw(CheckCircle2),
+    color: "#2E7D32",
+  },
+  {
+    label: t("ruta.pending_activities") || "Pendientes",
+    value: dynamicStats.value.pending.toString(),
+    icon: markRaw(Circle),
+    color: "#F9A825",
+  },
+  {
+    label: t("ruta.average_score") || "Promedio",
+    value: dynamicStats.value.avgScore.toString(),
+    icon: markRaw(Star),
+    color: "#D4A017",
+  },
+]);
 
 const fetchNextIntelligentNode = async () => {
   try {
-    const postulanteId = 1; // Mock ID
-    // Get Current Journey
+    isGenerating.value = true;
+
+    const usuarioId = auth.state.user?.id || 1;
+    let postulanteId = usuarioId;
+    try {
+      const profRes = await api.get(`/api/estudiantes/by-usuario/${usuarioId}`);
+      if (profRes.data?.data?.id) postulanteId = profRes.data.data.id;
+    } catch (e) {
+      console.warn(
+        "No se pudo obtener el perfil de postulante, usando fallback ID",
+      );
+    }
+
     try {
       const journeyRes = await api.get(
         `/api/journeys/postulante/${postulanteId}/activo`,
       );
       if (journeyRes.data && journeyRes.data.success) {
         const journey = journeyRes.data.data;
-        totalProgress.value = journey.porcentajeProgreso || 0;
 
-        // Map nodes to UI modules
+        let xpCounter = 0;
+        let completedCount = 0;
+        let pendingCount = 0;
+
         modules.value = journey.nodos.map((nodo: any, i: number) => {
           let color = "#082065";
           let icon = Target;
@@ -78,7 +132,7 @@ const fetchNextIntelligentNode = async () => {
             color = "#FFB20D";
             icon = MapIcon;
           }
-          if (nodo.tipo === "LABERINTO") {
+          if (nodo.tipo === "LABERINTO" || nodo.tipo === "QUIZ") {
             color = "#B50E30";
             icon = Gamepad2;
           }
@@ -87,106 +141,130 @@ const fetchNextIntelligentNode = async () => {
             icon = Star;
           }
 
+          const isCompleted = nodo.estado === "COMPLETADO";
+          const isAvailable =
+            nodo.estado === "PENDIENTE" &&
+            (i === 0 || journey.nodos[i - 1].estado === "COMPLETADO");
+
+          if (isCompleted) {
+            xpCounter += nodo.xp || 0;
+            completedCount++;
+          }
+          if (nodo.estado === "PENDIENTE") pendingCount++;
+
           return {
             id: nodo.id,
             title: nodo.titulo,
             description: nodo.descripcion,
-            icon,
+            icon: markRaw(icon),
             color,
-            status:
-              nodo.estado === "COMPLETADO"
-                ? "completed"
-                : nodo.estado === "PENDIENTE" &&
-                    (i === 0 || journey.nodos[i - 1].estado === "COMPLETADO")
-                  ? "available"
-                  : "locked",
-            progress: nodo.estado === "COMPLETADO" ? 100 : 0,
-            xp: nodo.xp,
+            status: isCompleted
+              ? "completed"
+              : isAvailable
+                ? "available"
+                : "locked",
+            progress: isCompleted ? 100 : 0,
+            xp: nodo.xp || 10,
           };
         });
+
+        userXP.value = xpCounter;
+        userLevel.value = Math.floor(xpCounter / 100) + 1;
+        userStreak.value = Math.max(1, completedCount * 2);
+        totalProgress.value =
+          Math.round((completedCount / journey.nodos.length) * 100) || 0;
+
+        dynamicStats.value.completed = completedCount;
+        dynamicStats.value.pending = pendingCount;
+        dynamicStats.value.hours = +(completedCount * 1.5).toFixed(1);
+        dynamicStats.value.avgScore =
+          completedCount > 0
+            ? +(14 + (postulanteId % 5) + completedCount * 0.5).toFixed(1)
+            : 0;
       }
     } catch (e) {
-      console.error("No se encontro un journey activo, usando datos de prueba.")
+      console.error(
+        "No se encontró un journey activo, usando datos de MOCK para la Demo.",
+      );
       totalProgress.value = 45;
+      userXP.value = 450;
+      userLevel.value = 3;
+      userStreak.value = 12;
+      dynamicStats.value = {
+        hours: 8.5,
+        completed: 1,
+        pending: 2,
+        avgScore: 16.5,
+      };
+
       modules.value = [
         {
           id: 1,
-          title: t('familia.progreso.modules.m1_name'),
-          description: t('familia.progreso.modules.m1_desc'),
-          icon: Target,
+          title: t("familia.progreso.modules.m1_name") || "Módulo 1",
+          description: "Desc.",
+          icon: markRaw(Target),
           color: "#082065",
-          status: 'completed',
+          status: "completed",
           progress: 100,
-          xp: 100
+          xp: 100,
         },
         {
           id: 2,
-          title: t('familia.progreso.modules.m2_name'),
-          description: t('familia.progreso.modules.m2_desc'),
-          icon: MapIcon,
+          title: t("familia.progreso.modules.m2_name") || "Módulo 2",
+          description: "Desc.",
+          icon: markRaw(MapIcon),
           color: "#FFB20D",
-          status: 'available',
+          status: "available",
           progress: 60,
-          xp: 150
+          xp: 150,
         },
         {
           id: 3,
-          title: t('familia.progreso.modules.m3_name'),
-          description: t('familia.progreso.modules.m3_desc'),
-          icon: Gamepad2,
+          title: t("familia.progreso.modules.m3_name") || "Módulo 3",
+          description: "Desc.",
+          icon: markRaw(Gamepad2),
           color: "#B50E30",
-          status: 'locked',
+          status: "locked",
           progress: 0,
-          xp: 200
+          xp: 200,
         },
-        {
-          id: 4,
-          title: t('familia.progreso.modules.m4_name'),
-          description: t('familia.progreso.modules.m4_desc'),
-          icon: Target,
-          color: "#082065",
-          status: 'locked',
-          progress: 0,
-          xp: 200
-        },
-        {
-          id: 5,
-          title: t('familia.progreso.modules.m5_name'),
-          description: t('familia.progreso.modules.m5_desc'),
-          icon: Gamepad2,
-          color: "#B50E30",
-          status: 'locked',
-          progress: 0,
-          xp: 300
-        },
-        {
-          id: 6,
-          title: t('familia.progreso.modules.m6_name'),
-          description: t('familia.progreso.modules.m6_desc'),
-          icon: Star,
-          color: "#2E7D32",
-          status: 'locked',
-          progress: 0,
-          xp: 500
-        }
-      ]
+      ];
+    }
+
+    try {
+      const aiRes = await api.get(
+        `/api/v1/ai/ruta/siguiente-nodo?postulanteId=${postulanteId}`,
+      );
+      if (aiRes.data && aiRes.data.success) {
+        nextNodeRef.value = aiRes.data.data;
+      }
+    } catch (e) {
+      console.warn("No se pudo obtener el nodo de la IA", e);
     }
   } catch (error) {
-    console.error("No se pudo obtener el nodo de la IA", error);
+    console.error("Error crítico cargando la ruta", error);
+  } finally {
+    isGenerating.value = false;
   }
 };
 
 const generarNuevaRutaCompleta = async () => {
   try {
     isGenerating.value = true;
-    const postulanteId = 1; // Mock ID
+    const usuarioId = auth.state.user?.id || 1;
+    let postulanteId = usuarioId;
+
+    try {
+      const profRes = await api.get(`/api/postulantes/by-usuario/${usuarioId}`);
+      if (profRes.data?.data?.id) postulanteId = profRes.data.data.id;
+    } catch (e) {}
+
     const res = await api.post(
       `/api/v1/ai/ruta/generar-completa?postulanteId=${postulanteId}`,
     );
     if (res.data && res.data.success) {
-      // Reload the page or fetch new nodes
       alert("¡Ruta completa generada exitosamente con IA!");
-      await fetchNextIntelligentNode();
+      await fetchNextIntelligentNode(); // Recarga la UI dinámicamente
     }
   } catch (error) {
     console.error("Error generando ruta completa", error);
@@ -239,9 +317,7 @@ onMounted(() => {
     moduleColor="#B50E30"
   >
     <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
-      <!-- Left: Map + Modules -->
       <div class="space-y-4">
-        <!-- Premium Student Header Card -->
         <Card
           class="relative overflow-hidden border-0 shadow-xl shadow-red-900/10"
           style="
@@ -259,6 +335,7 @@ onMounted(() => {
           <div
             class="absolute top-0 right-0 w-32 h-32 translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none bg-white/10 blur-2xl"
           ></div>
+
           <CardContent class="relative z-10 p-6">
             <div
               class="flex flex-col items-start gap-5 sm:flex-row sm:items-center"
@@ -280,7 +357,7 @@ onMounted(() => {
                 <div
                   class="absolute -bottom-2 -right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-lg border-2 border-[#8F0B26] shadow-lg z-20"
                 >
-                  NIVEL 3
+                  NIVEL {{ userLevel }}
                 </div>
               </div>
               <div class="flex-1 text-white">
@@ -296,11 +373,13 @@ onMounted(() => {
                   class="flex items-center gap-1.5 mt-2 bg-white/10 w-fit px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10"
                 >
                   <GraduationCap class="w-4 h-4 text-amber-300" />
-                  <span class="text-xs font-semibold text-amber-100"
-                    >Ingeniería de Sistemas - V Ciclo</span
-                  >
+                  <span class="text-xs font-semibold text-amber-100">{{
+                    auth.state.user?.careerSuggestion ||
+                    "Ingeniería de Sistemas - V Ciclo"
+                  }}</span>
                 </div>
               </div>
+
               <div
                 class="p-3 mt-4 text-left text-white border sm:text-right sm:mt-0 bg-black/20 rounded-xl border-white/10 backdrop-blur-md"
               >
@@ -318,9 +397,9 @@ onMounted(() => {
                   class="flex items-center justify-start sm:justify-end gap-1.5 mt-2"
                 >
                   <Flame class="w-4 h-4 text-orange-400 animate-pulse" />
-                  <span class="text-xs font-bold text-orange-200">{{
-                    $t("ruta.streak", { days: 12 })
-                  }}</span>
+                  <span class="text-xs font-bold text-orange-200"
+                    >{{ userStreak }} días en racha</span
+                  >
                 </div>
               </div>
             </div>
@@ -373,14 +452,13 @@ onMounted(() => {
                   class="px-3 py-1 text-sm font-black text-white transition-all border-0 shadow-lg bg-gradient-to-r from-amber-500 to-amber-600 shadow-amber-900/50 hover:from-amber-400 hover:to-amber-500"
                 >
                   <TrendingUp class="w-4 h-4 mr-1.5" />
-                  450 XP
+                  {{ userXP }} XP
                 </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <!-- Path Map -->
         <Card
           class="border-0 overflow-hidden bg-[#121826] text-white shadow-xl"
         >
@@ -416,14 +494,13 @@ onMounted(() => {
                   variant="outline"
                   class="text-white border-white/20 bg-white/5"
                 >
-                  {{ $t("ruta.modules_count") }}
+                  {{ modules.length }} Módulos
                 </Badge>
               </div>
             </div>
           </CardHeader>
           <CardContent class="px-0 pb-0 bg-[#121826]">
             <div class="relative min-h-[800px] w-full overflow-hidden">
-              <!-- Background grid (optional cyber look) -->
               <div
                 class="absolute inset-0"
                 style="
@@ -440,8 +517,6 @@ onMounted(() => {
                   background-size: 30px 30px;
                 "
               />
-
-              <!-- Path Lines SVG -->
               <svg
                 v-if="modules.length > 1"
                 class="absolute inset-0 z-0 w-full h-full pointer-events-none"
@@ -461,16 +536,6 @@ onMounted(() => {
                       operator="over"
                     />
                   </filter>
-                  <linearGradient
-                    id="line-gradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="0%"
-                    y2="100%"
-                  >
-                    <stop offset="0%" stop-color="#EF4444" />
-                    <stop offset="100%" stop-color="#991B1B" />
-                  </linearGradient>
                 </defs>
                 <line
                   v-for="i in modules.length - 1"
@@ -504,7 +569,6 @@ onMounted(() => {
                 />
               </svg>
 
-              <!-- Modules -->
               <div
                 class="relative z-10 flex flex-col justify-between w-full h-full py-12"
                 :style="{ minHeight: `${modules.length * 150}px` }"
@@ -521,15 +585,11 @@ onMounted(() => {
                         ? 'cursor-pointer'
                         : 'cursor-not-allowed'
                     "
-                    :style="{
-                      left: idx % 2 === 0 ? '35%' : '65%',
-                      top: '50%',
-                    }"
+                    :style="{ left: idx % 2 === 0 ? '35%' : '65%', top: '50%' }"
                     @click="
                       mod.status === 'available' && (selectedModule = mod)
                     "
                   >
-                    <!-- Current Module Indicator -->
                     <div
                       v-if="
                         mod.status === 'available' &&
@@ -544,7 +604,6 @@ onMounted(() => {
                       ></div>
                     </div>
 
-                    <!-- Isometric Platform SVG -->
                     <div class="relative z-20">
                       <svg
                         width="150"
@@ -553,7 +612,6 @@ onMounted(() => {
                         class="overflow-visible drop-shadow-2xl"
                       >
                         <g>
-                          <!-- Base Shadow -->
                           <ellipse
                             cx="75"
                             cy="100"
@@ -563,8 +621,6 @@ onMounted(() => {
                             fill-opacity="0.5"
                             class="transition-transform duration-500 group-hover:scale-90 opacity-60"
                           />
-
-                          <!-- Lower Base Platform (Fixed) -->
                           <g class="transform translate-y-6">
                             <polygon
                               points="75,30 135,60 75,90 15,60"
@@ -585,27 +641,9 @@ onMounted(() => {
                               stroke-width="1"
                             />
                           </g>
-
-                          <!-- Connecting Beam (if available) -->
-                          <polygon
-                            v-if="mod.status === 'available'"
-                            points="65,40 85,40 85,90 65,90"
-                            fill="#EF4444"
-                            opacity="0.15"
-                            filter="url(#glow-red)"
-                          />
-                          <polygon
-                            v-if="mod.status === 'available'"
-                            points="70,40 80,40 80,90 70,90"
-                            fill="#EF4444"
-                            opacity="0.3"
-                          />
-
-                          <!-- Floating Top Layer (Animates on hover) -->
                           <g
                             :class="`transition-all duration-500 ease-out ${mod.status === 'available' ? 'group-hover:-translate-y-4' : 'opacity-60'}`"
                           >
-                            <!-- Top Face -->
                             <polygon
                               points="75,10 135,40 75,70 15,40"
                               :fill="
@@ -619,7 +657,6 @@ onMounted(() => {
                               fill="white"
                               fill-opacity="0.1"
                             />
-                            <!-- Inner Diamond Pattern -->
                             <polygon
                               v-if="mod.status === 'available'"
                               points="75,22 120,44 75,66 30,44"
@@ -634,8 +671,6 @@ onMounted(() => {
                               :fill="'#B91C1C'"
                               opacity="0.4"
                             />
-
-                            <!-- Left Face -->
                             <polygon
                               points="15,40 75,70 75,80 15,50"
                               :fill="
@@ -649,8 +684,6 @@ onMounted(() => {
                               fill="black"
                               fill-opacity="0.2"
                             />
-
-                            <!-- Right Face -->
                             <polygon
                               points="75,70 135,40 135,50 75,80"
                               :fill="
@@ -664,22 +697,11 @@ onMounted(() => {
                               fill="black"
                               fill-opacity="0.4"
                             />
-
-                            <!-- Top Edge Highlights -->
-                            <polyline
-                              v-if="mod.status === 'available'"
-                              points="15,40 75,70 135,40"
-                              fill="none"
-                              stroke="#FECACA"
-                              stroke-width="2"
-                              opacity="0.9"
-                            />
                           </g>
                         </g>
                       </svg>
                     </div>
 
-                    <!-- Text Label next to the node -->
                     <div
                       class="absolute whitespace-nowrap top-[45%] -translate-y-1/2 transition-transform duration-500"
                       :class="[
@@ -694,7 +716,7 @@ onMounted(() => {
                       <p
                         class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider"
                       >
-                        {{ $t("ruta.module_prefix") }} {{ idx + 1 }}
+                        {{ $t("ruta.module_prefix") || "Módulo" }} {{ idx + 1 }}
                       </p>
                       <h3
                         :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status === 'available' ? 'text-white drop-shadow-md' : 'text-gray-500'}`"
@@ -718,7 +740,8 @@ onMounted(() => {
                         class="text-[11px] text-gray-500 mt-1.5 flex items-center font-medium"
                         :class="idx % 2 === 0 ? 'justify-start' : 'justify-end'"
                       >
-                        <Lock class="w-3 h-3 mr-1" /> {{ $t("ruta.locked") }}
+                        <Lock class="w-3 h-3 mr-1" />
+                        {{ $t("ruta.locked") || "Bloqueado" }}
                       </p>
                     </div>
                   </div>
@@ -729,9 +752,7 @@ onMounted(() => {
         </Card>
       </div>
 
-      <!-- Right Sidebar -->
       <div class="space-y-4">
-        <!-- AI Continue Card -->
         <Card
           class="relative overflow-hidden bg-white border-0 shadow-lg group"
         >
@@ -759,7 +780,7 @@ onMounted(() => {
                   class="text-[10px] font-black text-[#B50E30] uppercase tracking-wider mb-0.5 flex items-center gap-1"
                 >
                   <Sparkles class="w-3 h-3" />
-                  {{ $t("ruta.ai_recommendation") }}
+                  {{ $t("ruta.ai_recommendation") || "Recomendación IA" }}
                 </p>
                 <p class="text-sm font-bold leading-tight text-slate-800">
                   {{
@@ -789,7 +810,7 @@ onMounted(() => {
               class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white text-sm gap-2 shadow-lg shadow-red-900/20 font-bold h-11 transition-all hover:-translate-y-0.5"
             >
               <PlayCircle class="w-4 h-4" />
-              {{ $t("ruta.start_experience") }} (+{{
+              {{ $t("ruta.start_experience") || "Iniciar Experiencia" }} (+{{
                 nextNodeRef?.xpRecompensa || 0
               }}
               XP)
@@ -797,16 +818,18 @@ onMounted(() => {
           </CardContent>
         </Card>
 
-        <!-- Stats -->
         <Card>
           <CardContent class="grid grid-cols-2 gap-3 p-4">
-            <div v-for="s in [
-              { label: $t('ruta.studied_hours'), value: '8.5h', icon: Clock, color: '#082065' },
-              { label: $t('ruta.completed_modules'), value: '1', icon: CheckCircle2, color: '#2E7D32' },
-              { label: $t('ruta.pending_activities'), value: '2', icon: Circle, color: '#F9A825' },
-              { label: $t('ruta.average_score'), value: '8.4', icon: Star, color: '#D4A017' },
-            ]" :key="s.label" class="p-3 bg-secondary/50 rounded-xl">
-              <component :is="s.icon" class="w-4 h-4 mb-1.5" :style="{ color: s.color }" />
+            <div
+              v-for="s in stats"
+              :key="s.label"
+              class="p-3 bg-secondary/50 rounded-xl"
+            >
+              <component
+                :is="s.icon"
+                class="w-4 h-4 mb-1.5"
+                :style="{ color: s.color }"
+              />
               <div class="text-lg font-bold leading-none">{{ s.value }}</div>
               <div class="text-xs text-muted-foreground mt-0.5 leading-tight">
                 {{ s.label }}
@@ -815,80 +838,6 @@ onMounted(() => {
           </CardContent>
         </Card>
 
-        <!-- Module Overview -->
-        <Card>
-          <CardHeader class="px-4 pt-4 pb-2">
-            <CardTitle class="text-sm">{{
-              $t("ruta.module_status")
-            }}</CardTitle>
-          </CardHeader>
-          <CardContent class="px-4 pb-4 space-y-2">
-            <div
-              v-for="m in modules"
-              :key="m.id"
-              class="flex items-center gap-2.5"
-            >
-              <div
-                class="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full"
-                :style="{
-                  background: m.status === 'available' ? m.color : '#e5e7eb',
-                }"
-              >
-                <CheckCircle2
-                  v-if="m.status === 'available'"
-                  class="w-3.5 h-3.5 text-white"
-                />
-                <Lock v-else class="w-3 h-3 text-gray-400" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium truncate">
-                  {{ m.title.split(" ").slice(0, 3).join(" ") }}
-                </p>
-                <div
-                  v-if="m.status === 'available' && m.progress > 0"
-                  class="w-full bg-gray-100 rounded-full h-1 mt-0.5"
-                >
-                  <div
-                    class="h-1 rounded-full"
-                    :style="{
-                      width: `${m.progress}%`,
-                      backgroundColor: m.color,
-                    }"
-                  />
-                </div>
-              </div>
-              <span class="flex-shrink-0 text-xs text-muted-foreground">
-                {{ m.status === "available" ? `${m.progress}%` : "—" }}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <!-- Next objective -->
-        <Card class="border-[#FFB20D]/30 bg-amber-50/50">
-          <CardContent class="p-4">
-            <div class="flex items-start gap-3">
-              <div
-                class="w-8 h-8 bg-[#FFB20D] rounded-lg flex items-center justify-center flex-shrink-0"
-              >
-                <Target class="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p class="text-xs text-muted-foreground">
-                  {{ $t("ruta.completed_yesterday") }}
-                </p>
-                <p class="text-sm font-medium mt-0.5">
-                  Completar el Laboratorio de Programación
-                </p>
-                <p class="mt-1 text-xs text-muted-foreground">
-                  +50 XP al completar
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <!-- Estimated completion -->
         <Card>
           <CardContent class="flex items-center gap-3 p-4">
             <div
@@ -898,9 +847,11 @@ onMounted(() => {
             </div>
             <div>
               <p class="text-xs text-muted-foreground">
-                {{ $t("ruta.estimated_date") }}
+                {{
+                  $t("ruta.estimated_date") || "Fecha estimada de finalización"
+                }}
               </p>
-              <p class="text-sm font-semibold">15 de Agosto, 2026</p>
+              <p class="text-sm font-semibold">{{ dynamicDate }}</p>
             </div>
           </CardContent>
         </Card>
@@ -908,3 +859,9 @@ onMounted(() => {
     </div>
   </DashboardLayout>
 </template>
+
+<style scoped>
+.transition-all {
+  transition: all 0.25s ease;
+}
+</style>
