@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Bot,
   Brain,
+  BookOpen,
   Building2,
   Check,
   Compass,
@@ -34,17 +35,37 @@ import {
 } from "lucide-vue-next";
 import { computed, markRaw, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 
 const router = useRouter();
 const auth = useAuth();
+const { t } = useI18n();
 
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
-  { icon: markRaw(Brain), label: "Test Vocacional", href: "/postulante/test" },
+  {
+    icon: markRaw(Home),
+    label: t("nav.home") || "Inicio",
+    href: "/postulante",
+  },
+  {
+    icon: markRaw(Brain),
+    label: t("nav.vocational_tests") || "Tests",
+    href: "/postulante/test",
+  },
   {
     icon: markRaw(Gamepad2),
-    label: "Laberinto",
+    label: t("postulante.labyrinth") || "Laberinto",
     href: "/postulante/laberinto",
+  },
+  {
+    icon: markRaw(BookOpen),
+    label: t("postulante.digital_log") || "Bitácora",
+    href: "/postulante/bitacora",
+  },
+  {
+    icon: markRaw(MessageCircle),
+    label: t("postulante.p2p_connection") || "Conexión P2P",
+    href: "/postulante/p2p",
   },
 ]);
 
@@ -493,12 +514,11 @@ const saveAndRedirect = () => {
         <div class="absolute top-0 right-0 w-96 h-96 -mt-32 -mr-32 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-[pulse_7s_infinite]" />
         <div class="absolute bottom-0 left-0 w-96 h-96 -mb-32 -ml-32 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-[pulse_7s_infinite_2s]" />
 
-        <CardContent class="relative z-10 pt-6 space-y-8 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <CardContent class="relative z-10 pt-6 space-y-6 text-center">
           <div
             class="flex items-center justify-center w-28 h-28 mx-auto text-blue-600 border border-blue-100 shadow-xl bg-gradient-to-br from-blue-50 to-white rounded-[2rem] relative group"
           >
-            <div class="absolute inset-0 border-4 border-blue-500 rounded-[2rem] opacity-20 group-hover:scale-110 group-hover:opacity-0 transition-all duration-700"></div>
-            <Bot class="w-14 h-14 text-blue-600 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12" />
+            <Bot class="w-12 h-12 text-blue-600" />
           </div>
 
           <div class="space-y-4">
@@ -507,11 +527,11 @@ const saveAndRedirect = () => {
               >NEXUS AI Profiler</Badge
             >
             <h1
-              class="text-4xl font-black leading-tight tracking-tight sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900"
+              class="text-4xl font-black leading-tight tracking-tight sm:text-5xl text-slate-900"
             >
               Test Vocacional
             </h1>
-            <p class="max-w-2xl mx-auto text-lg font-medium text-slate-500 leading-relaxed">
+            <p class="max-w-xl mx-auto text-base font-medium text-slate-500">
               Evaluaremos tu comportamiento frente a escenarios reales para
               generar un perfil de talento preciso y armar tu laberinto de
               misiones impulsado por IA.
