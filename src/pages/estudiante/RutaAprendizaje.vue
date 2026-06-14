@@ -35,6 +35,7 @@ import {
   Star,
   Target,
   TrendingUp,
+  MessageCircle,
 } from "lucide-vue-next";
 import { computed, markRaw, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
@@ -61,6 +62,11 @@ const sidebarItems = computed(() => [
     icon: markRaw(MapIcon),
     label: t("nav.learning_path") || "Ruta Inteligente",
     href: "/estudiante/ruta",
+  },
+  {
+    icon: markRaw(MessageCircle),
+    label: "Conexión P2P",
+    href: "/estudiante/p2p",
   },
 ]);
 

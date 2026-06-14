@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth";
 import ConfiguracionPage from "@/pages/configuracion/ConfiguracionPage.vue";
 import EstudianteDashboard from "@/pages/estudiante/EstudianteDashboard.vue";
 import RutaAprendizaje from "@/pages/estudiante/RutaAprendizaje.vue";
+import EstudianteP2P from "@/pages/estudiante/P2P.vue";
 import FamiliaDashboard from "@/pages/familia/FamiliaDashboard.vue";
 import FamiliaProgreso from "@/pages/familia/FamiliaProgreso.vue";
 import LandingPage from "@/pages/landing/LandingPage.vue";
@@ -87,6 +88,13 @@ const router = createRouter({
           path: "estudiante/ruta",
           name: "estudiante-ruta",
           component: RutaAprendizaje,
+          meta: { requiresAuth: true, role: "estudiante" },
+        },
+        {
+          // Estudiante P2P
+          path: "estudiante/p2p",
+          name: "estudiante-p2p",
+          component: EstudianteP2P,
           meta: { requiresAuth: true, role: "estudiante" },
         },
         {
