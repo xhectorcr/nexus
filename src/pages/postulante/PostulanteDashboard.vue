@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,6 +23,7 @@ import {
   Check,
   Circle,
   Copy,
+  Eye,
   Gamepad2,
   Heart,
   Home,
@@ -69,13 +71,7 @@ const fetchBitacora = async () => {
     const res = await api.get(`/api/bitacoras/postulante/${postulantId}`);
     entries.value = res.data?.data || res.data || [];
   } catch (error) {
-    console.warn("Could not fetch bitacora, using fallback", error);
-    if (entries.value.length === 0) {
-      entries.value = [
-        { titulo: "Proyecto de robótica", descripcion: "Completé mi primer prototipo con éxito.", tipoEntrada: "LOGRO", fecha: new Date().toISOString() },
-        { titulo: "Dudas sobre la carrera", descripcion: "No sé si elegir sistemas o software, ambas me gustan mucho.", tipoEntrada: "REFLEXION", fecha: new Date().toISOString() },
-      ];
-    }
+    console.error("No se pudo obtener la bitácora desde la BD", error);
   } finally {
     bitacoraLoading.value = false;
   }
@@ -84,20 +80,28 @@ const fetchBitacora = async () => {
 const saveBitacoraEntry = async () => {
   if (!bitacoraForm.value.titulo || !bitacoraForm.value.descripcion) return;
   bitacoraSubmitting.value = true;
+  
   try {
     const postulantId = auth.state.user?.id || 1;
     const payload = {
       ...bitacoraForm.value,
-      postulanteId: postulantId,
-      fecha: new Date().toISOString()
+      postulanteId: postulantId, // Requerido por el backend real (BitacoraEntradaRequest)
+      emocion: "MOTIVADO",
+      nivelConfianza: 8,
+      nivelMotivacion: 10,
+      tags: ["General"]
     };
-    await api.post('/api/bitacoras', payload);
+    
+    // Ruta oficial del backend: POST /api/bitacoras
+    await api.post(`/api/bitacoras`, payload);
+    
+    // Recargar datos directamente de la base de datos
     await fetchBitacora();
+    
+    // Limpiar el formulario solo si tuvo éxito en la base de datos
     bitacoraForm.value = { titulo: '', descripcion: '', tipoEntrada: 'EXPERIENCIA' };
   } catch (error) {
-    console.error("Error saving bitacora:", error);
-    entries.value.unshift({ ...bitacoraForm.value, fecha: new Date().toISOString() });
-    bitacoraForm.value = { titulo: '', descripcion: '', tipoEntrada: 'EXPERIENCIA' };
+    console.error("Error al guardar la bitácora en la BD:", error);
   } finally {
     bitacoraSubmitting.value = false;
   }
@@ -490,18 +494,43 @@ onMounted(() => {
                 <div
                   v-for="(entry, i) in entries"
                   :key="i"
-                  class="p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all group relative"
+                  class="p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all group relative flex flex-col gap-2"
                 >
-                  <p class="text-sm font-medium text-[#1F1F1F]">
-                    {{ entry.titulo || entry }}
-                  </p>
-                  <p class="text-xs text-[#5F6368] mt-1">
-                    {{
-                      entry.fecha
-                        ? new Date(entry.fecha).toLocaleDateString()
-                        : $t("postulante.recently")
-                    }}
-                  </p>
+                  <div class="flex items-start justify-between gap-4">
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <Badge variant="secondary" class="bg-blue-50 text-blue-700 hover:bg-blue-100 uppercase text-[10px] font-bold tracking-wider">
+                          {{ entry.tipoEntrada || 'ENTRADA' }}
+                        </Badge>
+                        <p class="text-xs text-[#5F6368]">
+                          {{ entry.fecha ? new Date(entry.fecha).toLocaleDateString() : $t("postulante.recently") }}
+                        </p>
+                      </div>
+                      <p class="text-sm font-bold text-[#1F1F1F]">
+                        {{ entry.titulo || entry }}
+                      </p>
+                    </div>
+                    <Dialog v-if="entry.descripcion">
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm" class="h-8 w-8 p-0 text-gray-400 hover:text-[#082065] transition-colors rounded-full" :title="$t('postulante.view_details') || 'Ver detalles'">
+                          <Eye class="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent class="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle class="flex items-center gap-2">
+                            <Badge variant="secondary" class="bg-blue-50 text-blue-700 uppercase text-[10px] font-bold">
+                              {{ entry.tipoEntrada || 'ENTRADA' }}
+                            </Badge>
+                            <span class="truncate">{{ entry.titulo || 'Entrada' }}</span>
+                          </DialogTitle>
+                          <DialogDescription class="pt-4 text-gray-700 text-sm whitespace-pre-wrap leading-relaxed text-left">
+                            {{ entry.descripcion }}
+                          </DialogDescription>
+                        </DialogHeader>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
               </div>
             </div>
