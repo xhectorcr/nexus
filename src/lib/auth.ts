@@ -1,18 +1,25 @@
 import { reactive, watch } from "vue";
 import { api } from "./api";
+
 export interface User {
+  id?: number;
   role: "estudiante" | "familia" | "postulante";
+
   username: string;
   name: string;
+
+  vinculado?: boolean;
   studentName?: string;
   careerSuggestion?: string;
-  linkedStudentCode?: string;
   linkedStudentRole?: "estudiante" | "postulante";
+
+  codigoVinculacion?: string;
 }
 
 const STORAGE_KEY = "nexus_auth_user";
 
 const savedUser = localStorage.getItem(STORAGE_KEY);
+
 const state = reactive<{
   user: User | null;
 }>({
@@ -27,88 +34,70 @@ watch(
     } else {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem("nexus_vocational_result");
-      localStorage.removeItem("nexus_linked_student_code");
+      localStorage.removeItem("nexus_jwt_token");
     }
   },
   { deep: true },
 );
 
+export async function fetchFamiliarProfile() {
+  const response = await api.get("/api/familiar/me");
+
+  return response.data.data ?? response.data;
+}
+
 export async function login(
   role: "estudiante" | "familia" | "postulante",
   username: string,
   password?: string,
-  customName?: string,
 ) {
-  let name = customName || "";
-  let studentName = "";
-  let careerSuggestion = "";
-  let linkedStudentCode = "";
-  let linkedStudentRole: "estudiante" | "postulante" | undefined = undefined;
+  try {
+    const response = await api.post("/auth/login", {
+      email: username,
+      password,
+    });
 
-  if (password && password !== "google_mock_pass") {
-    try {
-      const response = await api.post('/auth/login', { email: username, password })
-      const token = response.data.data?.token
-      if (token) {
-        localStorage.setItem('nexus_jwt_token', token)
-      }
-      
-      // Update data with real backend info if available
-      const backendUser = response.data.data?.usuario
-      if (backendUser) {
-        username = backendUser.email || username
-        if (backendUser.nombre) {
-          name = `${backendUser.nombre} ${backendUser.apellido || ''}`.trim()
-        }
-      }
-    } catch (error) {
-      console.error("API Login failed:", error);
-      throw error;
+    const userData = response.data.data;
+
+    localStorage.setItem("nexus_jwt_token", userData.token);
+
+    const user: User = {
+      id: userData.id,
+      role,
+      username: userData.email,
+      name: `${userData.nombre} ${userData.apellido ?? ""}`.trim(),
+    };
+
+    if (role === "familia") {
+      const familiar = await fetchFamiliarProfile();
+
+      user.vinculado = familiar.vinculado;
+
+      user.studentName = familiar.nombreVinculado;
+
+      user.linkedStudentRole =
+        familiar.tipo === "ESTUDIANTE"
+          ? "estudiante"
+          : familiar.tipo === "POSTULANTE"
+            ? "postulante"
+            : undefined;
     }
-  }
 
-  if (!name) {
-    if (role === "estudiante") {
-      name = "Alejandro Lastra Torres";
-    } else if (role === "familia") {
-      name = "Marisela Torres";
-      // Load saved linkage if any
-      const savedCode = localStorage.getItem("nexus_linked_student_code");
-      if (savedCode) {
-        linkedStudentCode = savedCode;
-        studentName =
-          savedCode === "NEX-ALE-2026"
-            ? "Alejandro Lastra Torres"
-            : "Camila Ramos";
-        linkedStudentRole =
-          savedCode === "NEX-ALE-2026" ? "estudiante" : "postulante";
-      }
-    } else if (role === "postulante") {
-      name = "Camila Ramos";
-      const savedResult = localStorage.getItem("nexus_vocational_result");
-      if (savedResult) {
-        careerSuggestion = savedResult;
-      }
+    if (role === "postulante") {
+      const codigo = await fetchPostulanteCodigo();
+      user.codigoVinculacion = codigo;
     }
-  }
 
-  state.user = {
-    role,
-    username,
-    name,
-    studentName: studentName || undefined,
-    careerSuggestion: careerSuggestion || undefined,
-    linkedStudentCode: linkedStudentCode || undefined,
-    linkedStudentRole,
-  };
-  return state.user;
+    state.user = user;
+
+    return user;
+  } catch (error) {
+    console.error("API Login failed:", error);
+    throw error;
+  }
 }
 
-export async function loginWithGoogle(
-  credential: string,
-  role: string,
-  pin?: string,
-) {
+export async function loginWithGoogle(credential: string, role: string) {
   try {
     const response = await api.post("/auth/google", {
       idToken: credential,
@@ -116,61 +105,83 @@ export async function loginWithGoogle(
 
     const userData = response.data.data;
 
-    const jwtToken = userData.token;
-    localStorage.setItem("nexus_jwt_token", jwtToken);
+    localStorage.setItem("nexus_jwt_token", userData.token);
 
-    state.user = {
-      role: role as any,
+    const user: User = {
+      id: userData.id,
+      role: role as User["role"],
       username: userData.email,
-      name: `${userData.nombre} ${userData.apellido || ""}`.trim(),
+      name: `${userData.nombre} ${userData.apellido ?? ""}`.trim(),
     };
 
-    return state.user;
+    if (role === "familia") {
+      const familiar = await fetchFamiliarProfile();
+
+      user.vinculado = familiar.vinculado;
+
+      user.studentName = familiar.nombreVinculado;
+
+      user.linkedStudentRole =
+        familiar.tipo === "ESTUDIANTE"
+          ? "estudiante"
+          : familiar.tipo === "POSTULANTE"
+            ? "postulante"
+            : undefined;
+    }
+
+    if (role === "postulante") {
+      const codigo = await fetchPostulanteCodigo();
+      user.codigoVinculacion = codigo;
+    }
+
+    state.user = user;
+
+    return user;
   } catch (error) {
     console.error("Google Login failed:", error);
     throw error;
   }
 }
 
+export async function refreshFamiliarProfile() {
+  if (!state.user || state.user.role !== "familia") {
+    return;
+  }
+
+  const familiar = await fetchFamiliarProfile();
+
+  state.user = {
+    ...state.user,
+    vinculado: familiar.vinculado,
+    studentName: familiar.nombreVinculado,
+    linkedStudentRole:
+      familiar.tipo === "ESTUDIANTE"
+        ? "estudiante"
+        : familiar.tipo === "POSTULANTE"
+          ? "postulante"
+          : undefined,
+  };
+}
+
 export function logout() {
   state.user = null;
 }
 
+export async function fetchStudentCode(): Promise<string> {
+  const res = await api.get("/api/estudiantes/codigo-vinculacion/me");
+  return res.data.data;
+}
+
+export async function fetchPostulanteCodigo(): Promise<string> {
+  const response = await api.get("/api/postulantes/codigo-vinculacion/me");
+  return response.data.data ?? response.data;
+}
+
 export function updateCareerSuggestion(career: string) {
-  if (state.user && state.user.role === "postulante") {
+  if (state.user?.role === "postulante") {
     state.user.careerSuggestion = career;
+
     localStorage.setItem("nexus_vocational_result", career);
-  }
-}
-
-export function linkStudent(code: string): boolean {
-  const cleanCode = code.trim().toUpperCase();
-  if (cleanCode === "NEX-ALE-2026") {
-    if (state.user && state.user.role === "familia") {
-      state.user.linkedStudentCode = cleanCode;
-      state.user.studentName = "Alejandro Lastra Torres";
-      state.user.linkedStudentRole = "estudiante";
-      localStorage.setItem("nexus_linked_student_code", cleanCode);
-      return true;
-    }
-  } else if (cleanCode === "NEX-CAM-2026") {
-    if (state.user && state.user.role === "familia") {
-      state.user.linkedStudentCode = cleanCode;
-      state.user.studentName = "Camila Ramos";
-      state.user.linkedStudentRole = "postulante";
-      localStorage.setItem("nexus_linked_student_code", cleanCode);
-      return true;
-    }
-  }
-  return false;
-}
-
-export function unlinkStudent() {
-  if (state.user && state.user.role === "familia") {
-    state.user.linkedStudentCode = undefined;
-    state.user.studentName = undefined;
-    state.user.linkedStudentRole = undefined;
-    localStorage.removeItem("nexus_linked_student_code");
   }
 }
 
@@ -181,7 +192,8 @@ export function useAuth() {
     loginWithGoogle,
     logout,
     updateCareerSuggestion,
-    linkStudent,
-    unlinkStudent,
+    refreshFamiliarProfile,
+    fetchFamiliarProfile,
+    fetchStudentCode,
   };
 }

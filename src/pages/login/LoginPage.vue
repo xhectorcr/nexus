@@ -47,20 +47,22 @@ const fullName = ref("");
 const confirmPassword = ref("");
 const studentPin = ref("");
 
-const error = ref('')
-const isLoading = ref(false)
+const error = ref("");
+const isLoading = ref(false);
 
 // Set default credentials helper
-const updateDefaultCredentials = (role: 'estudiante' | 'familia' | 'postulante') => {
-  if (role === 'estudiante') {
-    email.value = 'ana@nexus.com'
-    password.value = '123456'
-  } else if (role === 'familia') {
-    email.value = 'roberto@nexus.com'
-    password.value = '123456'
-  } else if (role === 'postulante') {
-    email.value = 'carlos@nexus.com'
-    password.value = '123456'
+const updateDefaultCredentials = (
+  role: "estudiante" | "familia" | "postulante",
+) => {
+  if (role === "estudiante") {
+    email.value = "ana@nexus.com";
+    password.value = "123456";
+  } else if (role === "familia") {
+    email.value = "roberto@nexus.com";
+    password.value = "123456";
+  } else if (role === "postulante") {
+    email.value = "carlos@nexus.com";
+    password.value = "123456";
   }
 };
 
@@ -123,17 +125,8 @@ const handleRegister = async () => {
   error.value = "";
 
   try {
-    await auth.login(
-      activeRole.value,
-      email.value,
-      password.value,
-      fullName.value,
-    );
+    await auth.login(activeRole.value, email.value, password.value);
     isLoading.value = false;
-
-    if (activeRole.value === "familia" && studentPin.value) {
-      auth.linkStudent(studentPin.value);
-    }
 
     const redirectPath = `/${activeRole.value}`;
     router.push(redirectPath);

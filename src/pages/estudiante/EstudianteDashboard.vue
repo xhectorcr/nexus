@@ -16,6 +16,7 @@ import {
   BookOpen,
   ChevronRight,
   Clock,
+  Copy,
   Home,
   Map as MapIcon,
   Star,
@@ -28,6 +29,12 @@ import { useAuth } from "@/lib/auth";
 import { onMounted, ref } from "vue";
 
 const auth = useAuth();
+const studentCode = ref<string>("");
+
+const copyCode = async () => {
+  if (!studentCode.value) return;
+  await navigator.clipboard.writeText(studentCode.value);
+};
 
 const sidebarItems = [
   { icon: markRaw(Home), label: "Inicio", href: "/estudiante" },
@@ -111,8 +118,14 @@ const fetchEstudianteData = async () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   fetchEstudianteData();
+
+  try {
+    studentCode.value = await auth.fetchStudentCode();
+  } catch (e) {
+    console.error("Error cargando código estudiante", e);
+  }
 });
 </script>
 
@@ -152,16 +165,30 @@ onMounted(() => {
             </CardDescription>
           </div>
           <div
-            class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0"
+            class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-2 shrink-0"
           >
             <span
               class="text-[10px] uppercase font-bold text-red-200 tracking-wider"
-              >Código de Vinculación Familiar</span
             >
-            <span
-              class="font-mono text-lg font-black tracking-widest text-white"
-              >NEX-ALE-2026</span
-            >
+              Código de Vinculación
+            </span>
+
+            <div class="flex items-center gap-2">
+              <span
+                class="font-mono text-lg font-black tracking-widest text-white"
+              >
+                {{ studentCode || "Cargando..." }}
+              </span>
+
+              <Button
+                size="icon"
+                variant="ghost"
+                class="w-6 h-6 text-white hover:bg-white/20"
+                @click="copyCode"
+              >
+                <Copy />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent class="relative z-10 flex gap-4">

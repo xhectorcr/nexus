@@ -65,18 +65,16 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
 
 <template>
   <div class="min-h-screen bg-[#FAF7F7]">
-    <!-- Sidebar -->
     <aside
       :class="`fixed left-0 top-0 h-full bg-white border-r border-[#D9D9D9] transition-all duration-300 z-40 ${
         sidebarOpen ? 'w-64' : 'w-20'
       }`"
     >
-      <!-- Logo -->
       <div class="h-16 border-b border-[#D9D9D9] flex items-center justify-between px-4">
         <template if="sidebarOpen">
           <router-link to="/" class="flex items-center gap-2" v-if="sidebarOpen">
             <div
-              class="w-10 h-10 rounded-xl flex items-center justify-center"
+              class="flex items-center justify-center w-10 h-10 rounded-xl"
               :style="{ background: logoGradient }"
             >
               <GraduationCap class="w-6 h-6 text-white" />
@@ -86,7 +84,7 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
         </template>
         <template v-if="!sidebarOpen">
           <div
-            class="w-10 h-10 rounded-xl flex items-center justify-center mx-auto"
+            class="flex items-center justify-center w-10 h-10 mx-auto rounded-xl"
             :style="{ background: logoGradient }"
           >
             <GraduationCap class="w-6 h-6 text-white" />
@@ -106,7 +104,7 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
               }`"
               :style="route.path === item.href ? { backgroundColor: moduleColor } : undefined"
             >
-              <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+              <component :is="item.icon" class="flex-shrink-0 w-5 h-5" />
               <span v-if="sidebarOpen" class="text-sm font-medium">{{ item.label }}</span>
             </div>
           </router-link>
@@ -115,7 +113,7 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
             <div
               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer text-[#5F6368] hover:bg-[#F1F1F1]"
             >
-              <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+              <component :is="item.icon" class="flex-shrink-0 w-5 h-5" />
               <span v-if="sidebarOpen" class="text-sm font-medium">{{ item.label }}</span>
             </div>
           </button>
@@ -141,7 +139,7 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
     >
       <!-- Top Navbar -->
       <header class="h-16 bg-white border-b border-[#D9D9D9] sticky top-0 z-30">
-        <div class="h-full px-6 flex items-center justify-between">
+        <div class="flex items-center justify-between h-full px-6">
           <!-- Search -->
           <div class="flex-1 max-w-md">
             <div class="relative">
@@ -168,13 +166,13 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <div class="flex flex-col gap-1">
-                    <span class="font-medium text-sm">Nuevo mensaje</span>
+                    <span class="text-sm font-medium">Nuevo mensaje</span>
                     <span class="text-xs text-[#5F6368]">Tienes un nuevo mentor disponible</span>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <div class="flex flex-col gap-1">
-                    <span class="font-medium text-sm">Progreso actualizado</span>
+                    <span class="text-sm font-medium">Progreso actualizado</span>
                     <span class="text-xs text-[#5F6368]">Has completado el 75% de tu evaluación</span>
                   </div>
                 </DropdownMenuItem>
@@ -187,11 +185,11 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
                 <Button variant="ghost" class="flex items-center gap-2 px-2">
                   <Avatar class="w-8 h-8">
                     <AvatarImage src="" />
-                    <AvatarFallback :style="{ backgroundColor: moduleColor }" class="text-white font-bold">
+                    <AvatarFallback :style="{ backgroundColor: moduleColor }" class="font-bold text-white">
                       {{ auth.state.user?.name ? auth.state.user.name[0] : 'U' }}
                     </AvatarFallback>
                   </Avatar>
-                  <span class="text-sm font-medium hidden md:block">{{ auth.state.user?.name || 'Usuario' }}</span>
+                  <span class="hidden text-sm font-medium md:block">{{ auth.state.user?.name || 'Usuario' }}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -206,7 +204,7 @@ const logoGradient = computed(() => `linear-gradient(135deg, ${props.moduleColor
                   Configuración
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem @click="handleLogout" class="cursor-pointer text-red-600 focus:text-red-700">
+                <DropdownMenuItem @click="handleLogout" class="text-red-600 cursor-pointer focus:text-red-700">
                   <LogOut class="w-4 h-4 mr-2" />
                   Cerrar Sesión
                 </DropdownMenuItem>
