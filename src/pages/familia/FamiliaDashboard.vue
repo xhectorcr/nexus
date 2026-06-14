@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { api } from "@/lib/api";
@@ -25,6 +26,9 @@ import {
   UserCheck,
   Volume2,
   VolumeX,
+  KeyRound,
+  ArrowRight,
+  Info
 } from "lucide-vue-next";
 import { computed, markRaw, onMounted, ref } from "vue";
 const auth = useAuth();
@@ -32,23 +36,46 @@ const auth = useAuth();
 const vistaFacil = ref(true);
 const reproduciendoText = ref("");
 
+// Vinculación State
+const pinCode = ref("");
+const pinError = ref("");
+const isLoading = ref(false);
+
+const isLinked = computed(() => !!auth.state.user?.linkedStudentCode);
+
+const handleLinkStudent = () => {
+  if (!pinCode.value) {
+    pinError.value = "Por favor, ingresa el código del estudiante.";
+    return;
+  }
+  
+  isLoading.value = true;
+  pinError.value = "";
+  
+  setTimeout(() => {
+    const success = auth.linkStudent(pinCode.value);
+    if (!success) {
+      pinError.value = "Código inválido. Por favor, verifica el código (ej. NEX-ALE-2026).";
+    } else {
+      pinCode.value = "";
+      if (isApplicantLinked.value) fetchChildData();
+      hablar("¡Excelente! Has vinculado correctamente a tu hijo.");
+    }
+    isLoading.value = false;
+  }, 800);
+};
+
 const hablar = (texto: string) => {
   if (!("speechSynthesis" in window)) return;
-
   window.speechSynthesis.cancel();
-
   reproduciendoText.value = texto;
-
   const utterance = new SpeechSynthesisUtterance(texto);
-
   utterance.lang = "es-PE";
   utterance.rate = 0.95;
   utterance.pitch = 1;
-
   utterance.onend = () => {
     reproduciendoText.value = "";
   };
-
   window.speechSynthesis.speak(utterance);
 };
 
@@ -59,13 +86,11 @@ const detenerLectura = () => {
   }
 };
 
-// Voice Synthesis Helper
 const isApplicantLinked = computed(
   () => auth.state.user?.linkedStudentRole === "postulante",
 );
-const isStudentLinked = computed(() => !isApplicantLinked.value);
+const isStudentLinked = computed(() => auth.state.user?.linkedStudentRole === "estudiante");
 
-// Student: Alejandro Lastra Torres
 const studentMilestones = [
   {
     title: "Paso 1: Plan de acción creado",
@@ -99,10 +124,9 @@ const studentMilestones = [
   },
 ];
 
-// Applicant: Camila Ramos
 const applicantMilestones = ref([
   {
-    title: "Paso 1: Test Vocacional Completado",
+    title: "Paso 1: Test Vocacional",
     completed: true,
     date: "12 Jun 2026",
     desc: "Camila completó la evaluación con 95% en Ingeniería de Sistemas.",
@@ -114,22 +138,16 @@ const applicantMilestones = ref([
     desc: "Se generó el plan de estudios adaptado a su perfil vocacional.",
   },
   {
-    title: "Paso 3: Envío de Documentos",
+    title: "Paso 3: Certificado de Estudios",
     completed: false,
     date: "Pendiente",
-    desc: "Subir certificado de estudios de secundaria para evaluación preferencial.",
+    desc: "Falta subir el certificado de estudios de secundaria para evaluación.",
   },
   {
-    title: "Paso 4: Charla Informativa de Admisión",
+    title: "Paso 4: Charla Informativa",
     completed: false,
     date: "Pendiente",
-    desc: "Charla interactiva en el campus sobre becas y financiamiento.",
-  },
-  {
-    title: "Paso 5: Matrícula e Ingreso",
-    completed: false,
-    date: "Pendiente",
-    desc: "Formalización de ingreso a la Universidad Tecnológica del Perú.",
+    desc: "Asistir a la charla en el campus sobre becas y financiamiento.",
   },
 ]);
 
@@ -144,18 +162,9 @@ const fetchChildData = async () => {
     if (profile) {
       applicantMilestones.value[0].completed = profile.cuestionarioCompletado;
       applicantProgress.value = profile.cuestionarioCompletado ? 100 : 20;
-
-      if (profile.entradasBitacora && profile.entradasBitacora.length > 0) {
-        const lastTechnicalLog = profile.entradasBitacora[0].titulo;
-        const translationRes = await api.get("/api/v1/ai/familia/traductor", {
-          params: { logroTecnico: lastTechnicalLog },
-        });
-
-        applicantMilestones.value[1].desc = `Traducción IA del último avance: ${translationRes.data}`;
-      }
     }
   } catch (error) {
-    console.error("Error fetching child data:", error);
+    console.warn("Error fetching child data (API may not be running):", error);
   }
 };
 
@@ -165,47 +174,34 @@ onMounted(() => {
   }
 });
 
-// FAQs for Student (Alejandro)
 const studentFaqs = [
   {
-    q: "¿Cómo va Alejandro hoy en sus estudios?",
-    a: "¡Va excelente! Ha completado 3 de los 5 grandes pasos y tiene un progreso general del 68%. Además, lleva 12 días seguidos entrando a estudiar.",
-    voiceText:
-      "Tu hijo Alejandro va excelente. Ha completado tres de los cinco grandes pasos de su camino y tiene un progreso total del sesenta y ocho por ciento. ¡Va muy bien!",
+    q: "¿Cómo va Alejandro hoy?",
+    a: "¡Va excelente! Ha completado 3 de los 5 grandes pasos y tiene un progreso general del 68%.",
+    voiceText: "Tu hijo Alejandro va excelente. Ha completado tres de los cinco grandes pasos.",
   },
   {
-    q: "¿Qué carrera le recomienda la Inteligencia Artificial?",
-    a: "Le recomienda Ingeniería de Sistemas, porque destaca en análisis de datos, tecnología y resolución de problemas matemáticos.",
-    voiceText:
-      "Le recomendamos Ingeniería de Sistemas. Alejandro muestra mucha habilidad para la tecnología, las matemáticas y la resolución de problemas.",
+    q: "¿Qué carrera le recomienda la IA?",
+    a: "Le recomienda Ingeniería de Sistemas, porque destaca en análisis de datos y tecnología.",
+    voiceText: "Le recomendamos Ingeniería de Sistemas. Alejandro muestra mucha habilidad para la tecnología.",
   },
   {
     q: "¿Qué tareas le faltan por terminar?",
-    a: "Le falta tener la charla con su tutor vocacional en línea y realizar la elección final de su carrera.",
-    voiceText:
-      "Tiene pendiente conversar con su tutor vocacional y tomar la decisión final de su carrera.",
+    a: "Le falta tener la charla con su tutor vocacional en línea y realizar la elección final.",
+    voiceText: "Tiene pendiente conversar con su tutor vocacional y tomar la decisión final.",
   },
 ];
 
-// FAQs for Applicant (Camila)
 const applicantFaqs = [
   {
-    q: "¿Cómo le fue a Camila en su Test Vocacional?",
-    a: "¡Muy bien! NEXUS IA analizó sus respuestas y determinó un 95% de afinidad con la carrera de Ingeniería de Sistemas por sus habilidades de resolución lógica.",
-    voiceText:
-      "A Camila le fue excelente. El sistema inteligente calculó noventa y cinco por ciento de afinidad con Ingeniería de Sistemas.",
+    q: "¿Cómo le fue en el Test Vocacional?",
+    a: "¡Muy bien! Determinó un 95% de afinidad con la carrera de Ingeniería de Sistemas.",
+    voiceText: "Le fue excelente. El sistema inteligente calculó noventa y cinco por ciento de afinidad con Ingeniería de Sistemas.",
   },
   {
-    q: "¿Cuál es el siguiente paso para su ingreso?",
-    a: "Debe enviar su certificado de estudios escolares de secundaria para validar su ingreso directo por vía preferencial a la UTP.",
-    voiceText:
-      "El siguiente paso es enviar su certificado de estudios escolares para asegurar su ingreso preferencial.",
-  },
-  {
-    q: "¿Qué beneficios tiene por dar el test vocacional?",
-    a: "Tiene acceso prioritario a charlas de admisión, visitas guiadas al laboratorio de computación y asesoría de becas UTP.",
-    voiceText:
-      "Tiene acceso preferencial a charlas en el campus y visitas guiadas a laboratorios de computación.",
+    q: "¿Cuál es el siguiente paso?",
+    a: "Debe enviar su certificado de estudios escolares de secundaria para validar su ingreso directo.",
+    voiceText: "El siguiente paso es enviar su certificado de estudios escolares para asegurar su ingreso preferencial.",
   },
 ];
 
@@ -220,27 +216,27 @@ const toggleInstrucciones = () => {
     detenerLectura();
     return;
   }
-
-  hablar(
-    auth.state.user?.linkedStudentCode
-      ? `Bienvenido de vuelta. Estás viendo el progreso de tu hijo ${auth.state.user.studentName}. Su avance es del sesenta y ocho por ciento. Puedes pulsar las preguntas para escuchar más detalles.`
-      : `Bienvenido. Por favor, escribe en la casilla del centro el código de ocho dígitos de tu hijo. Por ejemplo, N E X, A L E, dos mil veintiséis.`,
-  );
+  
+  if (!isLinked.value) {
+    hablar("Bienvenido. Por favor, escribe en la casilla del centro el código de ocho dígitos de tu hijo para ver su progreso.");
+  } else {
+    hablar(
+      `Bienvenido de vuelta. Estás viendo el progreso de tu hijo ${auth.state.user?.studentName}. Puedes pulsar las preguntas para escuchar más detalles.`
+    );
+  }
 };
 
 const resources = [
   {
     title: "Guía fácil en PDF para Padres",
-    description:
-      "Manual sencillo con preguntas para conversar con tu hijo sin presionarlo.",
+    description: "Manual sencillo con preguntas para conversar con tu hijo.",
     downloads: 1243,
     icon: markRaw(FileText),
     color: "#B50E30",
   },
   {
     title: "Consejos de estudio en casa",
-    description:
-      "Cómo organizar un lugar tranquilo para que tu hijo estudie concentrado.",
+    description: "Cómo organizar un lugar tranquilo para que tu hijo estudie.",
     downloads: 1567,
     icon: markRaw(TrendingUp),
     color: "#1565C0",
@@ -248,9 +244,8 @@ const resources = [
 ];
 
 const parentTips = [
-  "Felicita a tu hijo hoy por su constancia y esfuerzo de estudio. ¡Tu apoyo le dará más motivación!",
-  "Pregúntale qué descubrió sobre sí mismo en el Test Vocacional. Escúchalo con atención e interés.",
-  "Ayúdale a elegir un horario tranquilo para su videollamada de orientación académica.",
+  "Felicita a tu hijo hoy por su esfuerzo. ¡Tu apoyo le dará más motivación!",
+  "Pregúntale qué descubrió sobre sí mismo en el Test Vocacional.",
 ];
 
 const sidebarItems = [
@@ -272,6 +267,8 @@ const sidebarItems = [
     moduleColor="#D4A017"
   >
     <div class="space-y-6">
+      
+      <!-- TOP BAR: ASISTENTE DE VOZ (COMÚN) -->
       <div
         class="flex flex-col items-center justify-between gap-4 p-5 border shadow-sm bg-gradient-to-r from-amber-50 to-amber-100/50 rounded-2xl border-amber-200/60 md:flex-row"
       >
@@ -282,15 +279,11 @@ const sidebarItems = [
             <Sparkles class="w-6 h-6 animate-pulse" />
           </div>
           <div>
-            <h3
-              class="font-extrabold text-gray-800"
-              :class="vistaFacil ? 'text-xl' : 'text-lg'"
-            >
+            <h3 class="font-extrabold text-gray-800" :class="vistaFacil ? 'text-xl' : 'text-lg'">
               Asistente de Lectura y Vista Grande
             </h3>
             <p class="text-xs font-medium text-gray-600">
-              Diseñado con botones grandes, explicaciones de voz y letra clara
-              para su comodidad.
+              Diseñado con botones grandes y explicaciones de voz para su comodidad.
             </p>
           </div>
         </div>
@@ -304,10 +297,7 @@ const sidebarItems = [
                 : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
             "
           >
-            <span
-              class="w-2.5 h-2.5 rounded-full bg-green-400"
-              v-if="vistaFacil"
-            ></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-green-400" v-if="vistaFacil"></span>
             {{ vistaFacil ? "Letra Grande: Activada" : "Activar Letra Grande" }}
           </button>
 
@@ -320,561 +310,273 @@ const sidebarItems = [
               :is="reproduciendoText.length > 0 ? VolumeX : Volume2"
               class="w-4.5 h-4.5 text-amber-700"
             />
-
-            {{
-              reproduciendoText.length > 0
-                ? "Detener Voz"
-                : "Escuchar Instrucciones"
-            }}
+            {{ reproduciendoText.length > 0 ? "Detener Voz" : "Escuchar Instrucciones" }}
           </Button>
         </div>
       </div>
 
       <!-- ============================================== -->
-      <!-- ALUMNO VINCULADO O POR DEFECTO -->
+      <!-- PANTALLA DE VINCULACIÓN (CUANDO NO HAY ALUMNO) -->
       <!-- ============================================== -->
-      <div class="space-y-6">
-        <!-- BANNER DE INFORMACIÓN DEL ESTUDIANTE CONECTADO -->
-        <div
-          class="flex flex-col justify-between gap-4 p-5 bg-white border border-gray-200 shadow-sm sm:flex-row sm:items-center rounded-2xl"
-        >
-          <div class="flex items-center gap-4">
-            <div
-              class="flex items-center justify-center w-12 h-12 border bg-amber-50 rounded-2xl border-amber-200 text-amber-600"
+      <div v-if="!isLinked" class="flex flex-col items-center justify-center py-12">
+        <Card class="w-full max-w-lg shadow-xl border-amber-200/60 rounded-2xl overflow-hidden">
+          <div class="h-2 w-full bg-gradient-to-r from-amber-400 to-amber-600"></div>
+          <CardHeader class="text-center pb-2 pt-8">
+            <div class="mx-auto w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4 shadow-inner">
+              <UserCheck class="w-8 h-8 text-amber-600" />
+            </div>
+            <CardTitle class="text-2xl font-black text-gray-900">Vincula la cuenta de tu hijo</CardTitle>
+            <CardDescription class="text-base text-gray-600 mt-2">
+              Para poder ver su progreso, tareas y recomendaciones, necesitamos que ingreses su código único.
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent class="p-8 pt-6 space-y-6">
+            <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3 text-sm text-blue-800">
+              <Info class="w-5 h-5 shrink-0 text-blue-500" />
+              <p>
+                <strong>¿Dónde encuentro este código?</strong><br/>
+                Tu hijo/a puede encontrar su código de 12 caracteres (ej: NEX-ALE-2026) en su perfil de estudiante dentro de la plataforma NEXUS.
+              </p>
+            </div>
+
+            <div class="space-y-3">
+              <label for="pinCode" class="block text-sm font-extrabold text-gray-700 uppercase tracking-wide">
+                Código del Estudiante
+              </label>
+              <div class="relative">
+                <KeyRound class="absolute w-5 h-5 text-gray-400 -translate-y-1/2 left-4 top-1/2" />
+                <Input
+                  id="pinCode"
+                  v-model="pinCode"
+                  placeholder="Ej. NEX-ALE-2026"
+                  class="pl-12 h-14 text-lg font-bold border-gray-300 focus:border-amber-500 focus:ring-amber-500 rounded-xl"
+                  @keyup.enter="handleLinkStudent"
+                />
+              </div>
+              <p v-if="pinError" class="text-red-600 font-bold text-sm bg-red-50 p-2 rounded-lg border border-red-100 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-red-600"></span> {{ pinError }}
+              </p>
+            </div>
+
+            <Button
+              @click="handleLinkStudent"
+              class="w-full h-14 text-lg font-black text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
+              :disabled="isLoading"
             >
-              <UserCheck class="w-6 h-6" />
+              <span v-if="isLoading" class="border-2 border-white border-t-transparent animate-spin rounded-full w-5 h-5"></span>
+              <span v-else class="flex items-center gap-2">Vincular y Continuar <ArrowRight class="w-5 h-5" /></span>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- DASHBOARD (CUANDO SÍ HAY ALUMNO) -->
+      <!-- ============================================== -->
+      <div v-else class="space-y-6 animate-in fade-in zoom-in-95 duration-500">
+        
+        <!-- HEADER ALUMNO -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-white border border-gray-200 shadow-sm rounded-2xl relative overflow-hidden">
+          <div class="absolute right-0 top-0 w-64 h-full bg-gradient-to-l from-amber-50 to-transparent pointer-events-none"></div>
+          
+          <div class="flex items-center gap-5 z-10">
+            <div class="w-16 h-16 rounded-full bg-amber-100 border-4 border-amber-50 flex items-center justify-center text-amber-700 shadow-sm">
+              <span class="text-2xl font-black">{{ auth.state.user?.studentName?.charAt(0) || 'A' }}</span>
             </div>
             <div>
-              <span
-                class="text-xs font-bold tracking-wider text-gray-500 uppercase"
-                >Hijo(a) conectado/a actualmente:</span
-              >
-              <h2
-                class="font-black leading-none text-gray-900"
-                :class="vistaFacil ? 'text-2xl' : 'text-xl'"
-              >
-                {{ auth.state.user?.studentName || "Alejandro Lastra Torres" }}
-                <Badge
-                  class="ml-2 bg-amber-100 text-amber-800 border-amber-200 font-extrabold text-[10px] uppercase"
-                >
-                  {{
-                    isStudentLinked ? "Estudiante UTP" : "Postulante / Admisión"
-                  }}
-                </Badge>
+              <span class="text-sm font-bold tracking-wider text-gray-500 uppercase">Hijo(a) Conectado(a)</span>
+              <h2 class="font-black text-gray-900 mt-1" :class="vistaFacil ? 'text-3xl' : 'text-2xl'">
+                {{ auth.state.user?.studentName }}
               </h2>
+              <Badge class="mt-2 bg-amber-100 text-amber-800 border-amber-200 font-extrabold text-xs uppercase px-3 py-1">
+                {{ isStudentLinked ? "Estudiante UTP" : "Postulante / Admisión" }}
+              </Badge>
             </div>
           </div>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- DETALLE DEL ALUMNO ESTUDIANTE -->
-        <!-- ============================================== -->
-        <div class="space-y-6">
-          <div class="grid md:grid-cols-[1.5fr_1fr] gap-6">
-            <!-- Semáforo de Estado Simplificado -->
-            <Card
-              class="p-6 space-y-4 border-2 shadow-sm border-emerald-300 bg-emerald-50/30 rounded-2xl"
-            >
-              <div class="flex items-center gap-2.5">
-                <span
-                  class="w-4 h-4 rounded-full bg-emerald-500 animate-pulse"
-                ></span>
-                <span
-                  class="text-sm font-extrabold tracking-wider uppercase text-emerald-800"
-                  >Estado: Excelente y Al Día</span
-                >
-              </div>
-              <h2
-                class="font-black leading-tight text-gray-900"
-                :class="vistaFacil ? 'text-3xl' : 'text-2xl'"
-              >
-                ¡Alejandro va por muy buen camino!
-              </h2>
-              <p
-                class="leading-relaxed text-gray-700"
-                :class="vistaFacil ? 'text-lg' : 'text-base'"
-              >
-                Ha completado el <strong>68%</strong> de su plan de estudios
-                vocacionales de este ciclo. No tiene tareas pendientes ni faltas
-                registradas en sus cursos de Ingeniería de Sistemas.
-              </p>
-              <div class="pt-2">
-                <a
-                  href="/familia/progreso"
-                  class="flex items-center gap-1 text-sm font-black underline text-emerald-700 hover:text-emerald-800"
-                >
-                  Ver detalle completo de sus notas y exámenes &rarr;
-                </a>
-              </div>
-            </Card>
-
-            <!-- Resumen de Notas en Gráfica Simple -->
-            <Card
-              class="flex flex-col items-center justify-between p-6 text-center border border-gray-200 shadow-sm rounded-2xl"
-            >
-              <span
-                class="text-sm font-bold tracking-wider text-gray-500 uppercase"
-                >Progreso Total</span
-              >
-              <div class="relative flex items-center justify-center my-4">
-                <div class="text-6xl font-black text-emerald-600">68%</div>
-              </div>
-              <Progress :value="68" class="h-3.5 w-full bg-emerald-100" />
-              <span class="mt-2 text-xs font-bold text-gray-500"
-                >Faltan solo 2 pasos para completar el ciclo académico</span
-              >
-            </Card>
+          
+          <div class="z-10">
+            <Button variant="outline" @click="auth.unlinkStudent()" class="text-gray-500 hover:text-red-600 border-gray-200 text-xs font-bold rounded-xl">
+              Desvincular Alumno
+            </Button>
           </div>
-
-          <!-- Milestones / Lista de Pasos del Estudiante -->
-          <Card class="border-gray-200 shadow-sm">
-            <CardHeader class="p-5 border-b border-gray-100">
-              <CardTitle
-                class="flex items-center gap-2 font-extrabold text-gray-900"
-                :class="vistaFacil ? 'text-xl' : 'text-lg'"
-              >
-                <TrendingUp class="w-5 h-5 text-blue-600" />
-                Pasos dados en este periodo académico
-              </CardTitle>
-              <CardDescription :class="vistaFacil ? 'text-base' : 'text-sm'">
-                Visualiza el avance de tu hijo en cada fase del ciclo. Las
-                tareas marcadas en verde ya fueron completadas y aprobadas.
-              </CardDescription>
-            </CardHeader>
-            <CardContent class="p-5 space-y-4">
-              <div
-                class="relative pl-6 ml-3 space-y-4 border-l-2 border-gray-200"
-              >
-                <div
-                  v-for="(m, idx) in studentMilestones"
-                  :key="idx"
-                  class="relative"
-                >
-                  <span
-                    class="absolute -left-[35px] top-1 w-6 h-6 rounded-full flex items-center justify-center border-2 font-bold text-xs"
-                    :class="
-                      m.completed
-                        ? 'bg-emerald-500 border-emerald-100 text-white'
-                        : 'bg-white border-gray-300 text-gray-400'
-                    "
-                  >
-                    <CheckCircle2
-                      v-if="m.completed"
-                      class="w-4 h-4 fill-white text-emerald-500"
-                    />
-                    <span v-else>•</span>
-                  </span>
-                  <div
-                    class="p-4 border rounded-xl"
-                    :class="
-                      m.completed
-                        ? 'border-emerald-200 bg-emerald-50/10'
-                        : 'border-gray-100 bg-gray-50/30 opacity-75'
-                    "
-                  >
-                    <h4
-                      class="font-bold text-gray-900"
-                      :class="vistaFacil ? 'text-lg' : 'text-base'"
-                    >
-                      {{ m.title }}
-                    </h4>
-                    <p class="text-gray-600 text-xs sm:text-sm mt-0.5">
-                      {{ m.desc }}
-                    </p>
-                    <Badge
-                      class="mt-2 text-[10px] font-bold"
-                      :class="
-                        m.completed
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-gray-200 text-gray-600'
-                      "
-                    >
-                      {{ m.completed ? "Completado" : "Pendiente" }}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- FAQs / Preguntas del Portal de Estudiante -->
-          <Card class="border-gray-200 shadow-sm">
-            <CardHeader class="p-5 border-b border-gray-100 bg-amber-50/10">
-              <CardTitle
-                class="flex items-center gap-2 font-extrabold text-gray-900"
-                :class="vistaFacil ? 'text-xl' : 'text-lg'"
-              >
-                <HelpCircle class="w-5 h-5 text-amber-600" />
-                Preguntas frecuentes de Alejandro
-              </CardTitle>
-            </CardHeader>
-            <CardContent class="p-5 space-y-3">
-              <div
-                v-for="(faq, i) in studentFaqs"
-                :key="i"
-                class="overflow-hidden transition-all border cursor-pointer rounded-xl hover:border-amber-400 hover:bg-amber-50/10"
-                :class="
-                  selectedFaq === i
-                    ? 'border-amber-500 bg-amber-50/20'
-                    : 'border-gray-200'
-                "
-                @click="toggleFaq(i)"
-              >
-                <div
-                  class="flex items-center justify-between p-4 font-bold text-gray-800"
-                  :class="vistaFacil ? 'text-lg' : 'text-sm'"
-                >
-                  <span>{{ faq.q }}</span>
-                  <ChevronDown class="w-4 h-4" />
-                </div>
-                <div
-                  v-if="selectedFaq === i"
-                  class="px-4 pt-2 pb-4 leading-relaxed text-gray-700 bg-white border-t border-amber-100"
-                  :class="vistaFacil ? 'text-base' : 'text-sm'"
-                >
-                  <p>
-                    {{ faq.a }}
-                  </p>
-
-                  <div class="flex gap-2 mt-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      class="gap-2"
-                      @click.stop="hablar(faq.voiceText)"
-                    >
-                      <Volume2 class="w-4 h-4" />
-                      Escuchar respuesta
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      class="gap-2"
-                      @click.stop="detenerLectura"
-                    >
-                      <VolumeX class="w-4 h-4" />
-                      Detener
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
-        <!-- ============================================== -->
-        <!-- SUB-CASO B2: EL ALUMNO ES POSTULANTE (CAMILA) -->
-        <!-- ============================================== -->
-        <div v-if="isApplicantLinked" class="space-y-6">
-          <div class="grid md:grid-cols-[1.5fr_1fr] gap-6">
-            <!-- Semáforo de Estado para Admisión -->
-            <Card
-              class="p-6 space-y-4 border-2 border-blue-300 shadow-sm bg-blue-50/30 rounded-2xl"
-            >
-              <div class="flex items-center gap-2.5">
-                <span
-                  class="w-4 h-4 bg-blue-500 rounded-full animate-pulse"
-                ></span>
-                <span
-                  class="text-sm font-extrabold tracking-wider text-blue-800 uppercase"
-                  >Admisión: Proceso Iniciado</span
-                >
-              </div>
-              <h2
-                class="font-black leading-tight text-gray-900"
-                :class="vistaFacil ? 'text-3xl' : 'text-2xl'"
-              >
-                Camila completó su Test Vocacional
-              </h2>
-              <p
-                class="leading-relaxed text-gray-700"
-                :class="vistaFacil ? 'text-lg' : 'text-base'"
-              >
-                El sistema de Inteligencia Artificial evaluó el perfil de Camila
-                Ramos y recomendó la carrera de **Ingeniería de Sistemas** con
-                **95% de afinidad**. Está en la fase de recopilación de
-                requisitos de ingreso directo.
-              </p>
-              <div class="pt-2">
-                <Badge
-                  class="px-3 py-1 text-xs font-extrabold text-white bg-blue-600 rounded-full hover:bg-blue-700"
-                >
-                  Afinidad UTP: Ingeniería de Sistemas (95%)
-                </Badge>
+        <!-- MAIN CONTENT COLUMNS -->
+        <div class="grid lg:grid-cols-[2fr_1fr] gap-6">
+          
+          <!-- LEFT COLUMN: PROGRESO Y PASOS -->
+          <div class="space-y-6">
+            
+            <!-- TARJETA: ESTADO PRINCIPAL (Semáforo) -->
+            <Card class="p-6 md:p-8 border-2 shadow-sm rounded-2xl bg-white relative overflow-hidden"
+              :class="isStudentLinked ? 'border-emerald-300 bg-emerald-50/10' : 'border-blue-300 bg-blue-50/10'">
+              
+              <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full blur-3xl opacity-50"
+                :class="isStudentLinked ? 'bg-emerald-300' : 'bg-blue-300'"></div>
+
+              <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-4">
+                  <span class="w-4 h-4 rounded-full animate-pulse" :class="isStudentLinked ? 'bg-emerald-500' : 'bg-blue-500'"></span>
+                  <span class="text-sm font-black tracking-wider uppercase" :class="isStudentLinked ? 'text-emerald-800' : 'text-blue-800'">
+                    Estado: ¡Al Día!
+                  </span>
+                </div>
+                
+                <h2 class="font-black leading-tight text-gray-900 mb-3" :class="vistaFacil ? 'text-3xl' : 'text-2xl'">
+                  {{ isStudentLinked ? '¡Alejandro va por muy buen camino!' : '¡Camila completó su Test Vocacional!' }}
+                </h2>
+                
+                <p class="leading-relaxed text-gray-700 max-w-2xl" :class="vistaFacil ? 'text-xl' : 'text-lg'">
+                  <span v-if="isStudentLinked">
+                    Ha completado el <strong>68%</strong> de su plan. No tiene tareas atrasadas. El siguiente paso es muy sencillo y solo tomará 15 minutos de su tiempo.
+                  </span>
+                  <span v-else>
+                    El sistema inteligente recomendó la carrera de <strong>Ingeniería de Sistemas</strong> con <strong>95% de afinidad</strong>.
+                  </span>
+                </p>
+
+                <!-- CALL TO ACTION / NEXT STEP -->
+                <div class="mt-6 p-5 rounded-xl border flex items-start gap-4 shadow-sm bg-white"
+                     :class="isStudentLinked ? 'border-emerald-200' : 'border-blue-200'">
+                  <div class="p-2 rounded-lg bg-gray-100 shrink-0">
+                    <ArrowRight class="w-6 h-6 text-gray-700" />
+                  </div>
+                  <div>
+                    <h4 class="font-black text-gray-900" :class="vistaFacil ? 'text-xl' : 'text-lg'">Siguiente Tarea de tu Hijo/a:</h4>
+                    <p class="text-gray-700 mt-1 font-medium" :class="vistaFacil ? 'text-lg' : 'text-base'">
+                      {{ isStudentLinked 
+                        ? "Conversar 15 minutos en videollamada con su tutor vocacional."
+                        : "Subir su certificado de estudios escolares de secundaria." 
+                      }}
+                    </p>
+                  </div>
+                </div>
               </div>
             </Card>
 
-            <!-- Detalle de Progreso Vocacional -->
-            <Card
-              class="flex flex-col items-center justify-between p-6 text-center border border-gray-200 shadow-sm rounded-2xl bg-gradient-to-b from-slate-50 to-white"
-            >
-              <span
-                class="text-sm font-bold tracking-wider text-gray-500 uppercase"
-                >Progreso Vocacional</span
-              >
-              <div class="my-4 text-center">
-                <div class="text-6xl font-black text-blue-600">
-                  {{ applicantProgress }}%
-                </div>
-                <span class="block mt-1 text-xs font-bold text-emerald-600"
-                  >✓ Test Vocacional
-                  {{
-                    applicantProgress === 100 ? "Completado" : "Pendiente"
-                  }}</span
-                >
-              </div>
-              <Progress
-                :value="applicantProgress"
-                class="h-3.5 w-full bg-blue-100"
-              />
-              <span class="text-[11px] text-gray-500 font-bold mt-2"
-                >Siguiente paso: Presentación de certificado escolar</span
-              >
-            </Card>
-          </div>
-
-          <!-- Milestones de Admisión -->
-          <Card class="border-gray-200 shadow-sm">
-            <CardHeader class="p-5 border-b border-gray-100">
-              <CardTitle
-                class="flex items-center gap-2 font-extrabold text-gray-900"
-                :class="vistaFacil ? 'text-xl' : 'text-lg'"
-              >
-                <TrendingUp class="w-5 h-5 text-blue-600" />
-                Camino de Admisión y Vocación de Camila
-              </CardTitle>
-              <CardDescription :class="vistaFacil ? 'text-base' : 'text-sm'">
-                Muestra los pasos requeridos para que Camila complete su ingreso
-                y matrícula en la UTP.
-              </CardDescription>
-            </CardHeader>
-            <CardContent class="p-5 space-y-4">
-              <div
-                class="relative pl-6 ml-3 space-y-4 border-l-2 border-gray-200"
-              >
-                <div
-                  v-for="(m, idx) in applicantMilestones"
-                  :key="idx"
-                  class="relative"
-                >
-                  <span
-                    class="absolute -left-[35px] top-1 w-6 h-6 rounded-full flex items-center justify-center border-2 font-bold text-xs"
-                    :class="
-                      m.completed
-                        ? 'bg-blue-600 border-blue-100 text-white'
-                        : 'bg-white border-gray-300 text-gray-400'
-                    "
-                  >
-                    <CheckCircle2
-                      v-if="m.completed"
-                      class="w-4 h-4 text-blue-600 fill-white"
-                    />
-                    <span v-else>•</span>
-                  </span>
-                  <div
-                    class="p-4 border rounded-xl"
-                    :class="
-                      m.completed
-                        ? 'border-blue-200 bg-blue-50/10'
-                        : 'border-gray-100 bg-gray-50/30 opacity-75'
-                    "
-                  >
-                    <h4
-                      class="font-bold text-gray-900"
-                      :class="vistaFacil ? 'text-lg' : 'text-base'"
-                    >
-                      {{ m.title }}
-                    </h4>
-                    <p class="text-gray-600 text-xs sm:text-sm mt-0.5">
-                      {{ m.desc }}
-                    </p>
-                    <Badge
-                      class="mt-2 text-[10px] font-bold"
-                      :class="
-                        m.completed
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-200 text-gray-600'
-                      "
-                    >
-                      {{ m.completed ? "Listo" : "Próximamente" }}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <!-- FAQs del Postulante -->
-          <Card class="border-gray-200 shadow-sm">
-            <CardHeader class="p-5 border-b border-gray-100 bg-blue-50/10">
-              <CardTitle
-                class="flex items-center gap-2 font-extrabold text-gray-900"
-                :class="vistaFacil ? 'text-xl' : 'text-lg'"
-              >
-                <HelpCircle class="w-5 h-5 text-blue-600" />
-                Preguntas frecuentes de Admisión de Camila
-              </CardTitle>
-            </CardHeader>
-            <CardContent class="p-5 space-y-3">
-              <div
-                v-for="(faq, i) in applicantFaqs"
-                :key="i"
-                class="overflow-hidden transition-all border cursor-pointer rounded-xl hover:border-blue-400 hover:bg-blue-50/10"
-                :class="
-                  selectedFaq === i
-                    ? 'border-blue-500 bg-blue-50/20'
-                    : 'border-gray-200'
-                "
-                @click="toggleFaq(i)"
-              >
-                <div
-                  class="flex items-center justify-between p-4 font-bold text-gray-800"
-                  :class="vistaFacil ? 'text-lg' : 'text-sm'"
-                >
-                  <span>{{ faq.q }}</span>
-                  <ChevronDown class="w-4 h-4" />
-                </div>
-                <div
-                  v-if="selectedFaq === i"
-                  class="px-4 pt-2 pb-4 leading-relaxed text-gray-700 bg-white border-t border-blue-100"
-                  :class="vistaFacil ? 'text-base' : 'text-sm'"
-                >
-                  <p>
-                    {{ faq.a }}
-                  </p>
-
-                  <div class="flex gap-2 mt-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      class="gap-2"
-                      @click.stop="hablar(faq.voiceText)"
-                    >
-                      <Volume2 class="w-4 h-4" />
-                      Escuchar respuesta
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      class="gap-2"
-                      @click.stop="detenerLectura"
-                    >
-                      <VolumeX class="w-4 h-4" />
-                      Detener
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <!-- RECURSOS Y GUÍAS ADICIONALES PARA PADRES (COMÚN) -->
-        <div class="grid gap-6 md:grid-cols-2">
-          <Card class="border-gray-200 shadow-sm">
-            <CardHeader class="p-5">
-              <CardTitle class="text-lg font-extrabold text-gray-900"
-                >Guías Útiles y Consejos Simples</CardTitle
-              >
-              <CardDescription
-                >Material muy sencillo que puedes descargar o imprimir para
-                apoyar a tu hijo.</CardDescription
-              >
-            </CardHeader>
-            <CardContent class="p-5 pt-0 space-y-4">
-              <div
-                v-for="(res, idx) in resources"
-                :key="idx"
-                class="flex items-start gap-4 p-4 transition-colors border border-gray-100 rounded-xl bg-gray-50/50 hover:bg-gray-50"
-              >
-                <div
-                  class="flex items-center justify-center w-12 h-12 rounded-xl shrink-0"
-                  :style="{ backgroundColor: `${res.color}15` }"
-                >
-                  <component
-                    :is="res.icon"
-                    class="w-6 h-6"
-                    :style="{ color: res.color }"
-                  />
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h4 class="text-base font-bold text-gray-900">
-                    {{ res.title }}
-                  </h4>
-                  <p class="mt-1 text-sm leading-snug text-gray-600">
-                    {{ res.description }}
-                  </p>
-                  <div class="flex items-center justify-between mt-3">
-                    <span class="text-xs text-gray-500"
-                      >{{ res.downloads.toLocaleString() }} descargas</span
-                    >
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      class="gap-1.5 font-bold rounded-xl text-xs h-8 border-gray-300"
-                    >
-                      <Download class="w-3.5 h-3.5 text-gray-600" />
-                      Descargar PDF
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            class="flex flex-col justify-between border-gray-200 shadow-sm bg-blue-50/5"
-          >
-            <div>
-              <CardHeader class="p-5">
-                <CardTitle class="text-lg font-extrabold text-gray-900"
-                  >Consejos Diarios para la Familia</CardTitle
-                >
-                <CardDescription
-                  >Pequeñas sugerencias de psicólogos de la UTP para acompañar a
-                  tu hijo/a.</CardDescription
-                >
+            <!-- TARJETA: LÍNEA DE TIEMPO (TIMELINE) -->
+            <Card class="border-gray-200 shadow-sm rounded-2xl overflow-hidden bg-white">
+              <CardHeader class="p-6 border-b border-gray-100 bg-gray-50/50">
+                <CardTitle class="flex items-center gap-3 font-black text-gray-900" :class="vistaFacil ? 'text-2xl' : 'text-xl'">
+                  <TrendingUp class="w-6 h-6 text-amber-600" />
+                  Camino de Progreso
+                </CardTitle>
+                <CardDescription :class="vistaFacil ? 'text-lg' : 'text-base'" class="text-gray-600 font-medium">
+                  Revisa qué pasos ya completó tu hijo y cuáles faltan para terminar este ciclo.
+                </CardDescription>
               </CardHeader>
-              <CardContent class="p-5 pt-0 space-y-3">
-                <div
-                  v-for="(tip, idx) in parentTips"
-                  :key="idx"
-                  class="flex items-start gap-3 p-4 bg-white border border-gray-100 shadow-sm rounded-xl"
-                >
-                  <span class="text-lg text-amber-500">💡</span>
-                  <p
-                    class="text-sm font-semibold leading-relaxed text-gray-700"
-                  >
-                    {{ tip }}
-                  </p>
+              
+              <CardContent class="p-6">
+                <div class="relative pl-6 ml-4 border-l-[3px] border-gray-100 space-y-8">
+                  <div v-for="(m, idx) in (isStudentLinked ? studentMilestones : applicantMilestones)" :key="idx" class="relative">
+                    
+                    <!-- Milestone Dot -->
+                    <span class="absolute -left-[35px] top-1 w-7 h-7 rounded-full flex items-center justify-center border-4"
+                      :class="m.completed ? 'bg-amber-500 border-white shadow-sm z-10' : 'bg-gray-200 border-white text-gray-400'">
+                      <CheckCircle2 v-if="m.completed" class="w-5 h-5 text-white" />
+                    </span>
+                    
+                    <!-- Milestone Content -->
+                    <div class="transition-all" :class="m.completed ? 'opacity-100' : 'opacity-60'">
+                      <h4 class="font-black text-gray-900" :class="vistaFacil ? 'text-xl' : 'text-lg'">
+                        {{ m.title }}
+                      </h4>
+                      <p class="text-gray-600 mt-1 font-medium" :class="vistaFacil ? 'text-lg' : 'text-base'">
+                        {{ m.desc }}
+                      </p>
+                      
+                      <div class="mt-2">
+                        <Badge v-if="m.completed" class="bg-emerald-100 text-emerald-800 border-emerald-200 font-extrabold px-2.5 py-0.5">
+                          ✓ Completado
+                        </Badge>
+                        <Badge v-else class="bg-gray-100 text-gray-600 border-gray-200 font-extrabold px-2.5 py-0.5">
+                          ⏳ Próximamente
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
-            </div>
-            <div
-              class="flex items-center justify-between p-4 border-t border-gray-100 bg-gray-50 rounded-b-xl"
-            >
-              <span class="text-xs font-bold text-gray-600"
-                >¿Tienes dudas rápidas?</span
-              >
-              <a
-                href="tel:+51987654321"
-                class="flex items-center gap-1 text-xs font-black underline text-amber-700 hover:text-amber-800"
-              >
-                <Phone class="w-3.5 h-3.5" />
-                Llamar Soporte Padres
-              </a>
-            </div>
-          </Card>
+            </Card>
+            
+          </div>
+
+          <!-- RIGHT COLUMN: FAQS & RECURSOS -->
+          <div class="space-y-6">
+            
+            <!-- TARJETA: FAQS -->
+            <Card class="border-gray-200 shadow-sm rounded-2xl bg-white">
+              <CardHeader class="p-5 border-b border-gray-100">
+                <CardTitle class="flex items-center gap-2 font-black text-gray-900 text-lg">
+                  <HelpCircle class="w-5 h-5 text-amber-600" />
+                  Dudas Comunes
+                </CardTitle>
+              </CardHeader>
+              <CardContent class="p-4 space-y-3">
+                <div v-for="(faq, i) in (isStudentLinked ? studentFaqs : applicantFaqs)" :key="i"
+                  class="border border-gray-200 rounded-xl overflow-hidden transition-all bg-gray-50 hover:border-amber-300"
+                  :class="selectedFaq === i ? 'ring-2 ring-amber-500 border-transparent bg-white shadow-sm' : ''"
+                >
+                  <button @click="toggleFaq(i)" class="w-full flex items-center justify-between p-4 text-left font-bold text-gray-800 focus:outline-none">
+                    <span :class="vistaFacil ? 'text-base' : 'text-sm'">{{ faq.q }}</span>
+                    <ChevronDown class="w-5 h-5 text-gray-400 transition-transform" :class="selectedFaq === i ? 'rotate-180 text-amber-500' : ''" />
+                  </button>
+                  <div v-if="selectedFaq === i" class="px-4 pb-4 border-t border-gray-100 mt-1 pt-3 text-gray-600 font-medium leading-relaxed" :class="vistaFacil ? 'text-base' : 'text-sm'">
+                    {{ faq.a }}
+                    <div class="mt-3 flex gap-2">
+                      <Button size="sm" variant="secondary" class="h-8 font-bold text-xs gap-1.5 bg-amber-100 text-amber-800 hover:bg-amber-200" @click.stop="hablar(faq.voiceText)">
+                        <Volume2 class="w-3.5 h-3.5" /> Escuchar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <!-- TARJETA: RECURSOS -->
+            <Card class="border-gray-200 shadow-sm rounded-2xl bg-white">
+              <CardHeader class="p-5 border-b border-gray-100">
+                <CardTitle class="text-lg font-black text-gray-900">Ayuda para Padres</CardTitle>
+              </CardHeader>
+              <CardContent class="p-0">
+                <div class="divide-y divide-gray-100">
+                  <div v-for="(res, idx) in resources" :key="idx" class="p-5 hover:bg-gray-50 transition-colors">
+                    <div class="flex gap-3">
+                      <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" :style="{ backgroundColor: `${res.color}15`, color: res.color }">
+                        <component :is="res.icon" class="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 class="font-bold text-gray-900 text-sm">{{ res.title }}</h4>
+                        <p class="text-xs text-gray-600 mt-1 mb-2">{{ res.description }}</p>
+                        <Button size="sm" variant="outline" class="h-7 text-xs font-bold gap-1.5 rounded-lg border-gray-300">
+                          <Download class="w-3 h-3" /> Descargar PDF
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- CONTACT SUPPORT -->
+                <div class="p-4 bg-amber-50 rounded-b-2xl border-t border-amber-100 flex items-center justify-between">
+                  <span class="text-xs font-black text-amber-800 uppercase tracking-wider">¿Dudas rápidas?</span>
+                  <a href="tel:+51987654321" class="flex items-center gap-1.5 text-xs font-black text-amber-600 hover:text-amber-700 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-amber-200">
+                    <Phone class="w-3.5 h-3.5" /> Llamar Soporte
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+
+          </div>
         </div>
       </div>
+
     </div>
   </DashboardLayout>
 </template>
 
 <style scoped>
 .transition-all {
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
 }
 </style>
