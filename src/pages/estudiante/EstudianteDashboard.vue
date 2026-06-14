@@ -26,45 +26,47 @@ import { markRaw } from "vue";
 
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from 'vue-i18n';
 
 const auth = useAuth();
+const { t } = useI18n();
 
-const sidebarItems = [
-  { icon: markRaw(Home), label: "Inicio", href: "/estudiante" },
+const sidebarItems = computed(() => [
+  { icon: markRaw(Home), label: t('nav.home'), href: "/estudiante" },
   {
     icon: markRaw(MapIcon),
-    label: "Ruta de Aprendizaje",
+    label: t('nav.learning_path'),
     href: "/estudiante/ruta",
   },
-];
+]);
 
-const stats = [
+const stats = computed(() => [
   {
-    label: "Promedio Acumulado",
+    label: t('dashboard.stats_avg'),
     value: "16.5",
     icon: markRaw(Star),
     color: "#FFB20D",
   },
   {
-    label: "Créditos Aprobados",
+    label: t('dashboard.stats_credits'),
     value: "45",
     icon: markRaw(Award),
     color: "#082065",
   },
   {
-    label: "Cursos Actuales",
+    label: t('dashboard.stats_courses'),
     value: "6",
     icon: markRaw(BookOpen),
     color: "#B50E30",
   },
   {
-    label: "Asistencia Global",
+    label: t('dashboard.stats_attendance'),
     value: "92%",
     icon: markRaw(TrendingUp),
     color: "#2E7D32",
   },
-];
+]);
 
 const upcomingTasks = ref([
   {
@@ -121,8 +123,8 @@ onMounted(() => {
   <DashboardLayout
     :sidebarItems="sidebarItems"
     title="NEXUS Estudiante"
-    subtitle="Tu espacio personal para seguir tu progreso académico"
-    :breadcrumbs="[{ label: 'Inicio' }]"
+    :subtitle="$t('dashboard.subtitle')"
+    :breadcrumbs="[{ label: $t('nav.home') }]"
     moduleColor="#B50E30"
   >
     <div class="space-y-6">
@@ -151,29 +153,24 @@ onMounted(() => {
 
             <div>
               <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-red-100 mb-3 shadow-inner">
-                <Star class="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" /> Alumno Destacado
+                <Star class="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" /> {{ $t('dashboard.outstanding_student') }}
               </div>
               <CardTitle class="text-3xl md:text-4xl font-extrabold tracking-tight"
-                >¡Hola,
-                {{
-                  auth.state.user?.name
-                    ? auth.state.user.name.split(" ")[0]
-                    : "Estudiante"
-                }}!</CardTitle
+                >{{ $t('dashboard.welcome', { name: auth.state.user?.name ? auth.state.user.name.split(" ")[0] : "Estudiante" }) }}</CardTitle
               >
               <CardDescription class="mt-2 text-red-100/90 text-base max-w-md leading-relaxed font-medium">
-                Tienes <span class="text-white font-bold bg-white/20 px-1.5 py-0.5 rounded">1 tarea importante</span> pendiente para mañana. Mantén el buen ritmo y sigue acumulando XP.
+                {{ $t('dashboard.important_task') }}
               </CardDescription>
             </div>
           </div>
           <div
             class="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:bg-white/15 transition-all cursor-default group"
           >
-            <span
+              <span
               class="text-[10px] uppercase font-bold text-red-200 tracking-widest flex items-center gap-1.5"
               >
               <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
-              Vínculo Familiar Activo
+              {{ $t('dashboard.active_link') }}
             </span>
             <span
               class="font-mono text-xl font-black tracking-[0.2em] text-white group-hover:scale-105 transition-transform inline-block"
@@ -183,14 +180,14 @@ onMounted(() => {
         </CardHeader>
         <CardContent class="relative z-10 flex flex-wrap gap-4 px-8 pb-8 pt-4">
           <Button class="bg-white text-[#B50E30] hover:bg-red-50 hover:scale-105 transition-all duration-300 font-bold px-6 shadow-xl shadow-black/10">
-            Ver horario de hoy
+            {{ $t('dashboard.view_schedule') }}
           </Button>
           <Button
             variant="outline"
             class="text-white border-white/30 hover:bg-white/15 hover:border-white/50 backdrop-blur-md font-semibold px-6 transition-all duration-300 hover:scale-105"
             @click="$router.push('/estudiante/ruta')"
           >
-            Ir a mi Ruta IA
+            {{ $t('dashboard.go_to_path') }}
           </Button>
         </CardContent>
       </Card>
@@ -229,14 +226,14 @@ onMounted(() => {
             <div>
               <CardTitle class="flex items-center gap-2 text-lg">
                 <Bell class="w-5 h-5 text-[#B50E30]" />
-                Próximas Entregas
+                {{ $t('dashboard.upcoming_deliveries') }}
               </CardTitle>
               <CardDescription
-                >Tus actividades académicas más cercanas</CardDescription
+                >{{ $t('dashboard.upcoming_desc') }}</CardDescription
               >
             </div>
             <Button variant="ghost" size="sm" class="text-[#B50E30]">
-              Ver calendario
+              {{ $t('dashboard.view_calendar') }}
               <ChevronRight class="w-4 h-4 ml-1" />
             </Button>
           </CardHeader>
@@ -274,7 +271,7 @@ onMounted(() => {
                     <p
                       :class="`text-xs font-bold ${task.urgent ? 'text-[#B50E30]' : 'text-slate-500'}`"
                     >
-                      Vence: {{ task.date }}
+                      {{ $t('dashboard.due') }}: {{ task.date }}
                     </p>
                   </div>
                 </div>
@@ -287,7 +284,7 @@ onMounted(() => {
           <CardHeader>
             <CardTitle class="flex items-center gap-2 text-lg">
               <MapIcon class="w-5 h-5 text-[#B50E30]" />
-              Progreso en tu Ruta
+              {{ $t('dashboard.progress_path') }}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -298,9 +295,9 @@ onMounted(() => {
               
               <div class="flex items-start justify-between mb-4 relative z-10">
                 <div>
-                  <Badge class="bg-red-100 text-[#B50E30] hover:bg-red-100 border-0 mb-2 text-[10px] font-black uppercase tracking-widest">En curso</Badge>
+                  <Badge class="bg-red-100 text-[#B50E30] hover:bg-red-100 border-0 mb-2 text-[10px] font-black uppercase tracking-widest">{{ $t('dashboard.in_progress') }}</Badge>
                   <h4 class="font-bold text-slate-800 text-sm">
-                    Módulo 1: Fundamentos de Programación
+                    {{ $t('dashboard.module1_name') }}
                   </h4>
                 </div>
                 <div class="bg-white px-2 py-1 rounded-lg border shadow-sm">
@@ -310,8 +307,8 @@ onMounted(() => {
               
               <div class="relative z-10 mb-5">
                 <div class="flex justify-between text-xs text-slate-500 font-medium mb-1.5">
-                  <span>Progreso del módulo</span>
-                  <span>4/6 nodos</span>
+                  <span>{{ $t('dashboard.module_progress') }}</span>
+                  <span>{{ $t('dashboard.nodes') }}</span>
                 </div>
                 <div class="h-2.5 w-full bg-slate-200/60 rounded-full overflow-hidden shadow-inner">
                   <div class="h-full bg-gradient-to-r from-[#B50E30] to-red-400 rounded-full w-[72%] shadow-[0_0_10px_rgba(181,14,48,0.5)]"></div>
@@ -320,14 +317,14 @@ onMounted(() => {
               
               <p class="text-xs text-slate-600 font-medium mb-5 relative z-10 flex items-center gap-1.5">
                 <Award class="w-4 h-4 text-amber-500" />
-                Desbloqueas <strong class="text-slate-800">Lógica Avanzada</strong> en 2 actividades.
+                {{ $t('dashboard.unlock') }}
               </p>
               
               <Button
                 class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white shadow-lg shadow-red-900/20 transition-all hover:-translate-y-0.5 relative z-10 font-bold"
                 @click="$router.push('/estudiante/ruta')"
               >
-                Continuar Ruta Inteligente
+                {{ $t('dashboard.continue_path') }}
                 <ArrowRight class="w-4 h-4 ml-2" />
               </Button>
             </div>

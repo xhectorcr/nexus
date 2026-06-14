@@ -23,19 +23,23 @@ import {
   TrendingUp,
   Lightbulb,
 } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { computed } from 'vue'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const auth = useAuth()
 
-const sidebarItems = [
-  { icon: Home, label: "Inicio", href: "/postulante" },
-]
+const sidebarItems = computed(() => [
+  { icon: Home, label: t('nav.home'), href: "/postulante" },
+])
 
-const modules = [
+const modules = computed(() => [
   {
     id: 1,
-    title: "Test de Intereses Vocacionales",
-    description: "Evaluación inicial completada con éxito.",
+    title: t('laberinto.modules.m1_t'),
+    description: t('laberinto.modules.m1_d'),
     icon: Brain,
     color: "#2E7D32",
     status: "available",
@@ -46,8 +50,8 @@ const modules = [
   },
   {
     id: 2,
-    title: "Test de Inteligencias Múltiples",
-    description: "Descubre tus tipos de inteligencia dominantes.",
+    title: t('laberinto.modules.m2_t'),
+    description: t('laberinto.modules.m2_d'),
     icon: Lightbulb,
     color: "#B50E30",
     status: "available",
@@ -58,8 +62,8 @@ const modules = [
   },
   {
     id: 3,
-    title: "Test de Personalidad y Valores",
-    description: "Conoce tu perfil psicológico y ético.",
+    title: t('laberinto.modules.m3_t'),
+    description: t('laberinto.modules.m3_d'),
     icon: Heart,
     color: "#FFB20D",
     status: "locked",
@@ -70,8 +74,8 @@ const modules = [
   },
   {
     id: 4,
-    title: "Simulador de Situaciones",
-    description: "Juego de rol para toma de decisiones.",
+    title: t('laberinto.modules.m4_t'),
+    description: t('laberinto.modules.m4_d'),
     icon: Gamepad2,
     color: "#082065",
     status: "locked",
@@ -82,8 +86,8 @@ const modules = [
   },
   {
     id: 5,
-    title: "Resultado Vocacional",
-    description: "Tu perfil completo y recomendación NEXUS IA.",
+    title: t('laberinto.modules.m5_t'),
+    description: t('laberinto.modules.m5_d'),
     icon: Target,
     color: "#B50E30",
     status: "locked",
@@ -92,13 +96,13 @@ const modules = [
     badge: "Vocación Encontrada",
     position: { x: 10, side: "left" },
   },
-]
+])
 
-const badges = [
-  { name: "Curioso", icon: "🔍", earned: true },
-  { name: "Constante", icon: "🔥", earned: true },
-  { name: "Pensador", icon: "🧠", earned: false },
-]
+const badges = computed(() => [
+  { name: t('laberinto.badges.b1'), icon: "🔍", earned: true },
+  { name: t('laberinto.badges.b2'), icon: "🔥", earned: true },
+  { name: t('laberinto.badges.b3'), icon: "🧠", earned: false },
+])
 
 const totalProgress = ref(20)
 const selectedModule = ref<any>(null)
@@ -107,11 +111,11 @@ const selectedModule = ref<any>(null)
 <template>
   <DashboardLayout
     :sidebarItems="sidebarItems"
-    title="NEXUS Postulante"
-    subtitle="Tu Laberinto de Vocaciones y Experiencias"
+    :title="$t('postulante.title')"
+    :subtitle="$t('laberinto.subtitle')"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/postulante' },
-      { label: 'Laberinto de Vocaciones' },
+      { label: $t('nav.home'), href: '/postulante' },
+      { label: $t('laberinto.title') },
     ]"
     moduleColor="#B50E30"
   >
@@ -122,7 +126,7 @@ const selectedModule = ref<any>(null)
         class="flex items-center gap-2 text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft class="w-4 h-4" />
-        Volver al Dashboard
+        {{ $t('laberinto.back_to_dashboard') }}
       </Button>
     </div>
 
@@ -143,27 +147,32 @@ const selectedModule = ref<any>(null)
                 </div>
               </div>
               <div class="flex-1 text-white">
-                <p class="text-white/70 text-xs">Explorador de Vocaciones</p>
+                <p class="text-white/70 text-xs">{{ $t('laberinto.explorer_role') }}</p>
                 <h2 class="font-semibold text-lg leading-tight">{{ auth.state.user?.name || 'Camila Postulante' }}</h2>
                 <div class="flex items-center gap-1.5 mt-1">
+<<<<<<< HEAD
                   <Target class="w-3.5 h-3.5 text-[#FFB20D]" />
                   <span class="text-[#FFB20D] text-xs font-medium">Buscando su camino</span>
+=======
+                  <Target class="w-3.5 h-3.5 text-[#D4A017]" />
+                  <span class="text-[#D4A017] text-xs font-medium">{{ $t('laberinto.searching_path') }}</span>
+>>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
                 </div>
               </div>
               <div class="text-right text-white">
                 <div class="text-2xl font-bold">20%</div>
-                <div class="text-white/60 text-xs">completado</div>
+                <div class="text-white/60 text-xs">{{ $t('laberinto.completed') }}</div>
                 <div class="flex items-center justify-end gap-1 mt-1.5">
                   <Flame class="w-3.5 h-3.5 text-orange-400" />
-                  <span class="text-xs text-orange-300">2 días seguidos</span>
+                  <span class="text-xs text-orange-300">{{ $t('laberinto.streak_days', { days: 2 }) }}</span>
                 </div>
               </div>
             </div>
 
             <div class="mt-4">
               <div class="flex justify-between text-xs text-white/70 mb-1.5">
-                <span>Progreso General</span>
-                <span>{{ Math.round(totalProgress) }}% total</span>
+                <span>{{ $t('laberinto.general_progress') }}</span>
+                <span>{{ Math.round(totalProgress) }}% {{ $t('laberinto.total') }}</span>
               </div>
               <div class="w-full bg-white/20 rounded-full h-2">
                 <div
@@ -201,12 +210,12 @@ const selectedModule = ref<any>(null)
               <div>
                 <CardTitle class="flex items-center gap-2 text-white">
                   <Gamepad2 class="w-5 h-5 text-[#B50E30]" />
-                  Laberinto de Vocaciones
+                  {{ $t('laberinto.title') }}
                 </CardTitle>
-                <p class="text-sm text-white/50 mt-0.5 font-mono">Supera cada etapa para desbloquear tu perfil completo.</p>
+                <p class="text-sm text-white/50 mt-0.5 font-mono">{{ $t('laberinto.map_desc') }}</p>
               </div>
               <Badge variant="outline" class="text-white border-white/20 bg-white/5">
-                1 / 5 etapas
+                {{ $t('laberinto.stages_count') }}
               </Badge>
             </div>
           </CardHeader>
@@ -259,7 +268,7 @@ const selectedModule = ref<any>(null)
                   >
                     <!-- Current Module Indicator -->
                     <div v-if="mod.status === 'available' && mod.progress < 100" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#EF4444] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-red-500/30 whitespace-nowrap z-30 tracking-wide uppercase transition-transform group-hover:-translate-y-2">
-                      Continuar Laberinto
+                      {{ $t('laberinto.continue_maze') }}
                       <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#EF4444]"></div>
                     </div>
 
@@ -314,16 +323,16 @@ const selectedModule = ref<any>(null)
                         mod.status === 'available' ? 'group-hover:-translate-y-4' : ''
                       ]"
                     >
-                      <p class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider">Etapa {{ idx + 1 }}</p>
+                      <p class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider">{{ $t('laberinto.stage') }} {{ idx + 1 }}</p>
                       <h3 :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status === 'available' ? 'text-white drop-shadow-md' : 'text-gray-500'}`">
                         {{ mod.title }}
                       </h3>
                       <p v-if="mod.status === 'available'" class="text-[11px] mt-1.5 flex items-center font-medium" :class="idx % 2 === 0 ? 'justify-start text-[#EF4444]' : 'justify-end text-[#EF4444]'">
                         <component :is="mod.icon" class="w-3.5 h-3.5 mr-1" />
-                        {{ mod.progress }}% completado
+                        {{ mod.progress }}% {{ $t('laberinto.completed') }}
                       </p>
                       <p v-else class="text-[11px] text-gray-500 mt-1.5 flex items-center font-medium" :class="idx % 2 === 0 ? 'justify-start' : 'justify-end'">
-                        <Lock class="w-3 h-3 mr-1" /> Bloqueado
+                        <Lock class="w-3 h-3 mr-1" /> {{ $t('laberinto.locked') }}
                       </p>
                     </div>
                   </div>
@@ -344,18 +353,18 @@ const selectedModule = ref<any>(null)
                 <PlayCircle class="w-4 h-4 text-white" />
               </div>
               <div>
-                <p class="text-xs text-muted-foreground">Siguiente desafío</p>
-                <p class="text-sm font-semibold">Test de Inteligencias Múltiples</p>
+                <p class="text-xs text-muted-foreground">{{ $t('laberinto.next_challenge') }}</p>
+                <p class="text-sm font-semibold">{{ $t('laberinto.modules.m2_t') }}</p>
               </div>
             </div>
             <div class="mb-3">
               <p class="text-xs text-muted-foreground italic line-clamp-3">
-                Avanza a la segunda etapa para que NEXUS evalúe tus inteligencias dominantes.
+                {{ $t('laberinto.challenge_desc') }}
               </p>
             </div>
             <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white text-sm gap-2">
               <PlayCircle class="w-4 h-4" />
-              Iniciar Etapa (+100 XP)
+              {{ $t('laberinto.start_stage') }}
             </Button>
           </CardContent>
         </Card>
@@ -363,7 +372,7 @@ const selectedModule = ref<any>(null)
         <!-- Stats -->
         <Card>
           <CardHeader class="pb-2 pt-4 px-4">
-            <CardTitle class="text-sm">Estado del Laberinto</CardTitle>
+            <CardTitle class="text-sm">{{ $t('laberinto.maze_status') }}</CardTitle>
           </CardHeader>
           <CardContent class="px-4 pb-4 space-y-2">
             <div v-for="m in modules" :key="m.id" class="flex items-center gap-2.5">

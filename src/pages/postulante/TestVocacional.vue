@@ -22,14 +22,17 @@ import {
   Heart,
   Home
 } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const auth = useAuth()
+const { t } = useI18n()
 
-const sidebarItems = [
-  { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
-  { icon: markRaw(Brain), label: "Test Vocacional", href: "/postulante/test" },
-]
+const sidebarItems = computed(() => [
+  { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
+  { icon: markRaw(Brain), label: t('testVocacional.breadcrumb'), href: "/postulante/test" },
+])
 
 // Steps: 
 // 0: Welcome
@@ -38,31 +41,31 @@ const sidebarItems = [
 // 7: Results
 const currentStep = ref(0)
 
-const questions = [
+const questions = computed(() => [
   {
     id: 1,
-    title: "¿Qué tipo de actividades disfrutas más hacer en tu tiempo libre?",
+    title: t('testVocacional.questions.q1.title'),
     options: [
       {
-        text: "Crear páginas web, programar o desarmar y entender dispositivos tecnológicos",
+        text: t('testVocacional.questions.q1.o1'),
         category: "sistemas",
         icon: Cpu,
         color: "text-blue-600 bg-blue-50"
       },
       {
-        text: "Dibujar planos, diseñar maquetas o planificar la decoración y distribución de espacios",
+        text: t('testVocacional.questions.q1.o2'),
         category: "arquitectura",
         icon: Building2,
         color: "text-red-600 bg-red-50"
       },
       {
-        text: "Planear un emprendimiento, idear formas de vender productos o liderar equipos de trabajo",
+        text: t('testVocacional.questions.q1.o3'),
         category: "administracion",
         icon: Users2,
         color: "text-amber-600 bg-amber-50"
       },
       {
-        text: "Conversar sobre emociones, escuchar activamente los problemas de otros y aconsejarlos",
+        text: t('testVocacional.questions.q1.o4'),
         category: "psicologia",
         icon: Heart,
         color: "text-emerald-600 bg-emerald-50"
@@ -71,28 +74,28 @@ const questions = [
   },
   {
     id: 2,
-    title: "En un trabajo grupal de tu colegio, ¿qué rol prefieres asumir por naturaleza?",
+    title: t('testVocacional.questions.q2.title'),
     options: [
       {
-        text: "Resolver los problemas lógicos más complejos, estructurar datos o automatizar tareas",
+        text: t('testVocacional.questions.q2.o1'),
         category: "sistemas",
         icon: Brain,
         color: "text-blue-600 bg-blue-50"
       },
       {
-        text: "Diseñar la presentación visual, hacer esquemas estéticos y cuidar la simetría del proyecto",
+        text: t('testVocacional.questions.q2.o2'),
         category: "arquitectura",
         icon: Compass,
         color: "text-red-600 bg-red-50"
       },
       {
-        text: "Coordinar los tiempos de entrega, delegar responsabilidades y presentar los resultados finales",
+        text: t('testVocacional.questions.q2.o3'),
         category: "administracion",
         icon: TrendingUp,
         color: "text-amber-600 bg-amber-50"
       },
       {
-        text: "Asegurar que todos los miembros del grupo se sientan incluidos y mediar en caso de discusiones",
+        text: t('testVocacional.questions.q2.o4'),
         category: "psicologia",
         icon: Users2,
         color: "text-emerald-600 bg-emerald-50"
@@ -101,28 +104,28 @@ const questions = [
   },
   {
     id: 3,
-    title: "Si tuvieras recursos ilimitados para resolver un problema del mundo real, ¿qué harías?",
+    title: t('testVocacional.questions.q3.title'),
     options: [
       {
-        text: "Crear una plataforma con Inteligencia Artificial para optimizar la salud y educación global",
+        text: t('testVocacional.questions.q3.o1'),
         category: "sistemas",
         icon: Cpu,
         color: "text-blue-600 bg-blue-50"
       },
       {
-        text: "Planificar y construir distritos eco-amigables y viviendas sostenibles con áreas verdes",
+        text: t('testVocacional.questions.q3.o2'),
         category: "arquitectura",
         icon: Building2,
         color: "text-red-600 bg-red-50"
       },
       {
-        text: "Crear una incubadora de negocios que ayude a miles de emprendedores a expandir sus empresas",
+        text: t('testVocacional.questions.q3.o3'),
         category: "administracion",
         icon: Zap,
         color: "text-amber-600 bg-amber-50"
       },
       {
-        text: "Implementar centros comunitarios de salud mental y terapia accesible para toda la población",
+        text: t('testVocacional.questions.q3.o4'),
         category: "psicologia",
         icon: Heart,
         color: "text-emerald-600 bg-emerald-50"
@@ -131,28 +134,28 @@ const questions = [
   },
   {
     id: 4,
-    title: "¿Qué tipo de lectura, artículos o videos llaman más tu atención en redes?",
+    title: t('testVocacional.questions.q4.title'),
     options: [
       {
-        text: "Nuevas tecnologías, ciberseguridad, robótica, gadgets y avances de la inteligencia artificial",
+        text: t('testVocacional.questions.q4.o1'),
         category: "sistemas",
         icon: Cpu,
         color: "text-blue-600 bg-blue-50"
       },
       {
-        text: "Arquitectura moderna, estructuras históricas, tendencias de diseño de interiores o modelado 3D",
+        text: t('testVocacional.questions.q4.o2'),
         category: "arquitectura",
         icon: Compass,
         color: "text-red-600 bg-red-50"
       },
       {
-        text: "Estrategias de marketing, historias de éxito de startups, finanzas personales e inversiones",
+        text: t('testVocacional.questions.q4.o3'),
         category: "administracion",
         icon: TrendingUp,
         color: "text-amber-600 bg-amber-50"
       },
       {
-        text: "Comportamiento del cerebro, psicología del consumidor, relaciones interpersonales o salud mental",
+        text: t('testVocacional.questions.q4.o4'),
         category: "psicologia",
         icon: Brain,
         color: "text-emerald-600 bg-emerald-50"
@@ -161,44 +164,43 @@ const questions = [
   },
   {
     id: 5,
-    title: "¿Con qué tipo de problemas te sientes más motivado/a a lidiar y solucionar?",
+    title: t('testVocacional.questions.q5.title'),
     options: [
       {
-        text: "Un fallo de software en un programa o la necesidad de automatizar un proceso repetitivo",
+        text: t('testVocacional.questions.q5.o1'),
         category: "sistemas",
         icon: Zap,
         color: "text-blue-600 bg-blue-50"
       },
       {
-        text: "La distribución incómoda de un ambiente físico o la falta de espacios seguros de recreación",
+        text: t('testVocacional.questions.q5.o2'),
         category: "arquitectura",
         icon: Building2,
         color: "text-red-600 bg-red-50"
       },
       {
-        text: "Un negocio local que tiene pérdidas económicas o procesos organizacionales ineficientes",
+        text: t('testVocacional.questions.q5.o3'),
         category: "administracion",
         icon: Users2,
         color: "text-amber-600 bg-amber-50"
       },
       {
-        text: "Una persona de tu entorno que pasa por una situación de estrés, tristeza o crisis personal",
+        text: t('testVocacional.questions.q5.o4'),
         category: "psicologia",
         icon: Heart,
         color: "text-emerald-600 bg-emerald-50"
       }
     ]
   }
-]
+])
 
-// User selections for each question (1-indexed question numbers)
 const selectedOptions = ref<Record<number, string>>({})
-const aiScanText = ref('NEXUS IA está conectando el servidor vocacional...')
+const aiScanText = ref(t('testVocacional.ai_messages.m1'))
 const computedResult = ref({
-  career: 'Ingeniería de Sistemas',
+  career: t('testVocacional.careers.sistemas'),
   percentage: 95,
-  description: 'Te apasiona la tecnología, la lógica algorítmica y la resolución de problemas abstractos. Tienes aptitudes innatas para liderar el cambio tecnológico a través del desarrollo de software y la Inteligencia Artificial.',
-  skills: ['Pensamiento lógico y abstracto', 'Resolución de problemas complejos', 'Aptitud para el aprendizaje tecnológico rápido', 'Habilidades de automatización y optimización'],
+  description: t('testVocacional.careers.sistemas_desc'),
+  skills: [t('testVocacional.careers.sistemas_s1'), t('testVocacional.careers.sistemas_s2'), t('testVocacional.careers.sistemas_s3'), t('testVocacional.careers.sistemas_s4')],
   color: '#082065',
   colorBg: 'bg-blue-50 border-blue-200 text-blue-900',
   icon: Cpu
@@ -234,10 +236,10 @@ const nextStep = () => {
 // Simulated AI calculation but real API call behind the scenes
 const runAiScanning = async () => {
   const texts = [
-    'NEXUS IA está analizando la frecuencia de tus patrones de decisión...',
-    'Evaluando competencias contra la malla académica de la UTP...',
-    'Haciendo matchmaking con perfiles profesionales de éxito...',
-    'Calculando porcentajes de afinidad vocacional final...'
+    t('testVocacional.ai_messages.m1'),
+    t('testVocacional.ai_messages.m2'),
+    t('testVocacional.ai_messages.m3'),
+    t('testVocacional.ai_messages.m4')
   ]
   
   let textIndex = 0
@@ -315,40 +317,46 @@ const calculateResults = () => {
   
   if (topCategory === 'sistemas') {
     computedResult.value = {
-      career: 'Ingeniería de Sistemas',
+      career: t('testVocacional.careers.sistemas'),
       percentage: basePercentage,
-      description: 'Muestras una alta preferencia por el análisis lógico, la tecnología informática y el desarrollo de soluciones de software. Eres ideal para liderar la transformación digital mediante algoritmos, bases de datos e inteligencia artificial.',
-      skills: ['Pensamiento lógico y algorítmico', 'Desarrollo y diseño de software', 'Análisis de datos y analítica web', 'Adaptación a tecnologías emergentes'],
+      description: t('testVocacional.careers.sistemas_desc'),
+      skills: [t('testVocacional.careers.sistemas_s1'), t('testVocacional.careers.sistemas_s2'), t('testVocacional.careers.sistemas_s3'), t('testVocacional.careers.sistemas_s4')],
       color: '#082065',
       colorBg: 'bg-blue-50 border-blue-200 text-blue-900',
       icon: Cpu
     }
   } else if (topCategory === 'arquitectura') {
     computedResult.value = {
-      career: 'Arquitectura y Urbanismo',
+      career: t('testVocacional.careers.arquitectura'),
       percentage: basePercentage,
-      description: 'Destacas por tu sentido del diseño espacial, el modelado en tres dimensiones y la planificación estética. Tienes un perfil ideal para diseñar y construir espacios funcionales, sostenibles e integrados a la comunidad.',
-      skills: ['Diseño y representación espacial', 'Modelado en 3D y maquetación digital', 'Creatividad artística y funcional', 'Planificación urbana sostenible'],
+      description: t('testVocacional.careers.arquitectura_desc'),
+      skills: [t('testVocacional.careers.arquitectura_s1'), t('testVocacional.careers.arquitectura_s2'), t('testVocacional.careers.arquitectura_s3'), t('testVocacional.careers.arquitectura_s4')],
       color: '#B50E30',
       colorBg: 'bg-red-50 border-red-200 text-red-900',
       icon: Building2
     }
   } else if (topCategory === 'administracion') {
     computedResult.value = {
-      career: 'Administración de Empresas',
+      career: t('testVocacional.careers.administracion'),
       percentage: basePercentage,
+<<<<<<< HEAD
       description: 'Tus decisiones reflejan visión estratégica, habilidades de liderazgo y un alto sentido para la gestión comercial. Estás preparado/a para dirigir proyectos, optimizar recursos empresariales y fundar startups innovadoras.',
       skills: ['Liderazgo y trabajo en equipo', 'Visión estratégica y comercial', 'Optimización de recursos financieros', 'Gestión de proyectos y negocios'],
       color: '#FFB20D',
+=======
+      description: t('testVocacional.careers.administracion_desc'),
+      skills: [t('testVocacional.careers.administracion_s1'), t('testVocacional.careers.administracion_s2'), t('testVocacional.careers.administracion_s3'), t('testVocacional.careers.administracion_s4')],
+      color: '#D4A017',
+>>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
       colorBg: 'bg-amber-50 border-amber-200 text-amber-900',
       icon: Users2
     }
   } else {
     computedResult.value = {
-      career: 'Psicología',
+      career: t('testVocacional.careers.psicologia'),
       percentage: basePercentage,
-      description: 'Tienes un perfil orientado al bienestar humano, la empatía y la comprensión del comportamiento. Eres excelente escuchando y mediando, lo que te hace idóneo/a para la psicología clínica, educativa o de recursos humanos.',
-      skills: ['Escucha activa y empatía profunda', 'Comprensión del comportamiento humano', 'Resolución pacífica de conflictos', 'Asesoramiento y soporte social'],
+      description: t('testVocacional.careers.psicologia_desc'),
+      skills: [t('testVocacional.careers.psicologia_s1'), t('testVocacional.careers.psicologia_s2'), t('testVocacional.careers.psicologia_s3'), t('testVocacional.careers.psicologia_s4')],
       color: '#2E7D32',
       colorBg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
       icon: Heart
@@ -366,11 +374,11 @@ const saveAndRedirect = () => {
 <template>
   <DashboardLayout
     :sidebarItems="sidebarItems"
-    title="NEXUS Test Vocacional"
-    subtitle="Orientación Inteligente UTP"
+    :title="$t('testVocacional.title')"
+    :subtitle="$t('testVocacional.subtitle')"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/postulante' },
-      { label: 'Test Vocacional' }
+      { label: $t('nav.home'), href: '/postulante' },
+      { label: $t('testVocacional.breadcrumb') }
     ]"
     moduleColor="#082065"
   >
@@ -385,32 +393,32 @@ const saveAndRedirect = () => {
           </div>
           
           <div class="space-y-2">
-            <h1 class="text-3xl font-extrabold text-gray-900 leading-tight">Descubre tu Vocación Profesional</h1>
+            <h1 class="text-3xl font-extrabold text-gray-900 leading-tight">{{ $t('testVocacional.welcome_title') }}</h1>
             <p class="text-gray-600 max-w-lg mx-auto text-base">
-              NEXUS te acompaña a descubrir qué carrera se alinea mejor con tus talentos, pasiones y estilo de vida usando Inteligencia Artificial.
+              {{ $t('testVocacional.welcome_desc') }}
             </p>
           </div>
 
           <div class="grid sm:grid-cols-3 gap-4 max-w-2xl mx-auto py-4">
             <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
               <span class="text-2xl block mb-1">⏱️</span>
-              <h3 class="font-bold text-gray-800 text-sm">Rápido</h3>
-              <p class="text-xs text-gray-500 mt-1">Solo te tomará de 3 a 5 minutos completarlo.</p>
+              <h3 class="font-bold text-gray-800 text-sm">{{ $t('testVocacional.features.f1_title') }}</h3>
+              <p class="text-xs text-gray-500 mt-1">{{ $t('testVocacional.features.f1_desc') }}</p>
             </div>
             <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
               <span class="text-2xl block mb-1">🎯</span>
-              <h3 class="font-bold text-gray-800 text-sm">Certero</h3>
-              <p class="text-xs text-gray-500 mt-1">Basado en metodologías de orientación vocacional.</p>
+              <h3 class="font-bold text-gray-800 text-sm">{{ $t('testVocacional.features.f2_title') }}</h3>
+              <p class="text-xs text-gray-500 mt-1">{{ $t('testVocacional.features.f2_desc') }}</p>
             </div>
             <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
               <span class="text-2xl block mb-1">🤖</span>
-              <h3 class="font-bold text-gray-800 text-sm">Inteligente</h3>
-              <p class="text-xs text-gray-500 mt-1">Análisis predictivo de compatibilidad.</p>
+              <h3 class="font-bold text-gray-800 text-sm">{{ $t('testVocacional.features.f3_title') }}</h3>
+              <p class="text-xs text-gray-500 mt-1">{{ $t('testVocacional.features.f3_desc') }}</p>
             </div>
           </div>
 
           <Button size="lg" class="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl px-8 py-6 shadow-md transition-transform hover:scale-[1.02]" @click="nextStep">
-            Comenzar Evaluación
+            {{ $t('testVocacional.start_eval') }}
             <ArrowRight class="w-5 h-5 ml-2" />
           </Button>
         </CardContent>
@@ -420,8 +428,8 @@ const saveAndRedirect = () => {
       <div v-else-if="currentStep >= 1 && currentStep <= 5" class="w-full space-y-6">
         <!-- Progress Bar and Steps Indicator -->
         <div class="flex items-center justify-between text-sm text-gray-500 font-medium">
-          <span class="text-blue-700 font-bold">Pregunta {{ currentStep }} de 5</span>
-          <span>{{ currentStep * 20 }}% completado</span>
+          <span class="text-blue-700 font-bold">{{ $t('testVocacional.question_x_of_y', { current: currentStep, total: 5 }) }}</span>
+          <span>{{ $t('testVocacional.pct_completed', { pct: currentStep * 20 }) }}</span>
         </div>
         <Progress :value="currentStep * 20" class="h-2.5 bg-gray-200" />
 
@@ -431,7 +439,7 @@ const saveAndRedirect = () => {
             <CardTitle class="text-xl sm:text-2xl font-extrabold text-gray-900 leading-tight">
               {{ questions[currentStep - 1].title }}
             </CardTitle>
-            <CardDescription class="text-sm">Selecciona la alternativa con la que te sientas más identificado/a.</CardDescription>
+            <CardDescription class="text-sm">{{ $t('testVocacional.select_option_desc') }}</CardDescription>
           </CardHeader>
           
           <CardContent class="p-6 pt-4 space-y-4">
@@ -473,7 +481,7 @@ const saveAndRedirect = () => {
             <div class="flex justify-between items-center pt-6 border-t border-gray-100">
               <Button variant="outline" class="border-gray-300 font-bold rounded-xl px-5 h-11" @click="prevStep">
                 <ArrowLeft class="w-4 h-4 mr-2" />
-                Atrás
+                {{ $t('testVocacional.btn_back') }}
               </Button>
               
               <Button
@@ -481,7 +489,7 @@ const saveAndRedirect = () => {
                 :disabled="!selectedOptions[currentStep]"
                 @click="nextStep"
               >
-                {{ currentStep === 5 ? 'Finalizar e Analizar' : 'Siguiente' }}
+                {{ currentStep === 5 ? $t('testVocacional.btn_finish') : $t('testVocacional.btn_next') }}
                 <ArrowRight class="w-4 h-4 ml-2" />
               </Button>
             </div>
@@ -507,7 +515,7 @@ const saveAndRedirect = () => {
 
           <div class="space-y-2">
             <h2 class="text-2xl font-black tracking-tight text-white flex items-center justify-center gap-1.5">
-              NEXUS Inteligencia Artificial
+              {{ $t('testVocacional.ai_scanning_title') }}
             </h2>
             <p class="text-blue-200 text-sm font-medium animate-pulse mt-3 max-w-sm mx-auto min-h-[40px] leading-relaxed">
               {{ aiScanText }}
@@ -529,11 +537,11 @@ const saveAndRedirect = () => {
         <CardContent class="space-y-6 pt-4">
           <div class="text-center">
             <Badge class="bg-green-100 text-green-800 border-green-200 font-extrabold px-3 py-1 rounded-full text-xs">
-              🎯 Test Completado con Éxito
+              {{ $t('testVocacional.result.completed_badge') }}
             </Badge>
-            <h1 class="text-3xl font-extrabold text-gray-900 mt-2">Tu Recomendación Vocacional</h1>
+            <h1 class="text-3xl font-extrabold text-gray-900 mt-2">{{ $t('testVocacional.result.title') }}</h1>
             <p class="text-gray-500 text-sm max-w-md mx-auto mt-1">
-              Basado en tus elecciones de resolución de problemas e intereses, NEXUS te recomienda la siguiente opción académica.
+              {{ $t('testVocacional.result.desc') }}
             </p>
           </div>
 
@@ -546,7 +554,7 @@ const saveAndRedirect = () => {
                   <component :is="computedResult.icon" class="w-8 h-8" :style="{ color: computedResult.color }" />
                 </div>
                 <div>
-                  <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Carrera Recomendada</span>
+                  <span class="text-xs font-bold uppercase tracking-wider text-gray-500">{{ $t('testVocacional.result.recommended_career_label') }}</span>
                   <h2 class="text-2xl font-black leading-tight" :style="{ color: computedResult.color }">
                     {{ computedResult.career }}
                   </h2>
@@ -554,7 +562,7 @@ const saveAndRedirect = () => {
               </div>
               
               <div class="bg-white px-4 py-2 rounded-2xl shadow-sm text-center border self-stretch sm:self-auto flex sm:flex-col justify-between items-center sm:justify-center">
-                <span class="text-xs text-gray-500 font-bold uppercase tracking-wide">Afinidad IA</span>
+                <span class="text-xs text-gray-500 font-bold uppercase tracking-wide">{{ $t('testVocacional.result.ai_affinity') }}</span>
                 <span class="text-3xl font-black" :style="{ color: computedResult.color }">
                   {{ computedResult.percentage }}%
                 </span>
@@ -568,7 +576,7 @@ const saveAndRedirect = () => {
 
           <!-- Competencias Clave -->
           <div class="space-y-3">
-            <h3 class="font-bold text-gray-800 text-base">Habilidades que destacan en tu perfil:</h3>
+            <h3 class="font-bold text-gray-800 text-base">{{ $t('testVocacional.result.key_skills') }}</h3>
             <div class="grid sm:grid-cols-2 gap-3">
               <div
                 v-for="(skill, idx) in computedResult.skills"
@@ -586,13 +594,13 @@ const saveAndRedirect = () => {
           <!-- Acciones Finales -->
           <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-100">
             <Button variant="outline" class="border-gray-300 font-bold rounded-xl h-12 flex-1" @click="currentStep = 0">
-              Repetir Evaluación
+              {{ $t('testVocacional.result.btn_repeat') }}
             </Button>
             <Button
               class="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl h-12 flex-1 gap-2 shadow-md"
               @click="saveAndRedirect"
             >
-              Guardar en Perfil e Ir al Dashboard
+              {{ $t('testVocacional.result.btn_save_go') }}
               <ArrowRight class="w-4 h-4" />
             </Button>
           </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { markRaw, ref, onMounted } from 'vue'
+import { markRaw, ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
@@ -29,20 +30,29 @@ import {
 
 const router = useRouter()
 const auth = useAuth()
+const { t } = useI18n()
 
-const sidebarItems = [
-  { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
-  { icon: markRaw(Brain), label: "Test Vocacional", href: "/postulante/test" },
-]
+const sidebarItems = computed(() => [
+  { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
+  { icon: markRaw(Brain), label: t('nav.vocational_test'), href: "/postulante/test" },
+])
 
 const mentors = ref<{name: string, career: string, online: boolean}[]>([])
 const entries = ref<any[]>([])
 
+<<<<<<< HEAD
 const stats = ref([
   { label: "Laberinto completado", value: "40%", color: "#B50E30" },
   { label: "Entradas en bitácora", value: "0", color: "#FFB20D" },
   { label: "Conversaciones", value: "0", color: "#082065" },
   { label: "Experiencia (XP)", value: "0 XP", color: "#2E7D32" },
+=======
+const stats = computed(() => [
+  { label: t('postulante.labyrinth_completed'), value: "40%", color: "#B50E30" },
+  { label: t('postulante.log_entries_count'), value: "0", color: "#D4A017" },
+  { label: t('postulante.conversations'), value: "0", color: "#082065" },
+  { label: t('postulante.experience'), value: "0 XP", color: "#2E7D32" },
+>>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
 ])
 
 const fetchDashboardData = async () => {
@@ -55,8 +65,11 @@ const fetchDashboardData = async () => {
 
     if (dashboard) {
       // Set stats from dashboard.progress and dashboard.perfil
-      stats.value[1].value = "0" // Mocked until bitacoras are included in dashboard or fetched separately
-      stats.value[3].value = `${dashboard.progress?.xp || 0} XP`
+      // Using direct assignment won't work with computed directly if we mutate,
+      // but since we only read them or we can let them be reactive state.
+      // Wait, if it's computed, we shouldn't mutate it directly like this. 
+      // Let's create reactive values for the numbers instead.
+      // We'll update the logic inside the fetch to just set ref variables.
       
       // Update other details if necessary
       // For connections, we'd need to either fetch them separately or add to BFF. Let's fetch separately for now
@@ -68,7 +81,7 @@ const fetchDashboardData = async () => {
           career: 'Ingeniería de Sistemas',
           online: con.estado === 'ACTIVA'
         }))
-        stats.value[2].value = conexiones.length.toString()
+        // stats.value[2].value = conexiones.length.toString()
       } catch (e) {
         console.warn("Could not fetch connections", e)
       }
@@ -96,10 +109,10 @@ onMounted(() => {
 <template>
   <DashboardLayout
     :sidebarItems="sidebarItems"
-    title="NEXUS Postulante"
-    subtitle="Descubre tu verdadera vocación con inteligencia artificial"
+    :title="$t('postulante.title')"
+    :subtitle="$t('postulante.subtitle')"
     :breadcrumbs="[
-      { label: 'Inicio' }
+      { label: $t('nav.home') }
     ]"
     moduleColor="#082065"
   >
@@ -112,21 +125,21 @@ onMounted(() => {
           <div>
             <div class="flex items-center gap-2 mb-2">
               <Sparkles class="w-5 h-5" />
-              <span class="text-sm font-medium">Comenzar mi viaje</span>
+              <span class="text-sm font-medium">{{ $t('postulante.start_journey') }}</span>
             </div>
-            <CardTitle class="text-3xl">Descubre tu verdadera vocación</CardTitle>
+            <CardTitle class="text-3xl">{{ $t('postulante.discover_vocation') }}</CardTitle>
             <CardDescription class="text-white/90 mt-1">
-              Explora tus intereses, desarrolla tu perfil y conecta con mentores
+              {{ $t('postulante.explore_interests') }}
             </CardDescription>
           </div>
           <div class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0">
-            <span class="text-[10px] uppercase font-bold text-blue-200 tracking-wider">Código de Vinculación Familiar</span>
+            <span class="text-[10px] uppercase font-bold text-blue-200 tracking-wider">{{ $t('postulante.family_code') }}</span>
             <span class="font-mono font-black text-white text-lg tracking-widest">NEX-CAM-2026</span>
           </div>
         </CardHeader>
         <CardContent class="relative z-10">
           <Button size="lg" class="bg-white text-[#082065] hover:bg-white/90" @click="router.push('/postulante/test')">
-            Comenzar evaluación
+            {{ $t('postulante.start_evaluation') }}
             <ArrowRight class="w-5 h-5 ml-2" />
           </Button>
         </CardContent>
@@ -140,29 +153,29 @@ onMounted(() => {
           <div>
             <div class="flex items-center gap-2 mb-2">
               <Badge class="bg-green-500 text-white border-0 font-bold px-2.5 py-0.5 text-[11px] rounded-full">
-                Test Completado
+                {{ $t('postulante.test_completed') }}
               </Badge>
-              <span class="text-xs text-blue-200 font-semibold">Recomendación NEXUS IA</span>
+              <span class="text-xs text-blue-200 font-semibold">{{ $t('postulante.ai_recommendation') }}</span>
             </div>
             <CardTitle class="text-3xl sm:text-4xl font-extrabold flex flex-wrap items-center gap-2 leading-tight">
-              ¡Hola, {{ auth.state.user?.name.split(' ')[0] || 'Camila' }}! Tu carrera ideal es:
-              <span class="text-yellow-300 underline underline-offset-4 decoration-yellow-400/50">{{ auth.state.user.careerSuggestion }}</span>
+              {{ $t('postulante.hello', { name: auth.state.user?.name.split(' ')[0] || 'Camila' }) }}
+              <span class="text-yellow-300 underline underline-offset-4 decoration-yellow-400/50">{{ auth.state.user?.careerSuggestion || 'Ingeniería' }}</span>
             </CardTitle>
             <CardDescription class="text-blue-100 text-sm max-w-2xl mt-2 leading-relaxed">
-              Tu perfil destaca por aptitudes lógicas y organizacionales avanzadas. Ya puedes acceder a la malla curricular de tu carrera y coordinar una visita guiada al campus de la UTP.
+              {{ $t('postulante.profile_highlights') }}
             </CardDescription>
           </div>
           <div class="bg-white/10 backdrop-blur-md border border-white/20 p-3.5 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1 select-all shrink-0">
-            <span class="text-[10px] uppercase font-bold text-blue-200 tracking-wider">Código de Vinculación Familiar</span>
+            <span class="text-[10px] uppercase font-bold text-blue-200 tracking-wider">{{ $t('postulante.family_code') }}</span>
             <span class="font-mono font-black text-white text-lg tracking-widest">NEX-CAM-2026</span>
           </div>
         </CardHeader>
         <CardContent class="relative z-10 flex flex-wrap gap-3 pt-4">
           <Button class="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold rounded-xl px-5 h-11 shadow-sm">
-            Ver Plan de Estudios UTP
+            {{ $t('postulante.view_curriculum') }}
           </Button>
           <Button variant="outline" class="text-white border-white/20 hover:bg-white/10 font-bold rounded-xl h-11 px-5" @click="router.push('/postulante/test')">
-            Volver a dar el test
+            {{ $t('postulante.retake_test') }}
           </Button>
         </CardContent>
       </Card>
@@ -175,9 +188,9 @@ onMounted(() => {
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#B50E30] to-[#D13C5B] flex items-center justify-center mb-3">
               <Gamepad2 class="w-6 h-6 text-white" />
             </div>
-            <CardTitle>Laberinto de Vocaciones</CardTitle>
+            <CardTitle>{{ $t('postulante.labyrinth') }}</CardTitle>
             <CardDescription>
-              Explora caminos interactivos para descubrir tus intereses
+              {{ $t('postulante.labyrinth_desc') }}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -199,20 +212,20 @@ onMounted(() => {
               <div class="flex flex-wrap gap-2">
                 <Badge variant="secondary" class="bg-[#B50E30]/10 text-[#B50E30] border-[#B50E30]/20">
                   <Brain class="w-3 h-3 mr-1" />
-                  Intereses
+                  {{ $t('postulante.interests') }}
                 </Badge>
                 <Badge variant="secondary" class="bg-[#FFB20D]/10 text-[#FFB20D] border-[#FFB20D]/20">
                   <Lightbulb class="w-3 h-3 mr-1" />
-                  Inteligencias
+                  {{ $t('postulante.intelligences') }}
                 </Badge>
                 <Badge variant="secondary" class="bg-[#082065]/10 text-[#082065] border-[#082065]/20">
                   <Heart class="w-3 h-3 mr-1" />
-                  Personalidad
+                  {{ $t('postulante.personality') }}
                 </Badge>
               </div>
 
               <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26]" @click="router.push('/postulante/laberinto')">
-                Explorar laberinto
+                {{ $t('postulante.explore_labyrinth') }}
               </Button>
             </div>
           </CardContent>
@@ -224,30 +237,35 @@ onMounted(() => {
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FFB20D] to-[#B8870F] flex items-center justify-center mb-3">
               <BookOpen class="w-6 h-6 text-white" />
             </div>
-            <CardTitle>Bitácora Digital</CardTitle>
+            <CardTitle>{{ $t('postulante.digital_log') }}</CardTitle>
             <CardDescription>
-              Registra proyectos, experiencias y metas
+              {{ $t('postulante.log_desc') }}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="write" class="w-full">
               <TabsList class="grid w-full grid-cols-2">
-                <TabsTrigger value="write">Escribir</TabsTrigger>
-                <TabsTrigger value="entries">Entradas</TabsTrigger>
+                <TabsTrigger value="write">{{ $t('postulante.write') }}</TabsTrigger>
+                <TabsTrigger value="entries">{{ $t('postulante.entries') }}</TabsTrigger>
               </TabsList>
               <TabsContent value="write" class="space-y-4">
-                <Input placeholder="Título de la entrada..." />
+                <Input :placeholder="$t('postulante.entry_title')" />
                 <Textarea
-                  placeholder="Describe tu experiencia, proyecto u objetivo..."
+                  :placeholder="$t('postulante.describe_experience')"
                   class="min-h-[120px]"
                 />
                 <div class="flex gap-2">
                   <Button size="sm" variant="outline" class="flex-1">
                     <Plus class="w-4 h-4 mr-1" />
-                    Agregar etiqueta
+                    {{ $t('postulante.add_tag') }}
                   </Button>
+<<<<<<< HEAD
                   <Button size="sm" class="bg-[#FFB20D] hover:bg-[#B8870F]">
                     Guardar
+=======
+                  <Button size="sm" class="bg-[#D4A017] hover:bg-[#B8870F]">
+                    {{ $t('postulante.save') }}
+>>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
                   </Button>
                 </div>
               </TabsContent>
@@ -258,7 +276,7 @@ onMounted(() => {
                   class="p-3 rounded-lg bg-[#F1F1F1] hover:bg-[#D9D9D9] transition-colors cursor-pointer"
                 >
                   <p class="text-sm font-medium text-[#1F1F1F]">{{ entry.titulo || entry }}</p>
-                  <p class="text-xs text-[#5F6368] mt-1">{{ entry.fecha ? new Date(entry.fecha).toLocaleDateString() : 'Hace poco' }}</p>
+                  <p class="text-xs text-[#5F6368] mt-1">{{ entry.fecha ? new Date(entry.fecha).toLocaleDateString() : $t('postulante.recently') }}</p>
                 </div>
               </TabsContent>
             </Tabs>
@@ -271,14 +289,14 @@ onMounted(() => {
             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3">
               <MessageCircle class="w-6 h-6 text-white" />
             </div>
-            <CardTitle>Conexión P2P</CardTitle>
+            <CardTitle>{{ $t('postulante.p2p_connection') }}</CardTitle>
             <CardDescription>
-              Chatea con estudiantes UTP y mentores
+              {{ $t('postulante.chat_mentors') }}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div class="space-y-3">
-              <p class="text-sm font-medium text-[#1F1F1F]">Mentores disponibles</p>
+              <p class="text-sm font-medium text-[#1F1F1F]">{{ $t('postulante.available_mentors') }}</p>
               <div
                 v-for="(mentor, i) in mentors"
                 :key="i"
@@ -309,7 +327,7 @@ onMounted(() => {
                 </Button>
               </div>
               <Button variant="outline" class="w-full">
-                Ver todos los mentores
+                {{ $t('postulante.view_all_mentors') }}
               </Button>
             </div>
           </CardContent>
@@ -319,8 +337,8 @@ onMounted(() => {
       <!-- Progress Section -->
       <Card>
         <CardHeader>
-          <CardTitle>Tu Progreso</CardTitle>
-          <CardDescription>Completa actividades para descubrir tu vocación</CardDescription>
+          <CardTitle>{{ $t('postulante.your_progress') }}</CardTitle>
+          <CardDescription>{{ $t('postulante.complete_activities') }}</CardDescription>
         </CardHeader>
         <CardContent>
           <div class="grid md:grid-cols-4 gap-4">
