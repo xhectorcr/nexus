@@ -18,6 +18,8 @@ import {
   Mail,
   UserCheck,
   UserPlus,
+  Eye,
+  EyeOff,
 } from "lucide-vue-next";
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -46,7 +48,8 @@ const email = ref("");
 const password = ref("");
 const fullName = ref("");
 const confirmPassword = ref("");
-const studentPin = ref("");
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 const error = ref("");
 const isLoading = ref(false);
@@ -55,16 +58,8 @@ const isLoading = ref(false);
 const updateDefaultCredentials = (
   role: "estudiante" | "familia" | "postulante",
 ) => {
-  if (role === "estudiante") {
-    email.value = "ana@nexus.com";
-    password.value = "123456";
-  } else if (role === "familia") {
-    email.value = "roberto@nexus.com";
-    password.value = "123456";
-  } else if (role === "postulante") {
-    email.value = "carlos@nexus.com";
-    password.value = "123456";
-  }
+  email.value = "";
+  password.value = "";
 };
 
 updateDefaultCredentials(initialRole);
@@ -81,7 +76,8 @@ const toggleMode = () => {
   error.value = "";
   fullName.value = "";
   confirmPassword.value = "";
-  studentPin.value = "";
+  showPassword.value = false;
+  showConfirmPassword.value = false;
   updateDefaultCredentials(activeRole.value);
 };
 
@@ -301,11 +297,19 @@ const themeColors = computed(() => {
                 />
                 <Input
                   id="password"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
                   v-model="password"
                   placeholder="••••••••"
-                  class="pl-10 border-[#D9D9D9] focus:ring-2 focus:ring-amber-500"
+                  class="pl-10 pr-10 border-[#D9D9D9] focus:ring-2 focus:ring-amber-500"
                 />
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="absolute text-gray-400 -translate-y-1/2 right-3 top-1/2 hover:text-gray-600"
+                >
+                  <Eye v-if="!showPassword" class="w-4 h-4" />
+                  <EyeOff v-else class="w-4 h-4" />
+                </button>
               </div>
             </div>
 
@@ -385,11 +389,19 @@ const themeColors = computed(() => {
                 />
                 <Input
                   id="regPassword"
-                  type="password"
+                  :type="showPassword ? 'text' : 'password'"
                   v-model="password"
                   placeholder="Mínimo 6 caracteres"
-                  class="pl-10 border-[#D9D9D9] focus:ring-2 focus:ring-amber-500"
+                  class="pl-10 pr-10 border-[#D9D9D9] focus:ring-2 focus:ring-amber-500"
                 />
+                <button
+                  type="button"
+                  @click="showPassword = !showPassword"
+                  class="absolute text-gray-400 -translate-y-1/2 right-3 top-1/2 hover:text-gray-600"
+                >
+                  <Eye v-if="!showPassword" class="w-4 h-4" />
+                  <EyeOff v-else class="w-4 h-4" />
+                </button>
               </div>
             </div>
 
@@ -405,34 +417,22 @@ const themeColors = computed(() => {
                 />
                 <Input
                   id="confirmPassword"
-                  type="password"
+                  :type="showConfirmPassword ? 'text' : 'password'"
                   v-model="confirmPassword"
                   placeholder="Repetir contraseña"
-                  class="pl-10 border-[#D9D9D9] focus:ring-2 focus:ring-amber-500"
+                  class="pl-10 pr-10 border-[#D9D9D9] focus:ring-2 focus:ring-amber-500"
                 />
+                <button
+                  type="button"
+                  @click="showConfirmPassword = !showConfirmPassword"
+                  class="absolute text-gray-400 -translate-y-1/2 right-3 top-1/2 hover:text-gray-600"
+                >
+                  <Eye v-if="!showConfirmPassword" class="w-4 h-4" />
+                  <EyeOff v-else class="w-4 h-4" />
+                </button>
               </div>
             </div>
 
-            <!-- PIN del Alumno (Sólo Familia) -->
-            <div v-if="activeRole === 'familia'" class="space-y-1.5">
-              <Label
-                for="studentPin"
-                class="text-sm font-semibold text-[#1F1F1F]"
-                >{{ $t('login.student_pin') }}</Label
-              >
-              <div class="relative">
-                <KeyRound
-                  class="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2"
-                />
-                <Input
-                  id="studentPin"
-                  type="text"
-                  v-model="studentPin"
-                  placeholder="Ej. NEX-ALE-2026"
-                  class="pl-10 border-[#D9D9D9] focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
-            </div>
 
             <!-- Error Alert -->
             <div
@@ -454,7 +454,7 @@ const themeColors = computed(() => {
                 class="border-2 border-white border-t-transparent animate-spin rounded-full w-4.5 h-4.5"
               ></span>
               <span v-else class="flex items-center gap-2">
-                {{ $t('login.create_account_btn') }}
+                {{ $t('login.create_account') }}
                 <UserPlus class="w-4 h-4 ml-1" />
               </span>
             </Button>
