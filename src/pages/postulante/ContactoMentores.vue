@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Home, Brain } from "lucide-vue-next";
+import { Users, Home, Brain, Gamepad2, BookOpen, MessageCircle } from "lucide-vue-next";
 import { computed, markRaw } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -9,8 +9,31 @@ const { t } = useI18n();
 
 // Simple sidebar for placeholder
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: t('nav.home') || 'Inicio', href: "/postulante" },
-  { icon: markRaw(Brain), label: t('nav.vocational_tests') || 'Test Vocacional', href: "/postulante/test" },
+  {
+    icon: markRaw(Home),
+    label: t("nav.home") || "Inicio",
+    href: "/postulante",
+  },
+  {
+    icon: markRaw(Brain),
+    label: t("nav.vocational_tests") || "Tests",
+    href: "/postulante/test",
+  },
+  {
+    icon: markRaw(Gamepad2),
+    label: t("postulante.labyrinth") || "Laberinto",
+    href: "/postulante/laberinto",
+  },
+  {
+    icon: markRaw(BookOpen),
+    label: t("postulante.digital_log") || "Bitácora",
+    href: "/postulante/bitacora",
+  },
+  {
+    icon: markRaw(MessageCircle),
+    label: t("postulante.p2p_connection") || "Conexión P2P",
+    href: "/postulante/p2p",
+  },
 ]);
 </script>
 
