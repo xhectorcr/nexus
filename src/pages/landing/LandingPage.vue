@@ -1,17 +1,47 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { GraduationCap, Users, Sparkles, ArrowRight } from 'lucide-vue-next'
 import LanguageSelector from '@/components/LanguageSelector.vue'
+import ThreeBook from '@/components/ThreeBook.vue'
 
 const router = useRouter()
+
+// Scroll tracking for Scrollytelling
+const scrollProgress = ref(0)
+
+const onScroll = () => {
+  const maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1)
+  scrollProgress.value = window.scrollY / maxScroll
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+})
+
+const heroOpacity = computed(() => {
+  if (scrollProgress.value < 0.2) return 1
+  if (scrollProgress.value > 0.35) return 0
+  return 1 - ((scrollProgress.value - 0.2) / 0.15)
+})
+
+const modulesOpacity = computed(() => {
+  if (scrollProgress.value < 0.75) return 0
+  if (scrollProgress.value > 0.9) return 1
+  return (scrollProgress.value - 0.75) / 0.15
+})
+
+const modulesPointerEvents = computed(() => scrollProgress.value > 0.8 ? 'auto' : 'none')
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-[#FAF7F7] via-white to-[#F1F1F1]">
+  <div class="h-[400vh] relative">
+    <ThreeBook />
     <!-- Header -->
-    <header class="border-b border-[#D9D9D9] bg-white/80 backdrop-blur-md sticky top-0 z-50">
+    <header class="fixed inset-x-0 border-b border-[#D9D9D9] bg-white/80 backdrop-blur-md top-0 z-50 transition-opacity duration-500" :style="{ opacity: Math.max(0.7, heroOpacity) }">
       <div class="container flex items-center justify-between px-6 py-4 mx-auto">
         <div class="flex items-center gap-2">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#B50E30] to-[#8F0B26] flex items-center justify-center">
@@ -28,43 +58,50 @@ const router = useRouter()
       </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="container px-6 py-20 mx-auto">
-      <div class="max-w-4xl mx-auto text-center">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#B50E30]/10 border border-[#B50E30]/20 mb-6">
-          <Sparkles class="w-4 h-4 text-[#B50E30]" />
-          <span class="text-sm text-[#B50E30] font-medium">{{ $t('landing.powered') }}</span>
+    <!-- Fixed Overlay for Scroll Narrative -->
+    <div class="fixed inset-0 z-10 pointer-events-none flex flex-col justify-center pt-20">
+      
+      <!-- Hero Section -->
+      <section class="container px-6 mx-auto absolute inset-0 flex flex-col justify-center" 
+               :style="{ opacity: heroOpacity, pointerEvents: heroOpacity > 0.5 ? 'auto' : 'none', transition: 'opacity 0.1s' }">
+        <div class="max-w-4xl mx-auto text-center transform -translate-y-10 md:-translate-y-20 lg:translate-x-[-15%] xl:translate-x-[-20%]">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#B50E30]/10 border border-[#B50E30]/20 mb-6">
+            <Sparkles class="w-4 h-4 text-[#B50E30]" />
+            <span class="text-sm text-[#B50E30] font-medium">{{ $t('landing.powered') }}</span>
+          </div>
+          <h1 class="text-5xl md:text-6xl font-bold text-[#1F1F1F] mb-6 leading-tight">
+            {{ $t('landing.hero_title_1') }}<br />
+            <span class="bg-gradient-to-r from-[#B50E30] to-[#D13C5B] bg-clip-text text-transparent">
+              {{ $t('landing.hero_title_2') }}
+            </span>
+          </h1>
+          <p class="text-xl text-[#5F6368] mb-12 max-w-2xl mx-auto">
+            {{ $t('landing.hero_desc') }}
+          </p>
+          <div class="flex flex-col justify-center gap-4 sm:flex-row">
+            <Button size="lg" class="bg-[#B50E30] hover:bg-[#8F0B26] text-white" @click="router.push('/register')">
+              {{ $t('landing.start_now') }}
+              <ArrowRight class="w-5 h-5 ml-2" />
+            </Button>
+            <Button size="lg" variant="outline" @click="router.push('/login')">
+              {{ $t('landing.have_account') }}
+            </Button>
+          </div>
         </div>
-        <h1 class="text-5xl md:text-6xl font-bold text-[#1F1F1F] mb-6 leading-tight">
-          {{ $t('landing.hero_title_1') }}<br />
-          <span class="bg-gradient-to-r from-[#B50E30] to-[#D13C5B] bg-clip-text text-transparent">
-            {{ $t('landing.hero_title_2') }}
-          </span>
-        </h1>
-        <p class="text-xl text-[#5F6368] mb-12 max-w-2xl mx-auto">
-          {{ $t('landing.hero_desc') }}
-        </p>
-        <div class="flex flex-col justify-center gap-4 sm:flex-row">
-          <Button size="lg" class="bg-[#B50E30] hover:bg-[#8F0B26] text-white" @click="router.push('/register')">
-            {{ $t('landing.start_now') }}
-            <ArrowRight class="w-5 h-5 ml-2" />
-          </Button>
-          <Button size="lg" variant="outline" @click="router.push('/login')">
-            {{ $t('landing.have_account') }}
-          </Button>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Modules Section -->
-    <section class="container px-6 py-20 mx-auto">
+      <!-- Modules Section (Hidden initially, appears over the open book) -->
+      <section class="container px-6 mx-auto absolute inset-0 flex flex-col justify-center items-center"
+               :style="{ opacity: modulesOpacity, pointerEvents: modulesPointerEvents, transition: 'opacity 0.1s' }">
       <div class="mb-12 text-center">
-        <h2 class="text-3xl font-bold text-[#1F1F1F] mb-4">
-          {{ $t('landing.modules_title') }}
-        </h2>
-        <p class="text-lg text-[#5F6368]">
-          {{ $t('landing.modules_subtitle') }}
-        </p>
+        <div class="inline-block bg-white/95 backdrop-blur-md py-6 px-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/20">
+          <h2 class="text-3xl font-bold text-[#1F1F1F] mb-3">
+            {{ $t('landing.modules_title') }}
+          </h2>
+          <p class="text-lg text-[#5F6368]">
+            {{ $t('landing.modules_subtitle') }}
+          </p>
+        </div>
       </div>
 
       <div class="grid max-w-6xl gap-6 mx-auto md:grid-cols-3">
@@ -174,19 +211,20 @@ const router = useRouter()
         </router-link>
       </div>
     </section>
+    </div>
 
-    <!-- Footer -->
-    <footer class="border-t border-[#D9D9D9] mt-20">
-      <div class="container px-6 py-8 mx-auto">
+    <!-- Footer (Fixed at the bottom but fades in) -->
+    <footer class="fixed bottom-0 inset-x-0 pointer-events-none z-50 transition-opacity duration-300" :style="{ opacity: modulesOpacity }">
+      <div class="container px-6 py-4 mx-auto border-t border-[#D9D9D9] bg-white/50 backdrop-blur-sm pointer-events-auto rounded-t-2xl">
         <div class="flex flex-col items-center justify-between md:flex-row">
-          <div class="flex items-center gap-2 mb-4 md:mb-0">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#B50E30] to-[#8F0B26] flex items-center justify-center">
-              <GraduationCap class="w-5 h-5 text-white" />
+          <div class="flex items-center gap-2 mb-2 md:mb-0">
+            <div class="w-6 h-6 rounded bg-gradient-to-br from-[#B50E30] to-[#8F0B26] flex items-center justify-center">
+              <GraduationCap class="w-4 h-4 text-white" />
             </div>
-            <span class="font-semibold text-[#1F1F1F]">NEXUS</span>
-            <span class="text-sm text-[#5F6368]">by UTP</span>
+            <span class="font-semibold text-[#1F1F1F] text-sm">NEXUS</span>
+            <span class="text-xs text-[#5F6368]">by UTP</span>
           </div>
-          <p class="text-sm text-[#5F6368]">
+          <p class="text-xs text-[#5F6368]">
             {{ $t('landing.footer') }}
           </p>
         </div>
