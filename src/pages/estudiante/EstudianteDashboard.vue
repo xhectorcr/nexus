@@ -183,8 +183,7 @@ onMounted(() => {
             {{ $t('dashboard.view_schedule') }}
           </Button>
           <Button
-            variant="outline"
-            class="text-white border-white/30 hover:bg-white/15 hover:border-white/50 backdrop-blur-md font-semibold px-6 transition-all duration-300 hover:scale-105"
+            class="bg-white text-[#B50E30] hover:bg-red-50 hover:scale-105 transition-all duration-300 font-bold px-6 shadow-xl shadow-black/10"
             @click="$router.push('/estudiante/ruta')"
           >
             {{ $t('dashboard.go_to_path') }}
