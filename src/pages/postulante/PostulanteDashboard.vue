@@ -46,9 +46,9 @@ const copied = ref(false);
 const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
   { icon: markRaw(Brain), label: t('nav.vocational_tests'), href: "/postulante/test" },
-  { icon: markRaw(BookOpen), label: t('postulante.digital_log') || 'Bitácora Digital', href: "#bitacora" },
-  { icon: markRaw(MessageSquare), label: t('postulante.chat_students') || 'Chatear con estudiantes', href: "/postulante/chat-estudiantes" },
-  { icon: markRaw(Users), label: t('postulante.contact_mentors') || 'Contactar con mentores', href: "/postulante/contacto-mentores" },
+  { icon: markRaw(Gamepad2), label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
+  { icon: markRaw(BookOpen), label: t('postulante.digital_log'), href: "/postulante/bitacora" },
+  { icon: markRaw(MessageCircle), label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
 ])
 
 const mentors = ref<{ name: string; career: string; online: boolean }[]>([]);
@@ -353,7 +353,7 @@ onMounted(() => {
       </Card>
 
       <!-- Main Features Grid -->
-      <div class="grid gap-6">
+      <div class="grid gap-6 md:grid-cols-2">
         <!-- Minijuego: Laberinto de Vocaciones -->
         <Card class="transition-shadow hover:shadow-lg">
           <CardHeader>
@@ -492,21 +492,64 @@ onMounted(() => {
                   :key="i"
                   class="p-4 rounded-xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all group relative"
                 >
-                  <div class="absolute top-4 right-4">
-                    <Badge variant="secondary" class="bg-blue-50 text-blue-700 hover:bg-blue-100 uppercase text-[10px] font-bold tracking-wider">
-                      {{ entry.tipoEntrada || 'ENTRADA' }}
-                    </Badge>
-                  </div>
-                  <h4 class="text-base font-bold text-[#1F1F1F] pr-20 mb-1">
-                    {{ entry.titulo || 'Entrada sin título' }}
-                  </h4>
-                  <p class="text-sm text-gray-600 mb-3 whitespace-pre-wrap leading-relaxed">
-                    {{ entry.descripcion }}
+                  <p class="text-sm font-medium text-[#1F1F1F]">
+                    {{ entry.titulo || entry }}
                   </p>
-                  <div class="flex items-center text-xs text-gray-400 font-medium">
-                    <Circle class="w-3 h-3 text-[#082065] mr-1.5 fill-[#082065]" />
-                    {{ entry.fecha ? new Date(entry.fecha).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Recientemente' }}
-                  </div>
+                  <p class="text-xs text-[#5F6368] mt-1">
+                    {{
+                      entry.fecha
+                        ? new Date(entry.fecha).toLocaleDateString()
+                        : $t("postulante.recently")
+                    }}
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        <!-- Conexión P2P -->
+        <Card class="transition-shadow hover:shadow-lg md:col-span-2">
+          <CardHeader>
+            <div
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3"
+            >
+              <MessageCircle class="w-6 h-6 text-white" />
+            </div>
+            <CardTitle>{{ $t("postulante.p2p_connection") }}</CardTitle>
+            <CardDescription>
+              {{ $t("postulante.chat_mentors") }}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div class="space-y-3">
+              <p class="text-sm font-medium text-[#1F1F1F]">
+                {{ $t("postulante.available_mentors") }}
+              </p>
+              <div
+                v-for="(mentor, i) in mentors"
+                :key="i"
+                class="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F1F1F1] transition-colors cursor-pointer"
+              >
+                <div class="relative">
+                  <Avatar class="w-10 h-10">
+                    <AvatarImage src="" />
+                    <AvatarFallback class="bg-[#082065] text-white">
+                      {{ mentor.name[0] }}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Circle
+                    v-if="mentor.online"
+                    class="absolute bottom-0 right-0 w-3 h-3 fill-[#2E7D32] text-[#2E7D32] border-2 border-white rounded-full"
+                  />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-[#1F1F1F] truncate">
+                    {{ mentor.name }}
+                  </p>
+                  <p class="text-xs text-[#5F6368] truncate">
+                    {{ mentor.career }}
+                  </p>
                 </div>
               </div>
             </div>
