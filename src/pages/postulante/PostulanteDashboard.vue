@@ -503,8 +503,9 @@ onMounted(() => {
                     }}
                   </p>
                 </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
+          </div>
           </CardContent>
         </Card>
 
@@ -553,8 +554,7 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-          </div>
-        </CardContent>
+          </CardContent>
       </Card>
 
       <!-- Progress Section -->
