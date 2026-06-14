@@ -181,16 +181,22 @@ const applicantProgress = ref(100);
 
 const fetchChildData = async () => {
   try {
-    const childId = 1;
+    // 1. Obtener el progreso real
+    const progresoRes = await api.get('/api/familiar/hijo-progreso');
+    if (progresoRes.data?.success) {
+      applicantProgress.value = progresoRes.data.data.progresoGeneral || 0;
+    }
+
+    // 2. Obtener los detalles del postulante (mantenemos esto para los hitos)
+    const childId = 1; // Podría venir dinámicamente según el usuario
     const profileRes = await api.get(`/api/postulantes/${childId}`);
-    const profile = profileRes.data.data;
+    const profile = profileRes.data?.data;
 
     if (profile) {
       applicantMilestones.value[0].completed = profile.cuestionarioCompletado;
-      applicantProgress.value = profile.cuestionarioCompletado ? 100 : 20;
     }
   } catch (error) {
-    console.warn("Error fetching child data (API may not be running):", error);
+    console.warn("Error fetching child data:", error);
   }
 };
 
@@ -691,9 +697,7 @@ const sidebarItems = computed(() => [
             </Card>
           </div>
 
-          <!-- RIGHT COLUMN: FAQS & RECURSOS -->
           <div class="space-y-6">
-            <!-- TARJETA: FAQS -->
             <Card class="bg-white border-gray-200 shadow-sm rounded-2xl">
               <CardHeader class="p-5 border-b border-gray-100">
                 <CardTitle

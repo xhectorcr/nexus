@@ -492,7 +492,7 @@ const sidebarItems = computed(() => [
                   :class="vistaFacil ? 'text-base' : 'text-sm'"
                 >
                   {{
-                    $t("familia.progreso.studying_desc") ||
+                    $t("familia.progreso.studying_desc", { count: progresoHijo?.modulos?.length || 0 }) ||
                     "Detalle de los módulos y cursos de Nexus."
                   }}
                 </CardDescription>

@@ -40,7 +40,7 @@ const auth = useAuth();
 
 const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
-  { icon: markRaw(Brain), label: "Assessment IA", href: "/postulante/test" },
+  { icon: markRaw(Brain), label: "Test Vocacional", href: "/postulante/test" },
   {
     icon: markRaw(Gamepad2),
     label: "Laberinto",
@@ -487,33 +487,34 @@ const saveAndRedirect = () => {
       <!-- STEP 0: WELCOME & PDF UPLOAD -->
       <Card
         v-if="currentStep === 0"
-        class="relative w-full p-4 overflow-hidden border-0 shadow-2xl sm:p-8 bg-white/95 rounded-3xl"
+        class="relative w-full p-4 overflow-hidden border-0 shadow-[0_0_50px_-12px_rgba(59,130,246,0.25)] sm:p-10 bg-white/95 rounded-3xl"
       >
-        <div
-          class="absolute top-0 right-0 w-64 h-64 -mt-32 -mr-32 bg-blue-600 rounded-full opacity-10 blur-3xl"
-        />
+        <!-- Background animated blobs -->
+        <div class="absolute top-0 right-0 w-96 h-96 -mt-32 -mr-32 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-[pulse_7s_infinite]" />
+        <div class="absolute bottom-0 left-0 w-96 h-96 -mb-32 -ml-32 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-[pulse_7s_infinite_2s]" />
 
-        <CardContent class="relative z-10 pt-6 space-y-6 text-center">
+        <CardContent class="relative z-10 pt-6 space-y-8 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div
-            class="flex items-center justify-center w-24 h-24 mx-auto text-blue-600 border border-blue-100 shadow-inner bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl"
+            class="flex items-center justify-center w-28 h-28 mx-auto text-blue-600 border border-blue-100 shadow-xl bg-gradient-to-br from-blue-50 to-white rounded-[2rem] relative group"
           >
-            <Bot class="w-12 h-12 text-blue-600" />
+            <div class="absolute inset-0 border-4 border-blue-500 rounded-[2rem] opacity-20 group-hover:scale-110 group-hover:opacity-0 transition-all duration-700"></div>
+            <Bot class="w-14 h-14 text-blue-600 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12" />
           </div>
 
-          <div class="space-y-3">
+          <div class="space-y-4">
             <Badge
-              class="mb-2 font-black tracking-widest text-blue-700 uppercase bg-blue-100 border-0 hover:bg-blue-100"
+              class="mb-2 font-black tracking-widest text-blue-700 uppercase bg-blue-100 border-0 shadow-sm animate-pulse"
               >NEXUS AI Profiler</Badge
             >
             <h1
-              class="text-4xl font-black leading-tight tracking-tight sm:text-5xl text-slate-900"
+              class="text-4xl font-black leading-tight tracking-tight sm:text-6xl text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900"
             >
-              Assessment Psicométrico
+              Test Vocacional
             </h1>
-            <p class="max-w-xl mx-auto text-base font-medium text-slate-500">
+            <p class="max-w-2xl mx-auto text-lg font-medium text-slate-500 leading-relaxed">
               Evaluaremos tu comportamiento frente a escenarios reales para
               generar un perfil de talento preciso y armar tu laberinto de
-              misiones.
+              misiones impulsado por IA.
             </p>
           </div>
 

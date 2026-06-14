@@ -208,7 +208,7 @@
       "avg_score": "Calificación promedio",
       "score_value": "8.4 (Muy buena)",
       "what_studying": "¿Qué temas está estudiando mi hijo?",
-      "studying_desc": "NEXUS divide el camino en 6 temas. A continuación ves el detalle de cada uno de ellos.",
+      "studying_desc": "NEXUS divide el camino en {count} temas. A continuación ves el detalle de cada uno de ellos.",
       "real_time": "Actualizado en tiempo real",
       "color_meaning": "Significado de los colores:",
       "next_task": "Siguiente tarea de {name}:",
