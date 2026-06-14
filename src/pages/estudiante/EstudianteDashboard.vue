@@ -41,10 +41,8 @@ const studentCareer = ref<string>("");
 const fetchDashboardData = async () => {
   try {
     isLoading.value = true;
-    const response = await api.get("/api/estudiantes/dashboard/me");
-    dashboardData.value = response.data.data;
-    // Extraemos el código de vinculación directamente del dashboard
-    studentCode.value = dashboardData.value.codigoVinculacion;
+    const response = await api.get("/api/estudiantes/codigo-vinculacion/me");
+    studentCode.value = response.data.data || "Sin Código";
   } catch (error) {
     console.error("Error al cargar el dashboard del estudiante:", error);
   } finally {
