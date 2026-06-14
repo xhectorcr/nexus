@@ -185,6 +185,30 @@ export function updateCareerSuggestion(career: string) {
   }
 }
 
+export async function linkStudent(codigo: string): Promise<boolean> {
+  try {
+    await api.post("/api/familiar/vincular", { codigo });
+
+    await refreshFamiliarProfile();
+    return true;
+  } catch (error) {
+    console.error("Error al vincular estudiante:", error);
+    return false;
+  }
+}
+
+export async function unlinkStudent(): Promise<boolean> {
+  try {
+    await api.post("/api/familiar/desvincular");
+
+    await refreshFamiliarProfile();
+    return true;
+  } catch (error) {
+    console.error("Error al desvincular estudiante:", error);
+    return false;
+  }
+}
+
 export function useAuth() {
   return {
     state,
@@ -195,5 +219,7 @@ export function useAuth() {
     refreshFamiliarProfile,
     fetchFamiliarProfile,
     fetchStudentCode,
+    linkStudent,
+    unlinkStudent,
   };
 }
