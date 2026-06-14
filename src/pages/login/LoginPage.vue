@@ -126,7 +126,8 @@ const handleRegister = async () => {
   error.value = "";
 
   try {
-    await auth.login(activeRole.value, email.value, password.value);
+    // LLAMAMOS AL ENDPOINT CORRECTO DE REGISTRO
+    await auth.register(activeRole.value, email.value, password.value, fullName.value);
     isLoading.value = false;
 
     const redirectPath = `/${activeRole.value}`;

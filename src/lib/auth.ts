@@ -97,6 +97,74 @@ export async function login(
   }
 }
 
+export async function registerUser(
+  role: "estudiante" | "familia" | "postulante",
+  username: string,
+  password?: string,
+  fullName?: string
+) {
+  try {
+    let mappedRole = "POSTULANTE";
+    if (role === "estudiante") mappedRole = "ESTUDIANTE_UTP";
+    if (role === "familia") mappedRole = "FAMILIAR";
+
+    const nameParts = (fullName || "").trim().split(" ");
+    const nombre = nameParts[0] || "Usuario";
+    const apellido = nameParts.slice(1).join(" ") || "Registrado";
+
+    const response = await api.post("/auth/register", {
+      email: username,
+      password,
+      nombre,
+      apellido,
+      roles: [mappedRole]
+    });
+
+    const userData = response.data.data;
+
+    localStorage.setItem("nexus_jwt_token", userData.token);
+
+    const user: User = {
+      id: userData.id,
+      role,
+      username: userData.email,
+      name: `${userData.nombre} ${userData.apellido ?? ""}`.trim(),
+    };
+
+    if (role === "familia") {
+      try {
+        const familiar = await fetchFamiliarProfile();
+        user.vinculado = familiar.vinculado;
+        user.studentName = familiar.nombreVinculado;
+        user.linkedStudentRole =
+          familiar.tipo === "ESTUDIANTE"
+            ? "estudiante"
+            : familiar.tipo === "POSTULANTE"
+              ? "postulante"
+              : undefined;
+      } catch (e) {
+        console.warn("Familiar profile fetch failed after register");
+      }
+    }
+
+    if (role === "postulante") {
+      try {
+        const codigo = await fetchPostulanteCodigo();
+        user.codigoVinculacion = codigo;
+      } catch (e) {
+        console.warn("Postulante codigo fetch failed after register");
+      }
+    }
+
+    state.user = user;
+
+    return user;
+  } catch (error) {
+    console.error("API Register failed:", error);
+    throw error;
+  }
+}
+
 export async function loginWithGoogle(credential: string, role: string) {
   try {
     const response = await api.post("/auth/google", {
@@ -221,5 +289,6 @@ export function useAuth() {
     fetchStudentCode,
     linkStudent,
     unlinkStudent,
+    register: registerUser,
   };
 }
