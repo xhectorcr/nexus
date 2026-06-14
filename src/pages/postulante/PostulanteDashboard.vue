@@ -44,6 +44,7 @@ const copied = ref(false);
 const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
   { icon: markRaw(Brain), label: t('nav.vocational_tests'), href: "/postulante/test" },
+  { icon: markRaw(Gamepad2), label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
 ])
 
 const mentors = ref<{ name: string; career: string; online: boolean }[]>([]);
