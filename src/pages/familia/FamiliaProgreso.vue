@@ -346,8 +346,8 @@ const sidebarItems = computed(() => [
         style="
           background: linear-gradient(
             135deg,
-            #ffd54f 0%,
-            #ffb20d 50%,
+            #ffb20d 0%,
+            #d4a017 80%,
             #b8870f 100%
           );
         "
