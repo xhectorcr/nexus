@@ -33,7 +33,7 @@ import { useI18n } from 'vue-i18n';
 const auth = useAuth();
 const { t } = useI18n();
 const studentCode = ref<string>("");
-const studentCareer = ref<string>("Ingeniería - I Ciclo");
+const studentCareer = ref<string>("");
 const copied = ref(false);
 
 const loadStudentCode = async () => {
@@ -71,58 +71,56 @@ const sidebarItems = computed(() => [
   },
 ]);
 
+const statsValues = ref({
+  promedioAcumulado: "0.0",
+  creditosAprobados: "0",
+  cursosActuales: "0",
+  asistenciaGlobal: "0%"
+});
+
 const stats = computed(() => [
   {
     label: t('dashboard.stats_avg'),
-    value: "16.5",
+    value: statsValues.value.promedioAcumulado,
     icon: markRaw(Star),
     color: "#B50E30",
   },
   {
     label: t('dashboard.stats_credits'),
-    value: "45",
+    value: statsValues.value.creditosAprobados,
     icon: markRaw(Award),
     color: "#082065",
   },
   {
     label: t('dashboard.stats_courses'),
-    value: "6",
+    value: statsValues.value.cursosActuales,
     icon: markRaw(BookOpen),
     color: "#B50E30",
   },
   {
     label: t('dashboard.stats_attendance'),
-    value: "92%",
+    value: statsValues.value.asistenciaGlobal,
     icon: markRaw(TrendingUp),
     color: "#2E7D32",
   },
 ]);
 
-const upcomingTasks = ref([
-  {
-    title: "Entrega de Proyecto Final",
-    course: "Ingeniería de Software",
-    date: "Mañana, 23:59",
-    type: "Tarea",
-    urgent: true,
-  },
-  {
-    title: "Práctica Calificada 3",
-    course: "Cálculo II",
-    date: "15 Jun, 10:00",
-    type: "Examen",
-    urgent: false,
-  },
-  {
-    title: "Foro de Discusión",
-    course: "Ética Profesional",
-    date: "16 Jun, 23:59",
-    type: "Foro",
-    urgent: false,
-  },
-]);
+const upcomingTasks = ref<any[]>([]);
 
 const conexionesMentoria = ref<any[]>([]);
+
+const activeJourney = ref<any>(null);
+
+const computedXP = computed(() => {
+  if (!activeJourney.value) return 0;
+  return activeJourney.value.nodos
+    .filter((n: any) => n.estado === 'COMPLETADO')
+    .reduce((sum: number, n: any) => sum + (n.xp || 0), 0);
+});
+
+const computedLevel = computed(() => {
+  return Math.floor(computedXP.value / 100) + 1;
+});
 
 const fetchEstudianteData = async () => {
   const userId = auth.state.user?.id;
@@ -138,6 +136,12 @@ const fetchEstudianteData = async () => {
         const roman = cicloRoman[cicloNumber - 1] || perfil.ciclo;
         studentCareer.value = `${perfil.carrera.nombre} - ${roman} Ciclo`;
       }
+      
+      // Update stats: si no existen se pone en 0 para usuarios nuevos
+      statsValues.value.promedioAcumulado = (perfil.promedioAcumulado || 0.0).toString();
+      statsValues.value.creditosAprobados = (perfil.creditosAprobados || 0).toString();
+      statsValues.value.cursosActuales = (perfil.cursosActuales || 0).toString();
+      statsValues.value.asistenciaGlobal = (perfil.asistenciaGlobal || 0).toString() + "%";
 
       // Fetch conexiones using the real profile ID
       try {
@@ -159,6 +163,28 @@ const fetchEstudianteData = async () => {
     }
   } catch (e) {
     console.error("Error fetching student profile data", e);
+  }
+
+  try {
+    const journeyRes = await api.get(`/api/journeys/usuario/${userId}/activo`);
+    if (journeyRes.data?.data) {
+      activeJourney.value = journeyRes.data.data;
+      
+      // Poblar las próximas entregas con los nodos pendientes
+      const nodosPendientes = activeJourney.value.nodos.filter((n: any) => n.estado === 'PENDIENTE');
+      
+      nodosPendientes.slice(0, 3).forEach((nodo: any, index: number) => {
+        upcomingTasks.value.push({
+          title: nodo.titulo,
+          course: "Ruta Inteligente",
+          date: index === 0 ? "Recomendado para hoy" : "Sin fecha límite",
+          type: nodo.tipo,
+          urgent: index === 0, // El primero siempre lo marcamos urgente para darle foco
+        });
+      });
+    }
+  } catch(e) {
+    console.warn("No active journey found");
   }
 };
 
@@ -206,8 +232,10 @@ onMounted(async () => {
                   alt="Avatar"
                 />
               </div>
-              <div class="absolute -bottom-2 -right-2 bg-[#B50E30] text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg z-20 border-2 border-[#8F0B26]">
-                NIVEL 3
+              <div
+                class="absolute -bottom-2 -right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[10px] font-black px-2 py-0.5 rounded-lg border-2 border-white shadow-lg"
+              >
+                NIVEL {{ computedLevel }}
               </div>
             </div>
 
@@ -218,7 +246,7 @@ onMounted(async () => {
               <CardTitle class="text-3xl font-extrabold tracking-tight md:text-4xl"
                 >{{ $t('dashboard.welcome', { name: auth.state.user?.name ? auth.state.user.name.split(" ")[0] : "Estudiante" }) }}</CardTitle
               >
-              <div class="flex items-center gap-2 mt-3 mb-1 px-3 py-1.5 rounded-lg bg-black/20 w-fit text-white shadow-inner border border-white/10">
+              <div v-if="studentCareer && studentCareer !== 'Perfil Incompleto'" class="flex items-center gap-2 mt-3 mb-1 px-3 py-1.5 rounded-lg bg-black/20 w-fit text-white shadow-inner border border-white/10">
                 <BookOpen class="w-4 h-4 text-red-200" />
                 <span class="text-sm font-semibold tracking-wide text-red-100">{{ studentCareer }}</span>
               </div>
@@ -388,31 +416,40 @@ onMounted(async () => {
                 class="absolute top-0 right-0 w-32 h-32 bg-[#B50E30]/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none transition-transform group-hover:scale-150 duration-700"
               ></div>
 
-              <div class="relative z-10 flex items-start justify-between mb-4">
+              <div v-if="activeJourney" class="relative z-10 flex items-start justify-between mb-4">
                 <div>
-                  <Badge class="bg-red-100 text-[#B50E30] hover:bg-red-100 border-0 mb-2 text-[10px] font-black uppercase tracking-widest">{{ $t('dashboard.in_progress') }}</Badge>
+                  <Badge class="bg-red-100 text-[#B50E30] hover:bg-red-100 border-0 mb-2 text-[10px] font-black uppercase tracking-widest">{{ activeJourney.estado === 'COMPLETADO' ? 'COMPLETADO' : $t('dashboard.in_progress') }}</Badge>
                   <h4 class="text-sm font-bold text-slate-800">
-                    {{ $t('dashboard.module1_name') }}
+                    {{ activeJourney.titulo }}
                   </h4>
                 </div>
                 <div class="px-2 py-1 bg-white border rounded-lg shadow-sm">
-                  <span class="text-sm font-black text-[#B50E30]">72%</span>
+                  <span class="text-sm font-black text-[#B50E30]">{{ activeJourney.porcentajeProgreso || 0 }}%</span>
                 </div>
               </div>
+              <div v-else class="relative z-10 flex flex-col items-center justify-center mb-4 text-center">
+                <Badge class="bg-gray-100 text-gray-500 border-0 mb-2 text-[10px] font-black uppercase tracking-widest">Sin ruta activa</Badge>
+                <h4 class="text-sm font-bold text-slate-800">
+                  Aún no tienes una ruta de aprendizaje
+                </h4>
+                <p class="text-xs text-slate-500 mt-2">Ve a la sección "Ruta de Aprendizaje" para generar tu primera ruta con IA.</p>
+              </div>
 
-              <div class="relative z-10 mb-5">
+              <div v-if="activeJourney" class="relative z-10 mb-5">
                 <div class="flex justify-between text-xs text-slate-500 font-medium mb-1.5">
                   <span>{{ $t('dashboard.module_progress') }}</span>
-                  <span>{{ $t('dashboard.nodes') }}</span>
+                  <span>{{ activeJourney.nodos.filter((n: any) => n.estado === 'COMPLETADO').length }}/{{ activeJourney.nodos.length }} {{ $t('dashboard.nodes') }}</span>
                 </div>
                 <div
                   class="h-2.5 w-full bg-slate-200/60 rounded-full overflow-hidden shadow-inner"
                 >
                   <div
-                    class="h-full bg-gradient-to-r from-[#B50E30] to-red-400 rounded-full w-[72%] shadow-[0_0_10px_rgba(181,14,48,0.5)]"
+                    class="h-full bg-gradient-to-r from-[#B50E30] to-red-400 rounded-full shadow-[0_0_10px_rgba(181,14,48,0.5)]"
+                    :style="`width: ${activeJourney.porcentajeProgreso || 0}%`"
                   ></div>
                 </div>
               </div>
+
 
               <p
                 class="text-xs text-slate-600 font-medium mb-5 relative z-10 flex items-center gap-1.5"

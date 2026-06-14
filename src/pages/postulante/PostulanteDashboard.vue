@@ -70,6 +70,7 @@ const fetchBitacora = async () => {
     const postulantId = auth.state.user?.id || 1;
     const res = await api.get(`/api/bitacoras/postulante/${postulantId}`);
     entries.value = res.data?.data || res.data || [];
+    statsValues.value.logs = entries.value.length;
   } catch (error) {
     console.error("No se pudo obtener la bitácora desde la BD", error);
   } finally {
@@ -107,11 +108,18 @@ const saveBitacoraEntry = async () => {
   }
 };
 
+const statsValues = ref({
+  labyrinth: 0,
+  logs: 0,
+  conversations: 0,
+  experience: 0
+});
+
 const stats = computed(() => [
-  { label: t('postulante.labyrinth_completed'), value: "40%", color: "#082065" },
-  { label: t('postulante.log_entries_count'), value: "0", color: "#082065" },
-  { label: t('postulante.conversations'), value: "0", color: "#082065" },
-  { label: t('postulante.experience'), value: "0 XP", color: "#082065" },
+  { label: t('postulante.labyrinth_completed'), value: `${statsValues.value.labyrinth}%`, color: "#082065" },
+  { label: t('postulante.log_entries_count'), value: statsValues.value.logs.toString(), color: "#082065" },
+  { label: t('postulante.conversations'), value: statsValues.value.conversations.toString(), color: "#082065" },
+  { label: t('postulante.experience'), value: `${statsValues.value.experience} XP`, color: "#082065" },
 ])
 
 const fetchDashboardData = async () => {
@@ -146,26 +154,22 @@ const fetchDashboardData = async () => {
           career: "Ingeniería de Sistemas",
           online: con.estado === "ACTIVA",
         }));
-        // stats.value[2].value = conexiones.length.toString()
+        // Actualizar estadísticas reales
+        statsValues.value.conversations = conexiones.length;
       } catch (e) {
         console.warn("Could not fetch connections", e);
       }
     }
 
-    // If no data, provide fallbacks
+    // Eliminamos los fallbacks para que una cuenta nueva no tenga datos falsos
     if (mentors.value.length === 0) {
-      mentors.value = [
-        { name: "Ana García", career: "Ingeniería de Sistemas", online: true },
-        { name: "Carlos Ruiz", career: "Administración", online: true },
-      ];
+      // Dejamos la lista vacía
+      mentors.value = [];
     }
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
-    // Fallbacks
-    entries.value = [
-      { titulo: "Proyecto de robótica" },
-      { titulo: "Clase de programación" },
-    ];
+    // En caso de error, aseguramos que quede vacío para no mostrar datos falsos
+    entries.value = [];
   }
 };
 

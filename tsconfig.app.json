@@ -11,6 +11,7 @@
         "./src/*"
       ]
     },
+    "ignoreDeprecations": "5.0",
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,

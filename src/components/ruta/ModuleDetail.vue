@@ -20,14 +20,24 @@ import {
   Flame,
   Loader2,
   Trophy,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-vue-next'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
 
 const props = defineProps<{
   module: any
 }>()
+
+const emit = defineEmits(['completed'])
 
 const auth = useAuth()
 
@@ -63,10 +73,23 @@ const minijuegoFinished = ref(false)
 const selectedAnswerIndex = ref<number | null>(null)
 const showAnswerExplanation = ref(false)
 
-const toggle = (id: string) => {
-  activities.value = activities.value.map(a => 
-    a.id === id ? { ...a, completed: !a.completed } : a
-  )
+const selectedActivity = ref<any>(null)
+const isActivityModalOpen = ref(false)
+
+const openActivityModal = (activity: any, isUnlocked: boolean) => {
+  if (!isUnlocked) return
+  selectedActivity.value = activity
+  isActivityModalOpen.value = true
+}
+
+const completeSelectedActivity = () => {
+  if (selectedActivity.value) {
+    activities.value = activities.value.map(a => 
+      a.id === selectedActivity.value.id ? { ...a, completed: true } : a
+    )
+  }
+  isActivityModalOpen.value = false
+  selectedActivity.value = null
 }
 
 const allActivitiesCompleted = computed(() => {
@@ -221,7 +244,7 @@ onMounted(() => {
           <p class="text-muted-foreground mb-6">Obtuviste {{ minijuegoScore }} de {{ minijuego.preguntas.length }} respuestas correctas.</p>
           <div class="flex gap-4">
             <Button variant="outline" @click="showMinijuego = false">Volver a Actividades</Button>
-            <Button class="bg-yellow-500 hover:bg-yellow-600 text-white">Reclamar Insignia</Button>
+            <Button class="bg-yellow-500 hover:bg-yellow-600 text-white" @click="emit('completed')">Continuar al siguiente módulo</Button>
           </div>
         </div>
       </Card>
@@ -241,7 +264,7 @@ onMounted(() => {
             @click="() => {
               const prevCompleted = idx === 0 || activities[idx - 1].completed
               const isUnlocked = activity.completed || prevCompleted
-              if (isUnlocked) toggle(activity.id)
+              openActivityModal(activity, isUnlocked)
             }"
             :class="`flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-150 ${
               activity.completed
@@ -333,7 +356,7 @@ onMounted(() => {
           </div>
           <div>
             <p class="text-xs text-muted-foreground">Tiempo estimado restante</p>
-            <p class="text-sm font-semibold">{{ activities.filter(a => !a.completed).reduce((sum, a) => sum + parseInt(a.duration), 0) }} minutos</p>
+            <p class="text-sm font-semibold">{{ activities.filter(a => !a.completed).reduce((sum, a) => sum + parseInt(a.duration || '0'), 0) }} minutos</p>
           </div>
         </CardContent>
       </Card>
@@ -358,5 +381,47 @@ onMounted(() => {
         </CardContent>
       </Card>
     </div>
+
+    <!-- Modal de Actividad -->
+    <Dialog :open="isActivityModalOpen" @update:open="val => isActivityModalOpen = val">
+      <DialogContent class="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <div class="flex items-center gap-2 mb-2">
+            <component
+              v-if="selectedActivity"
+              :is="activityIcons[selectedActivity.type]"
+              class="w-5 h-5"
+              :style="{ color: module.color }"
+            />
+            <span v-if="selectedActivity" class="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              {{ activityLabels[selectedActivity.type] }}
+            </span>
+          </div>
+          <DialogTitle class="text-2xl font-bold leading-tight" v-if="selectedActivity">
+            {{ selectedActivity.title }}
+          </DialogTitle>
+          <DialogDescription class="flex gap-4 items-center mt-2" v-if="selectedActivity">
+            <span class="flex items-center gap-1"><Clock class="w-4 h-4"/> {{ selectedActivity.duration }}</span>
+            <span class="flex items-center gap-1 font-semibold text-yellow-600"><Star class="w-4 h-4"/> +{{ selectedActivity.xp }} XP</span>
+          </DialogDescription>
+        </DialogHeader>
+
+        <div class="py-6 whitespace-pre-wrap text-base leading-relaxed text-gray-700 dark:text-gray-300" v-if="selectedActivity">
+          {{ selectedActivity.contenido || "No hay contenido disponible para esta actividad." }}
+        </div>
+
+        <DialogFooter class="sm:justify-between">
+          <Button variant="outline" @click="isActivityModalOpen = false">Cerrar</Button>
+          <Button :style="{ backgroundColor: module.color }" class="text-white gap-2" @click="completeSelectedActivity" v-if="selectedActivity && !selectedActivity.completed">
+            <CheckCircle2 class="w-4 h-4" />
+            Completar Actividad
+          </Button>
+          <Button variant="outline" disabled class="gap-2" v-if="selectedActivity && selectedActivity.completed">
+            <CheckCircle2 class="w-4 h-4 text-green-500" />
+            Completada
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

@@ -1,7 +1,21 @@
 <script setup lang="ts">
 import { ref, markRaw, onMounted, computed } from "vue";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -12,20 +26,19 @@ import {
   Star,
   Lock,
   CheckCircle2,
+  ChevronRight,
   Circle,
-  PlayCircle,
   Clock,
-  Zap,
-  Brain,
-  Target,
-  Heart,
-  Gamepad2,
-  ArrowLeft,
-  Award,
+  Code2,
   Flame,
-  TrendingUp,
+  Gamepad2,
   GraduationCap,
+  Info,
+  PlayCircle,
+  TrendingUp,
   Sparkles,
+  Target,
+  BookOpen,
 } from "lucide-vue-next";
 import ModuleDetail from "@/components/ruta/ModuleDetail.vue";
 import { useAuth } from "@/lib/auth";
@@ -37,12 +50,12 @@ const { t } = useI18n();
 
 const modules = ref<any[]>([]);
 
-const badges = [
-  { name: "Explorador", icon: "🧭", earned: true },
-  { name: "Constante", icon: "🔥", earned: true },
-  { name: "Pensador", icon: "🧠", earned: false },
-  { name: "Visionario", icon: "👁️", earned: false },
-];
+const badges = computed(() => [
+  { name: "Explorador", icon: "🧭", earned: computedXP.value >= 10 },
+  { name: "Constante", icon: "🔥", earned: computedXP.value >= 50 },
+  { name: "Pensador", icon: "🧠", earned: computedXP.value >= 100 },
+  { name: "Visionario", icon: "👁️", earned: computedXP.value >= 200 },
+]);
 
 const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: t("nav.home"), href: "/estudiante" },
@@ -57,7 +70,36 @@ const selectedModule = ref<any>(null);
 const totalProgress = ref(20);
 const nextNodeRef = ref<any>(null);
 const isGenerating = ref(false);
-const studentCareer = ref<string>("Ingeniería - I Ciclo");
+const studentCareer = ref<string>("");
+const hasInformeVocacional = ref(false);
+const showProfileModal = ref(false);
+
+const showNotificationModal = ref(false);
+const notificationTitle = ref("");
+const notificationMessage = ref("");
+
+const showNotification = (title: string, message: string) => {
+  notificationTitle.value = title;
+  notificationMessage.value = message;
+  showNotificationModal.value = true;
+};
+
+const computedXP = computed(() => {
+  return modules.value
+    .filter(m => m.status === 'completed')
+    .reduce((sum, m) => sum + (m.xp || 0), 0);
+});
+
+const computedLevel = computed(() => {
+  return Math.floor(computedXP.value / 100) + 1;
+});
+
+const sidebarStats = computed(() => [
+  { label: t('ruta.studied_hours'), value: '0h', icon: markRaw(Clock), color: '#082065' },
+  { label: t('ruta.completed_modules'), value: modules.value.filter(m => m.status === 'completed').length.toString(), icon: markRaw(CheckCircle2), color: '#2E7D32' },
+  { label: t('ruta.pending_activities'), value: modules.value.filter(m => m.status === 'available' || m.status === 'locked').length.toString(), icon: markRaw(Circle), color: '#F9A825' },
+  { label: t('ruta.average_score'), value: '0', icon: markRaw(Star), color: '#D4A017' },
+]);
 
 const fetchNextIntelligentNode = async () => {
   try {
@@ -108,94 +150,103 @@ const fetchNextIntelligentNode = async () => {
         });
       }
     } catch (e) {
-      console.error("No se encontro un journey activo, usando datos de prueba.")
-      totalProgress.value = 45;
-      modules.value = [
-        {
-          id: 1,
-          title: t('familia.progreso.modules.m1_name'),
-          description: t('familia.progreso.modules.m1_desc'),
-          icon: Target,
-          color: "#082065",
-          status: 'completed',
-          progress: 100,
-          xp: 100
-        },
-        {
-          id: 2,
-          title: t('familia.progreso.modules.m2_name'),
-          description: t('familia.progreso.modules.m2_desc'),
-          icon: MapIcon,
-          color: "#FFB20D",
-          status: 'available',
-          progress: 60,
-          xp: 150
-        },
-        {
-          id: 3,
-          title: t('familia.progreso.modules.m3_name'),
-          description: t('familia.progreso.modules.m3_desc'),
-          icon: Gamepad2,
-          color: "#B50E30",
-          status: 'locked',
-          progress: 0,
-          xp: 200
-        },
-        {
-          id: 4,
-          title: t('familia.progreso.modules.m4_name'),
-          description: t('familia.progreso.modules.m4_desc'),
-          icon: Target,
-          color: "#082065",
-          status: 'locked',
-          progress: 0,
-          xp: 200
-        },
-        {
-          id: 5,
-          title: t('familia.progreso.modules.m5_name'),
-          description: t('familia.progreso.modules.m5_desc'),
-          icon: Gamepad2,
-          color: "#B50E30",
-          status: 'locked',
-          progress: 0,
-          xp: 300
-        },
-        {
-          id: 6,
-          title: t('familia.progreso.modules.m6_name'),
-          description: t('familia.progreso.modules.m6_desc'),
-          icon: Star,
-          color: "#2E7D32",
-          status: 'locked',
-          progress: 0,
-          xp: 500
-        }
-      ]
+      console.warn("No se encontro un journey activo.");
+      totalProgress.value = 0;
+      modules.value = [];
     }
   } catch (error) {
     console.error("No se pudo obtener el nodo de la IA", error);
   }
 };
 
+const fetchStudentProfileData = async () => {
+  const userId = auth.state.user?.id;
+  if (!userId) return;
+
+  try {
+    const perfilRes = await api.get(`/api/estudiantes/by-usuario/${userId}`);
+    if (perfilRes.data?.data) {
+      const perfil = perfilRes.data.data;
+      if (perfil.carrera) {
+        const cicloRoman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+        const cicloNumber = parseInt(perfil.ciclo) || 1;
+        const roman = cicloRoman[cicloNumber - 1] || perfil.ciclo;
+        studentCareer.value = `${perfil.carrera.nombre} - ${roman} Ciclo`;
+      } else {
+        studentCareer.value = "Perfil Incompleto";
+      }
+    }
+  } catch (e) {
+    studentCareer.value = "Perfil Incompleto";
+  }
+
+  try {
+    const informeRes = await api.get(`/api/informes-vocacionales/by-usuario/${userId}`);
+    if (informeRes.data?.data) {
+      const inf = informeRes.data.data;
+      if (inf.intereses || inf.inteligenciasMultiples || inf.personalidad) {
+        hasInformeVocacional.value = true;
+      } else {
+        hasInformeVocacional.value = false;
+      }
+    }
+  } catch (e) {
+    hasInformeVocacional.value = false;
+  }
+};
+
 const generarNuevaRutaCompleta = async () => {
+  const limitKey = `ia_gen_${new Date().toDateString()}`;
+  const count = parseInt(localStorage.getItem(limitKey) || '0');
+  
+  if (count >= 3) {
+    showNotification("Límite alcanzado", "Has alcanzado el límite de 3 generaciones IA por día.");
+    return;
+  }
+
+  if (!studentCareer.value || studentCareer.value === 'Perfil Incompleto' || !hasInformeVocacional.value) {
+    showProfileModal.value = true;
+    return;
+  }
+
   try {
     isGenerating.value = true;
+    localStorage.setItem(limitKey, (count + 1).toString());
     const usuarioId = auth.state.user?.id;
     if (!usuarioId) return;
     const res = await api.post(
       `/api/v1/ai/ruta/generar-completa?usuarioId=${usuarioId}`,
     );
     if (res.data && res.data.success) {
-      // Reload the page or fetch new nodes
-      alert("¡Ruta completa generada exitosamente con IA!");
+      showNotification("¡Éxito!", "¡Ruta completa generada exitosamente con IA!");
       await fetchNextIntelligentNode();
+    } else {
+      showNotification("Error", "Ocurrió un error generando la ruta.");
     }
   } catch (error) {
     console.error("Error generando ruta completa", error);
-    alert("Ocurrió un error generando la ruta.");
+    showNotification("Error", "Ocurrió un error generando la ruta.");
   } finally {
     isGenerating.value = false;
+  }
+};
+
+const handleModuleCompleted = async () => {
+  if (selectedModule.value) {
+    try {
+      // Registrar completado en el backend
+      await api.patch(`/api/journeys/nodos/${selectedModule.value.id}/completar`);
+      
+      // Pasar a la vista de modulos general para ver la animación o avanzar automáticamente
+      selectedModule.value = null;
+
+      // Refrescar toda la ruta
+      await fetchNextIntelligentNode();
+    } catch (e) {
+      console.error("Error al completar módulo", e);
+      // Fallback
+      selectedModule.value = null;
+    }
   }
 };
 
@@ -220,7 +271,7 @@ const fetchEstudianteData = async () => {
 };
 
 onMounted(() => {
-  fetchEstudianteData();
+  fetchStudentProfileData();
   fetchNextIntelligentNode();
 });
 </script>
@@ -248,7 +299,7 @@ onMounted(() => {
         {{ $t("nav.learning_path") }}
       </Button>
     </div>
-    <ModuleDetail :module="selectedModule" />
+    <ModuleDetail :key="selectedModule.id" :module="selectedModule" @completed="handleModuleCompleted" />
   </DashboardLayout>
 
   <DashboardLayout
@@ -304,7 +355,7 @@ onMounted(() => {
                 <div
                   class="absolute -bottom-2 -right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-lg border-2 border-[#8F0B26] shadow-lg z-20"
                 >
-                  NIVEL 3
+                  NIVEL {{ computedLevel }}
                 </div>
               </div>
               <div class="flex-1 text-white">
@@ -316,14 +367,10 @@ onMounted(() => {
                 <h2 class="text-2xl font-black leading-tight tracking-tight">
                   {{ auth.state.user?.name || "Estudiante" }}
                 </h2>
-                <div
-                  class="flex items-center gap-1.5 mt-2 bg-white/10 w-fit px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10"
-                >
-                  <GraduationCap class="w-4 h-4 text-amber-300" />
-                  <span class="text-xs font-semibold text-amber-100"
-                    >{{ studentCareer }}</span
-                  >
-                </div>
+                <div v-if="studentCareer && studentCareer !== 'Perfil Incompleto'" class="flex items-center gap-2 px-3 py-1.5 mt-2 bg-black/20 w-fit text-white rounded-lg shadow-inner border border-white/10">
+                <BookOpen class="w-4 h-4 text-orange-200" />
+                <span class="text-sm font-semibold tracking-wide text-orange-50">{{ studentCareer }}</span>
+              </div>
               </div>
               <div
                 class="p-3 mt-4 text-left text-white border sm:text-right sm:mt-0 bg-black/20 rounded-xl border-white/10 backdrop-blur-md"
@@ -343,7 +390,7 @@ onMounted(() => {
                 >
                   <Flame class="w-4 h-4 text-orange-400 animate-pulse" />
                   <span class="text-xs font-bold text-orange-200">{{
-                    $t("ruta.streak", { days: 12 })
+                    $t("ruta.streak", { days: computedLevel })
                   }}</span>
                 </div>
               </div>
@@ -397,7 +444,7 @@ onMounted(() => {
                   class="px-3 py-1 text-sm font-black text-white transition-all border-0 shadow-lg bg-gradient-to-r from-amber-500 to-amber-600 shadow-amber-900/50 hover:from-amber-400 hover:to-amber-500"
                 >
                   <TrendingUp class="w-4 h-4 mr-1.5" />
-                  450 XP
+                  {{ computedXP }} XP
                 </Badge>
               </div>
             </div>
@@ -530,6 +577,7 @@ onMounted(() => {
 
               <!-- Modules -->
               <div
+                v-if="modules.length > 0"
                 class="relative z-10 flex flex-col justify-between w-full h-full py-12"
                 :style="{ minHeight: `${modules.length * 150}px` }"
               >
@@ -748,6 +796,20 @@ onMounted(() => {
                   </div>
                 </div>
               </div>
+
+              <!-- Empty State -->
+              <div
+                v-else
+                class="relative z-10 flex flex-col items-center justify-center w-full min-h-[400px] text-center p-8 mt-12"
+              >
+                <div class="w-20 h-20 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center mb-6 shadow-xl">
+                  <Sparkles class="w-10 h-10 text-white/40" />
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Tu camino aún no ha comenzado</h3>
+                <p class="text-white/60 max-w-md mb-8">
+                  Para poder generar tu Ruta Inteligente, asegúrate de tener tu perfil completo en el Informe Vocacional y presiona el botón "Generar Nueva Ruta IA" en la parte superior.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -824,12 +886,7 @@ onMounted(() => {
         <!-- Stats -->
         <Card>
           <CardContent class="grid grid-cols-2 gap-3 p-4">
-            <div v-for="s in [
-              { label: $t('ruta.studied_hours'), value: '8.5h', icon: Clock, color: '#082065' },
-              { label: $t('ruta.completed_modules'), value: '1', icon: CheckCircle2, color: '#2E7D32' },
-              { label: $t('ruta.pending_activities'), value: '2', icon: Circle, color: '#F9A825' },
-              { label: $t('ruta.average_score'), value: '8.4', icon: Star, color: '#D4A017' },
-            ]" :key="s.label" class="p-3 bg-secondary/50 rounded-xl">
+            <div v-for="s in sidebarStats" :key="s.label" class="p-3 bg-secondary/50 rounded-xl">
               <component :is="s.icon" class="w-4 h-4 mb-1.5" :style="{ color: s.color }" />
               <div class="text-lg font-bold leading-none">{{ s.value }}</div>
               <div class="text-xs text-muted-foreground mt-0.5 leading-tight">
@@ -929,6 +986,71 @@ onMounted(() => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog :open="showProfileModal" @update:open="showProfileModal = $event">
+        <DialogContent class="sm:max-w-md border-0 bg-white shadow-2xl">
+          <DialogHeader>
+            <DialogTitle class="flex items-center gap-2 text-[#B50E30]">
+              <Brain class="w-5 h-5" />
+              Completa tu Perfil
+            </DialogTitle>
+            <DialogDescription class="pt-2 text-slate-600 font-medium">
+              NEXUS IA necesita conocerte mejor. Para brindarte la mejor experiencia y generar una ruta personalizada, necesitamos tu <strong>Información Académica</strong> y los datos de tu <strong>Informe Vocacional</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div class="flex flex-col gap-3 py-4">
+            <div class="flex items-center gap-3 p-3 bg-red-50 rounded-xl border border-red-100">
+              <BookOpen class="w-8 h-8 text-[#B50E30] opacity-80" />
+              <div>
+                <p class="text-sm font-bold text-red-900">1. Carrera y Ciclo</p>
+                <p class="text-xs text-red-800/80">Selecciona tu carrera actual y el ciclo en el que te encuentras.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+              <Sparkles class="w-8 h-8 text-blue-700 opacity-80" />
+              <div>
+                <p class="text-sm font-bold text-blue-900">2. Informe Vocacional</p>
+                <p class="text-xs text-blue-800/80">Agrega tus intereses, inteligencia emocional y fortalezas.</p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter class="sm:justify-between flex gap-2">
+            <Button
+              variant="outline"
+              @click="showProfileModal = false"
+              class="w-full sm:w-auto"
+            >
+              Cancelar
+            </Button>
+            <Button
+              class="w-full sm:w-auto bg-[#B50E30] hover:bg-[#8F0B26]"
+              @click="$router.push('/configuracion')"
+            >
+              Ir a Configuración
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <!-- Notification Modal -->
+      <Dialog :open="showNotificationModal" @update:open="showNotificationModal = $event">
+        <DialogContent class="sm:max-w-sm border-0 bg-white shadow-2xl">
+          <DialogHeader>
+            <DialogTitle class="flex items-center gap-2 text-slate-800">
+              <Info class="w-5 h-5 text-blue-500" />
+              {{ notificationTitle }}
+            </DialogTitle>
+            <DialogDescription class="pt-2 text-slate-600 font-medium">
+              {{ notificationMessage }}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter class="sm:justify-end">
+            <Button class="bg-[#B50E30] hover:bg-[#8F0B26]" @click="showNotificationModal = false">
+              Aceptar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   </DashboardLayout>
 </template>
