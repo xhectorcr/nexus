@@ -196,7 +196,7 @@ const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: t("nav.home") || "Inicio", href: "/familia" },
   {
     icon: markRaw(TrendingUp),
-    label: t("nav.child_progress") || "Progreso de tu hijo",
+    label: t("Ruta de Aprendizaje") || "Ruta de Aprendizaje",
     href: "/familia/progreso",
   },
 ]);
@@ -209,7 +209,7 @@ const sidebarItems = computed(() => [
     :subtitle="$t('familia.progreso.subtitle')"
     :breadcrumbs="[
       { label: $t('nav.home'), href: '/familia' },
-      { label: $t('nav.child_progress') },
+      { label: $t('Ruta de Aprendizaje') },
     ]"
     moduleColor="#FFB20D"
   >
