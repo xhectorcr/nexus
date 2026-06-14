@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import ModuleDetail from "@/components/ruta/ModuleDetail2.vue";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
-import ModuleDetail from "@/components/ruta/ModuleDetail2.vue";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import {
@@ -22,7 +22,7 @@ import {
   Target,
   TrendingUp,
 } from "lucide-vue-next";
-import { computed, markRaw, onMounted, ref } from "vue";
+import { computed, markRaw, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
@@ -68,6 +68,28 @@ const userStreak = ref(0);
 const isLoading = ref(true);
 const isAiGeneratingInitial = ref(false);
 const needsVocationalTest = ref(false);
+
+const svgContainer = ref<HTMLElement | null>(null);
+const svgWidth = ref(100);
+const svgHeight = ref(100);
+let resizeObserver: ResizeObserver | null = null;
+
+const generatePath = (fromIdx: number, toIdx: number, total: number) => {
+  const w = svgWidth.value || 100;
+  const h = svgHeight.value || 100;
+  
+  const x1 = fromIdx % 2 === 0 ? w * 0.35 : w * 0.65;
+  const y1 = h * ((fromIdx + 0.5) / total);
+  
+  const x2 = toIdx % 2 === 0 ? w * 0.35 : w * 0.65;
+  const y2 = h * ((toIdx + 0.5) / total);
+
+  // Bezier control points for smooth S-curve
+  const cy1 = y1 + (y2 - y1) / 2;
+  const cy2 = y1 + (y2 - y1) / 2;
+
+  return `M ${x1} ${y1} C ${x1} ${cy1}, ${x2} ${cy2}, ${x2} ${y2}`;
+};
 
 const badges = computed(() => [
   {
@@ -249,6 +271,18 @@ const onModuleCompleted = async () => {
 
 onMounted(() => {
   loadJourneyData();
+
+  if (svgContainer.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      svgWidth.value = entries[0].contentRect.width;
+      svgHeight.value = entries[0].contentRect.height;
+    });
+    resizeObserver.observe(svgContainer.value);
+  }
+});
+
+onUnmounted(() => {
+  if (resizeObserver) resizeObserver.disconnect();
 });
 </script>
 
@@ -293,7 +327,7 @@ onMounted(() => {
       <p class="max-w-md mb-8 font-medium text-slate-500">
         Para poder armar tu Laberinto de Vocaciones y darte las misiones correctas, primero necesitamos conocerte. Por favor completa el Test Vocacional.
       </p>
-      <Button @click="$router.push('/postulante/test')" size="lg" class="px-8 text-white transition-transform shadow-lg bg-blue-600 hover:bg-blue-700 font-bold h-14 rounded-xl shadow-blue-500/30 hover:scale-105">
+      <Button @click="$router.push('/postulante/test')" size="lg" class="px-8 font-bold text-white transition-transform bg-blue-600 shadow-lg hover:bg-blue-700 h-14 rounded-xl shadow-blue-500/30 hover:scale-105">
         <Brain class="w-5 h-5 mr-2" />
         Ir al Test Vocacional
       </Button>
@@ -515,73 +549,57 @@ onMounted(() => {
           </CardHeader>
 
           <CardContent class="px-0 pb-0 bg-[#0B1120]">
-            <div class="relative min-h-[700px] w-full overflow-hidden">
+            <div class="relative min-h-[700px] w-full overflow-hidden" ref="svgContainer">
               <div
                 class="absolute inset-0"
                 style="
                   background-image:
-                    linear-gradient(
-                      rgba(255, 255, 255, 0.02) 1px,
-                      transparent 1px
-                    ),
-                    linear-gradient(
-                      90deg,
-                      rgba(255, 255, 255, 0.02) 1px,
-                      transparent 1px
-                    );
+                    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
                   background-size: 30px 30px;
                 "
-              />
+              ></div>
 
               <svg
                 v-if="modules.length > 1"
                 class="absolute inset-0 z-0 w-full h-full pointer-events-none"
               >
                 <defs>
-                  <filter
-                    id="glow-blue"
-                    x="-20%"
-                    y="-20%"
-                    width="140%"
-                    height="140%"
-                  >
+                  <filter id="glow-blue" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="4" result="blur" />
-                    <feComposite
-                      in="SourceGraphic"
-                      in2="blur"
-                      operator="over"
-                    />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
                   </filter>
                 </defs>
-                <line
+
+                <!-- Background Track Paths -->
+                <path
                   v-for="i in modules.length - 1"
-                  :key="'line-' + i"
-                  :x1="(i - 1) % 2 === 0 ? '35%' : '65%'"
-                  :y1="`${(100 * (i - 1 + 0.5)) / modules.length}%`"
-                  :x2="i % 2 === 0 ? '35%' : '65%'"
-                  :y2="`${(100 * (i + 0.5)) / modules.length}%`"
+                  :key="'track-' + i"
+                  :d="generatePath(i - 1, i, modules.length)"
+                  fill="none"
                   :stroke="
-                    modules[i - 1].status !== 'locked' &&
-                    modules[i].status !== 'locked'
-                      ? '#3B82F6'
-                      : modules[i - 1].status !== 'locked'
-                        ? '#1E3A8A'
-                        : '#374151'
+                    modules[i - 1].status !== 'locked' && modules[i].status !== 'locked'
+                      ? '#1E3A8A'
+                      : '#1F2937'
                   "
-                  stroke-width="3"
-                  :stroke-dasharray="
-                    modules[i - 1].status !== 'locked' &&
-                    modules[i].status !== 'locked'
-                      ? '8 6'
-                      : '0'
-                  "
-                  :class="
-                    modules[i - 1].status !== 'locked' &&
-                    modules[i].status !== 'locked'
-                      ? 'animate-[dash_2s_linear_infinite]'
-                      : ''
-                  "
+                  stroke-width="4"
                   stroke-linecap="round"
+                />
+
+                <!-- Glowing Animated Paths -->
+                <!-- Glowing Animated Paths -->
+                <path
+                  v-for="i in modules.length - 1"
+                  :key="'path-' + i"
+                  v-show="modules[i - 1].status !== 'locked' && modules[i].status !== 'locked'"
+                  :d="generatePath(i - 1, i, modules.length)"
+                  fill="none"
+                  stroke="#38BDF8"
+                  stroke-width="3"
+                  stroke-dasharray="10 20"
+                  class="animate-[dash_2s_linear_infinite]"
+                  stroke-linecap="round"
+                  filter="url(#glow-blue)"
                 />
               </svg>
 
@@ -595,181 +613,84 @@ onMounted(() => {
                   class="relative flex items-center flex-1 w-full"
                 >
                   <div
-                    class="absolute flex flex-col items-center transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 group"
+                    class="absolute flex flex-col items-center transition-all duration-500 transform -translate-x-1/2 -translate-y-1/2 group"
                     :class="[
                       mod.status !== 'locked'
-                        ? 'cursor-pointer hover:scale-105'
-                        : 'cursor-not-allowed opacity-60 grayscale',
-                      idx === currentModuleIndex
-                        ? 'drop-shadow-[0_0_20px_rgba(59,130,246,0.6)] scale-110'
-                        : '',
+                        ? 'cursor-pointer hover:scale-110 z-20'
+                        : 'cursor-not-allowed opacity-60 grayscale z-10',
                     ]"
-                    :style="{ left: idx % 2 === 0 ? '35%' : '65%', top: '50%' }"
-                    @click="mod.status !== 'locked' && (selectedModule = mod)"
+                    :style="{
+                      left: idx % 2 === 0 ? '35%' : '65%',
+                      top: `${(100 * (idx + 0.5)) / modules.length}%`,
+                    }"
+                    @click="mod.status !== 'locked' ? selectedModule = mod : null"
                   >
+                    <!-- Node Icon Circle -->
                     <div
-                      v-if="idx === currentModuleIndex"
-                      class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#3B82F6] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-blue-500/50 whitespace-nowrap z-30 tracking-wide uppercase animate-bounce"
-                    >
-                      {{ $t("laberinto.continue_maze") || "Continuar aquí" }}
-                      <div
-                        class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#3B82F6]"
-                      ></div>
-                    </div>
-
-                    <div class="relative z-20">
-                      <svg
-                        width="150"
-                        height="120"
-                        viewBox="0 0 150 120"
-                        class="overflow-visible drop-shadow-2xl"
-                      >
-                        <g>
-                          <ellipse
-                            cx="75"
-                            cy="100"
-                            rx="45"
-                            ry="15"
-                            fill="black"
-                            fill-opacity="0.5"
-                            class="transition-transform duration-500 group-hover:scale-90 opacity-60"
-                          />
-                          <g class="transform translate-y-6">
-                            <polygon
-                              points="75,30 135,60 75,90 15,60"
-                              fill="#1F2937"
-                            />
-                            <polygon
-                              points="15,60 75,90 75,100 15,70"
-                              fill="#111827"
-                            />
-                            <polygon
-                              points="75,90 135,60 135,70 75,100"
-                              fill="#030712"
-                            />
-                            <polygon
-                              points="75,30 135,60 75,90 15,60"
-                              fill="none"
-                              stroke="#374151"
-                              stroke-width="1"
-                            />
-                          </g>
-                          <g
-                            :class="`transition-all duration-500 ease-out ${mod.status !== 'locked' ? 'group-hover:-translate-y-4' : ''}`"
-                          >
-                            <polygon
-                              points="75,10 135,40 75,70 15,40"
-                              :fill="
-                                mod.status !== 'locked' ? '#3B82F6' : '#4B5563'
-                              "
-                            />
-                            <polygon
-                              points="75,10 135,40 75,70 15,40"
-                              fill="white"
-                              fill-opacity="0.1"
-                            />
-                            <polygon
-                              v-if="mod.status !== 'locked'"
-                              points="75,22 120,44 75,66 30,44"
-                              fill="none"
-                              stroke="#BFDBFE"
-                              stroke-width="1.5"
-                              opacity="0.6"
-                            />
-                            <polygon
-                              v-if="mod.status !== 'locked'"
-                              points="75,30 105,45 75,60 45,45"
-                              :fill="'#1D4ED8'"
-                              opacity="0.4"
-                            />
-                            <polygon
-                              points="15,40 75,70 75,80 15,50"
-                              :fill="
-                                mod.status !== 'locked' ? '#2563EB' : '#374151'
-                              "
-                            />
-                            <polygon
-                              points="15,40 75,70 75,80 15,50"
-                              fill="black"
-                              fill-opacity="0.2"
-                            />
-                            <polygon
-                              points="75,70 135,40 135,50 75,80"
-                              :fill="
-                                mod.status !== 'locked' ? '#1D4ED8' : '#1F2937'
-                              "
-                            />
-                            <polygon
-                              points="75,70 135,40 135,50 75,80"
-                              fill="black"
-                              fill-opacity="0.4"
-                            />
-                          </g>
-                        </g>
-                      </svg>
-                    </div>
-
-                    <div
-                      class="absolute whitespace-nowrap top-[45%] -translate-y-1/2 transition-transform duration-500"
+                      class="relative flex items-center justify-center w-16 h-16 transition-all duration-300 rounded-full shadow-2xl"
                       :class="[
-                        idx % 2 === 0
-                          ? 'left-[100%] ml-2 text-left'
-                          : 'right-[100%] mr-2 text-right',
+                        mod.status === 'completed'
+                          ? 'bg-[#1E3A8A] border-4 border-[#3B82F6] shadow-blue-500/50'
+                          : mod.status === 'in_progress' || mod.status === 'available'
+                            ? 'bg-gradient-to-tr from-[#3B82F6] to-[#0EA5E9] border-4 border-white shadow-cyan-500/50'
+                            : 'bg-slate-800 border-4 border-slate-600',
+                      ]"
+                    >
+                      <!-- Ping animation for active node -->
+                      <div
+                        v-if="mod.status === 'in_progress' || mod.status === 'available'"
+                        class="absolute inset-0 border-4 rounded-full opacity-50 border-cyan-400 animate-ping"
+                      ></div>
+
+                      <component
+                        v-if="mod.status !== 'locked'"
+                        :is="mod.status === 'completed' ? CheckCircle2 : mod.icon"
+                        class="relative z-10 w-8 h-8 text-white"
+                      />
+                      <Lock v-else class="relative z-10 w-8 h-8 text-slate-400" />
+                    </div>
+
+                    <!-- Node Tooltip/Label -->
+                    <div
+                      class="mt-3 bg-[#0B1120]/90 backdrop-blur-md px-4 py-2 rounded-xl border transition-all text-center min-w-[120px]"
+                      :class="[
                         mod.status !== 'locked'
-                          ? 'group-hover:-translate-y-4'
-                          : '',
+                          ? 'border-blue-500/30 group-hover:border-blue-400 shadow-lg shadow-blue-900/20'
+                          : 'border-slate-700',
                       ]"
                     >
                       <p
-                        class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider"
+                        class="max-w-[160px] text-sm font-bold truncate"
+                        :class="mod.status !== 'locked' ? 'text-white' : 'text-slate-400 blur-[2px]'"
                       >
-                        {{ $t("laberinto.stage") || "Etapa" }} {{ idx + 1 }}
-                      </p>
-                      <h3
-                        :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status !== 'locked' ? 'text-white drop-shadow-md' : 'text-gray-500'}`"
-                      >
-                        {{ mod.title }}
-                      </h3>
-
-                      <p
-                        v-if="mod.status === 'completed'"
-                        class="text-[11px] mt-1.5 flex items-center font-bold"
-                        :class="
-                          idx % 2 === 0
-                            ? 'justify-start text-emerald-400'
-                            : 'justify-end text-emerald-400'
-                        "
-                      >
-                        <CheckCircle2 class="w-3.5 h-3.5 mr-1" /> Completado
+                        {{ mod.status === 'locked' ? 'Desconocido' : mod.title }}
                       </p>
                       <p
-                        v-else-if="
-                          mod.status === 'in_progress' ||
-                          mod.status === 'available'
-                        "
-                        class="text-[11px] mt-1.5 flex items-center font-bold"
-                        :class="
-                          idx % 2 === 0
-                            ? 'justify-start text-[#3B82F6]'
-                            : 'justify-end text-[#3B82F6]'
-                        "
+                        class="mt-1 text-[10px] font-black tracking-widest uppercase"
+                        :class="[
+                          mod.status === 'completed' ? 'text-emerald-400' :
+                          mod.status === 'in_progress' || mod.status === 'available' ? 'text-cyan-400' :
+                          'text-slate-500'
+                        ]"
                       >
-                        <component :is="mod.icon" class="w-3.5 h-3.5 mr-1" />
-                        {{ mod.progress }}%
-                        {{ $t("laberinto.completed") || "Progreso" }}
+                        {{
+                          mod.status === 'completed' ? 'COMPLETADO' :
+                          mod.status === 'in_progress' ? 'EN PROGRESO' :
+                          mod.status === 'available' ? 'DISPONIBLE' : 'BLOQUEADO'
+                        }}
                       </p>
-                      <p
-                        v-else
-                        class="text-[11px] text-gray-500 mt-1.5 flex items-center font-medium"
-                        :class="idx % 2 === 0 ? 'justify-start' : 'justify-end'"
-                      >
-                        <Lock class="w-3 h-3 mr-1" />
-                        {{ $t("laberinto.locked") || "Bloqueado" }}
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            <div class="px-5 py-4 border-t border-white/10 bg-black/20">
+              <span class="text-xs font-medium text-white/50">
+                {{
+                  $t("laberinto.unlock_new_challenges") ||
+                  "Sigue completando misiones para desbloquear nuevos retos y ganar XP."
+                }}
+              </span>
             </div>
           </CardContent>
         </Card>
