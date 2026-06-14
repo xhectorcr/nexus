@@ -23,37 +23,40 @@ import {
   Star,
   TrendingUp,
 } from "lucide-vue-next";
-import { markRaw } from "vue";
+import { computed, markRaw, onMounted, ref } from "vue";
 
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 const auth = useAuth();
 const { t } = useI18n();
+
+const copied = ref(false);
+const isLoading = ref(true);
+const dashboardData = ref<any>(null); // Guardará la respuesta del backend
 const studentCode = ref<string>("");
 const studentCareer = ref<string>("");
-const copied = ref(false);
 
-const loadStudentCode = async () => {
+const fetchDashboardData = async () => {
   try {
-    const code = await auth.fetchStudentCode();
-    studentCode.value = code ?? "";
-  } catch (e) {
-    console.error("Error cargando código estudiante", e);
-    studentCode.value = "ERROR";
+    isLoading.value = true;
+    const response = await api.get("/api/estudiantes/dashboard/me");
+    dashboardData.value = response.data.data;
+    // Extraemos el código de vinculación directamente del dashboard
+    studentCode.value = dashboardData.value.codigoVinculacion;
+  } catch (error) {
+    console.error("Error al cargar el dashboard del estudiante:", error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
 const copyCode = async () => {
   if (!studentCode.value || studentCode.value === "ERROR") return;
-
   try {
     await navigator.clipboard.writeText(studentCode.value);
-
     copied.value = true;
-
     setTimeout(() => {
       copied.value = false;
     }, 1200);
@@ -226,9 +229,9 @@ const fetchEstudianteData = async () => {
   }
 };
 
-onMounted(async () => {
+onMounted(() => {
+  fetchDashboardData();
   fetchEstudianteData();
-  await loadStudentCode();
 });
 </script>
 
@@ -240,7 +243,7 @@ onMounted(async () => {
     :breadcrumbs="[{ label: $t('nav.home') }]"
     moduleColor="#B50E30"
   >
-    <div class="space-y-6">
+    <div class="space-y-6" v-if="!isLoading">
       <Card
         class="bg-gradient-to-br from-[#B50E30] via-[#8F0B26] to-[#5C0517] border-0 text-white overflow-hidden relative shadow-2xl shadow-red-900/20"
       >
@@ -311,6 +314,7 @@ onMounted(async () => {
               </CardDescription>
             </div>
           </div>
+
           <div
             class="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl self-start sm:self-auto flex flex-col items-start sm:items-end gap-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:bg-white/15 transition-all cursor-default group"
           >
@@ -318,9 +322,13 @@ onMounted(async () => {
               class="text-[10px] uppercase font-bold text-red-200 tracking-widest flex items-center gap-1.5"
             >
               <div
-                class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"
+                :class="`w-1.5 h-1.5 rounded-full ${dashboardData?.tieneFamiliarVinculado ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`"
               ></div>
-              {{ $t("dashboard.active_link") }}
+              {{
+                dashboardData?.tieneFamiliarVinculado
+                  ? "VÍNCULO FAMILIAR ACTIVO"
+                  : "CÓDIGO FAMILIAR"
+              }}
             </span>
             <div class="flex items-center gap-2">
               <span
@@ -362,12 +370,10 @@ onMounted(async () => {
           :key="i"
           class="relative overflow-hidden transition-all duration-300 border border-black group hover:-translate-y-1 hover:shadow-xl"
         >
-          <!-- Subtle color glow background on hover -->
           <div
             class="absolute inset-0 transition-opacity duration-500 opacity-0 pointer-events-none group-hover:opacity-10"
             :style="{ backgroundColor: stat.color }"
           ></div>
-
           <CardContent
             class="relative z-10 flex flex-col items-center justify-center p-6 text-center"
           >
@@ -411,13 +417,19 @@ onMounted(async () => {
             </Button>
           </CardHeader>
           <CardContent>
+            <div
+              v-if="upcomingTasks.length === 0"
+              class="py-6 text-sm font-medium text-center text-gray-500"
+            >
+              ¡Genial! No tienes entregas pendientes por ahora. 🎉
+            </div>
+
             <div class="mt-4 space-y-3">
               <div
                 v-for="(task, i) in upcomingTasks"
                 :key="i"
                 class="relative flex items-start gap-4 p-4 overflow-hidden transition-all duration-300 bg-white border border-black group rounded-xl hover:border-black hover:shadow-md"
               >
-                <!-- Urgent accent line -->
                 <div
                   v-if="task.urgent"
                   class="absolute left-0 top-0 bottom-0 w-1 bg-[#B50E30]"
@@ -547,8 +559,11 @@ onMounted(async () => {
               <p
                 class="text-xs text-slate-600 font-medium mb-5 relative z-10 flex items-center gap-1.5"
               >
-                <Award class="w-4 h-4 text-amber-500" />
-                {{ $t("dashboard.unlock") }}
+                <Award class="w-4 h-4 text-amber-500 shrink-0" />
+                {{
+                  dashboardData?.progresoRuta?.recompensaDesbloqueo ||
+                  $t("dashboard.unlock")
+                }}
               </p>
 
               <Button
@@ -561,6 +576,15 @@ onMounted(async () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+    </div>
+
+    <div v-else class="flex items-center justify-center min-h-[400px]">
+      <div class="flex flex-col items-center gap-4">
+        <div
+          class="w-10 h-10 border-4 border-[#B50E30] border-t-transparent rounded-full animate-spin"
+        ></div>
+        <p class="text-sm font-bold text-gray-500">Cargando tu progreso...</p>
       </div>
     </div>
   </DashboardLayout>

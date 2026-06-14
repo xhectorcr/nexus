@@ -106,10 +106,7 @@ const fetchDashboardData = async () => {
     }
 
     if (mentors.value.length === 0) {
-      mentors.value = [
-        { name: "Ana García", career: "Ingeniería de Sistemas", online: true },
-        { name: "Carlos Ruiz", career: "Administración", online: true },
-      ];
+      mentors.value = [];
     }
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
@@ -300,7 +297,7 @@ onMounted(() => {
           </Button>
           <Button
             variant="outline"
-            class="px-5 font-bold text-black hover:text-black border-white/20 hover:bg-white/90 rounded-xl h-11"
+            class="px-5 font-bold text-white border-white/20 hover:bg-white/10 rounded-xl h-11"
             @click="router.push('/postulante/test')"
           >
             {{ $t("postulante.retake_test") }}

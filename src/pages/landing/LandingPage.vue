@@ -149,7 +149,7 @@ const modulesPointerEvents = computed(() => scrollProgress.value > 0.8 ? 'auto' 
         <router-link to="/postulante">
           <Card class="h-full hover:shadow-xl transition-all duration-300 border-[#D9D9D9] group cursor-pointer">
             <CardHeader>
-              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#B50E30] to-[#8F0B26] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
                 <GraduationCap class="text-white w-7 h-7" />
               </div>
               <CardTitle class="text-[#1F1F1F]">{{ $t('landing.module1_title') }}</CardTitle>
@@ -160,19 +160,19 @@ const modulesPointerEvents = computed(() => scrollProgress.value > 0.8 ? 'auto' 
             <CardContent>
               <ul class="space-y-2 text-sm text-[#5F6368]">
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#B50E30]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#082065]" />
                   {{ $t('landing.module1_f1') }}
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#B50E30]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#082065]" />
                   {{ $t('landing.module1_f2') }}
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#B50E30]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#082065]" />
                   {{ $t('landing.module1_f3') }}
                 </li>
               </ul>
-              <Button variant="ghost" class="w-full mt-6 text-[#B50E30] group-hover:bg-[#B50E30]/10">
+              <Button variant="ghost" class="w-full mt-6 text-[#082065] group-hover:bg-[#082065]/10">
                 {{ $t('landing.explore') }}
                 <ArrowRight class="w-4 h-4 ml-2" />
               </Button>
@@ -219,7 +219,7 @@ const modulesPointerEvents = computed(() => scrollProgress.value > 0.8 ? 'auto' 
         <router-link to="/utp-plus">
           <Card class="h-full hover:shadow-xl transition-all duration-300 border-[#D9D9D9] group cursor-pointer">
             <CardHeader>
-              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#B50E30] to-[#8F0B26] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-md">
                 <Sparkles class="text-white w-7 h-7" />
               </div>
               <CardTitle class="text-[#1F1F1F]">{{ $t('landing.module3_title') }}</CardTitle>
@@ -230,19 +230,19 @@ const modulesPointerEvents = computed(() => scrollProgress.value > 0.8 ? 'auto' 
             <CardContent>
               <ul class="space-y-2 text-sm text-[#5F6368]">
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#082065]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#B50E30]" />
                   {{ $t('landing.module3_f1') }}
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#082065]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#B50E30]" />
                   {{ $t('landing.module3_f2') }}
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#082065]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#B50E30]" />
                   {{ $t('landing.module3_f3') }}
                 </li>
               </ul>
-              <Button variant="ghost" class="w-full mt-6 text-[#082065] group-hover:bg-[#082065]/10">
+              <Button variant="ghost" class="w-full mt-6 text-[#B50E30] group-hover:bg-[#B50E30]/10">
                 {{ $t('landing.explore') }}
                 <ArrowRight class="w-4 h-4 ml-2" />
               </Button>

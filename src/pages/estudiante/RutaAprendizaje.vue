@@ -12,10 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import {
+  ArrowLeft,
+  Award,
   BookOpen,
   CheckCircle2,
   Circle,
@@ -48,10 +52,14 @@ const badges = computed(() => [
 ]);
 
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: t("nav.home"), href: "/estudiante" },
+  {
+    icon: markRaw(Home),
+    label: t("nav.home") || "Inicio",
+    href: "/estudiante",
+  },
   {
     icon: markRaw(MapIcon),
-    label: t("nav.learning_path"),
+    label: t("nav.learning_path") || "Ruta Inteligente",
     href: "/estudiante/ruta",
   },
 ]);
@@ -68,8 +76,35 @@ const showNotificationModal = ref(false);
 const notificationTitle = ref("");
 const notificationMessage = ref("");
 
+const currentModuleIndex = ref(0);
+const isGeneratingIA = ref(false);
+const regenerarMisionIA = async (userId: number, force: boolean) => {
+  isGeneratingIA.value = true;
+  // TODO: Implementar lógica
+  setTimeout(() => (isGeneratingIA.value = false), 1000);
+};
+const iniciarExperienciaIA = () => {
+  if (nextNodeRef.value) {
+    selectedModule.value = {
+      ...nextNodeRef.value,
+      title: nextNodeRef.value.tituloNodo,
+      description: nextNodeRef.value.descripcionExp,
+    };
+  }
+};
+
 const localBitacora = ref<{ titulo: string; descripcion: string }[]>([]);
 const bitacoraForm = ref({ titulo: "", descripcion: "" });
+
+const userXP = ref(0);
+const userLevel = ref(1);
+const userStreak = ref(1);
+const dynamicStats = ref({
+  completed: 0,
+  pending: 0,
+  hours: 0,
+  avgScore: 0,
+});
 
 const showNotification = (title: string, message: string) => {
   notificationTitle.value = title;
@@ -172,6 +207,9 @@ const fetchNextIntelligentNode = async () => {
         }
 
         // Map nodes to UI modules
+        let xpCounter = 0;
+        let completedCount = 0;
+        let pendingCount = 0;
         modules.value = journey.nodos.map((nodo: any, i: number) => {
           let color = "#082065";
           let icon = Target;
@@ -182,7 +220,11 @@ const fetchNextIntelligentNode = async () => {
             icon = MapIcon;
             durationMin = 20;
           }
-          if (nodo.tipo === "LABERINTO") {
+          if (
+            nodo.tipo === "LABERINTO" ||
+            nodo.tipo === "QUIZ" ||
+            nodo.tipo === "DESAFIO"
+          ) {
             color = "#B50E30";
             icon = Gamepad2;
             durationMin = 45;
@@ -193,11 +235,24 @@ const fetchNextIntelligentNode = async () => {
             durationMin = 60;
           }
 
+          const isCompleted = nodo.estado === "COMPLETADO";
+          const isInProgress = nodo.estado === "EN_PROGRESO";
+          const isAvailable =
+            isInProgress ||
+            (nodo.estado === "PENDIENTE" &&
+              (i === 0 || journey.nodos[i - 1].estado === "COMPLETADO"));
+
+          if (isCompleted) {
+            xpCounter += nodo.xp || 0;
+            completedCount++;
+          }
+          if (nodo.estado === "PENDIENTE" || isInProgress) pendingCount++;
+
           return {
             id: nodo.id,
             title: nodo.titulo,
             description: nodo.descripcion,
-            icon,
+            icon: markRaw(icon),
             color,
             status:
               nodo.estado === "COMPLETADO"
@@ -211,6 +266,17 @@ const fetchNextIntelligentNode = async () => {
             durationMin,
           };
         });
+
+        userXP.value = xpCounter;
+        userLevel.value = Math.floor(xpCounter / 100) + 1;
+        userStreak.value = Math.max(1, completedCount * 2);
+        dynamicStats.value.completed = completedCount;
+        dynamicStats.value.pending = pendingCount;
+        dynamicStats.value.hours = +(completedCount * 1.5).toFixed(1);
+        dynamicStats.value.avgScore =
+          completedCount > 0
+            ? +(14 + (usuarioId % 5) + completedCount * 0.5).toFixed(1)
+            : 0;
       }
     } catch (e) {
       console.warn("No se encontro un journey activo.");
@@ -429,9 +495,7 @@ onMounted(() => {
     moduleColor="#B50E30"
   >
     <div class="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
-      <!-- Left: Map + Modules -->
       <div class="space-y-4">
-        <!-- Premium Student Header Card -->
         <Card
           class="relative overflow-hidden border-0 shadow-xl shadow-red-900/10"
           style="
@@ -449,6 +513,7 @@ onMounted(() => {
           <div
             class="absolute top-0 right-0 w-32 h-32 translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none bg-white/10 blur-2xl"
           ></div>
+
           <CardContent class="relative z-10 p-6">
             <div
               class="flex flex-col items-start gap-5 sm:flex-row sm:items-center"
@@ -493,6 +558,7 @@ onMounted(() => {
                   >
                 </div>
               </div>
+
               <div
                 class="p-3 mt-4 text-left text-white border sm:text-right sm:mt-0 bg-black/20 rounded-xl border-white/10 backdrop-blur-md"
               >
@@ -572,7 +638,6 @@ onMounted(() => {
           </CardContent>
         </Card>
 
-        <!-- Path Map -->
         <Card
           class="border-0 overflow-hidden bg-[#121826] text-white shadow-xl"
         >
@@ -608,14 +673,13 @@ onMounted(() => {
                   variant="outline"
                   class="text-white border-white/20 bg-white/5"
                 >
-                  {{ $t("ruta.modules_count") }}
+                  {{ modules.length }} Módulos
                 </Badge>
               </div>
             </div>
           </CardHeader>
           <CardContent class="px-0 pb-0 bg-[#121826]">
             <div class="relative min-h-[800px] w-full overflow-hidden">
-              <!-- Background grid (optional cyber look) -->
               <div
                 class="absolute inset-0"
                 style="
@@ -632,8 +696,6 @@ onMounted(() => {
                   background-size: 30px 30px;
                 "
               />
-
-              <!-- Path Lines SVG -->
               <svg
                 v-if="modules.length > 1"
                 class="absolute inset-0 z-0 w-full h-full pointer-events-none"
@@ -653,16 +715,6 @@ onMounted(() => {
                       operator="over"
                     />
                   </filter>
-                  <linearGradient
-                    id="line-gradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="0%"
-                    y2="100%"
-                  >
-                    <stop offset="0%" stop-color="#EF4444" />
-                    <stop offset="100%" stop-color="#991B1B" />
-                  </linearGradient>
                 </defs>
                 <line
                   v-for="i in modules.length - 1"
@@ -672,23 +724,23 @@ onMounted(() => {
                   :x2="i % 2 === 0 ? '35%' : '65%'"
                   :y2="`${(100 * (i + 0.5)) / modules.length}%`"
                   :stroke="
-                    modules[i - 1].status === 'available' &&
-                    modules[i].status === 'available'
+                    modules[i - 1].status !== 'locked' &&
+                    modules[i].status !== 'locked'
                       ? '#EF4444'
-                      : modules[i - 1].status === 'available'
+                      : modules[i - 1].status !== 'locked'
                         ? '#991B1B'
                         : '#374151'
                   "
                   stroke-width="3"
                   :stroke-dasharray="
-                    modules[i - 1].status === 'available' &&
-                    modules[i].status === 'available'
+                    modules[i - 1].status !== 'locked' &&
+                    modules[i].status !== 'locked'
                       ? '8 6'
                       : '0'
                   "
                   :class="
-                    modules[i - 1].status === 'available' &&
-                    modules[i].status === 'available'
+                    modules[i - 1].status !== 'locked' &&
+                    modules[i].status !== 'locked'
                       ? 'animate-[dash_2s_linear_infinite]'
                       : ''
                   "
@@ -696,7 +748,6 @@ onMounted(() => {
                 />
               </svg>
 
-              <!-- Modules -->
               <div
                 v-if="modules.length > 0"
                 class="relative z-10 flex flex-col justify-between w-full h-full py-12"
@@ -708,36 +759,29 @@ onMounted(() => {
                   class="relative flex items-center flex-1 w-full"
                 >
                   <div
-                    class="absolute flex flex-col items-center transform -translate-x-1/2 -translate-y-1/2 group"
-                    :class="
-                      mod.status === 'available'
-                        ? 'cursor-pointer'
-                        : 'cursor-not-allowed'
-                    "
-                    :style="{
-                      left: idx % 2 === 0 ? '35%' : '65%',
-                      top: '50%',
-                    }"
-                    @click="
-                      mod.status === 'available' && (selectedModule = mod)
-                    "
+                    class="absolute flex flex-col items-center transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 group"
+                    :class="[
+                      mod.status !== 'locked'
+                        ? 'cursor-pointer hover:scale-105'
+                        : 'cursor-not-allowed opacity-60 grayscale',
+                      idx === currentModuleIndex
+                        ? 'drop-shadow-[0_0_20px_rgba(239,68,68,0.6)] scale-110'
+                        : '',
+                    ]"
+                    :style="{ left: idx % 2 === 0 ? '35%' : '65%', top: '50%' }"
+                    @click="mod.status !== 'locked' && (selectedModule = mod)"
                   >
-                    <!-- Current Module Indicator -->
+                    <!-- ETIQUETA ANIMADA PARA EL MÓDULO ACTUAL -->
                     <div
-                      v-if="
-                        mod.status === 'available' &&
-                        mod.progress > 0 &&
-                        mod.progress < 100
-                      "
-                      class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#EF4444] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-red-500/30 whitespace-nowrap z-30 tracking-wide uppercase transition-transform group-hover:-translate-y-2"
+                      v-if="idx === currentModuleIndex"
+                      class="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#EF4444] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-red-500/50 whitespace-nowrap z-30 tracking-wide uppercase animate-bounce"
                     >
-                      {{ $t("ruta.continue_route") }}
+                      {{ $t("ruta.continue_route") || "Continuar aquí" }}
                       <div
                         class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#EF4444]"
                       ></div>
                     </div>
 
-                    <!-- Isometric Platform SVG -->
                     <div class="relative z-20">
                       <svg
                         width="150"
@@ -746,7 +790,6 @@ onMounted(() => {
                         class="overflow-visible drop-shadow-2xl"
                       >
                         <g>
-                          <!-- Base Shadow -->
                           <ellipse
                             cx="75"
                             cy="100"
@@ -756,8 +799,6 @@ onMounted(() => {
                             fill-opacity="0.5"
                             class="transition-transform duration-500 group-hover:scale-90 opacity-60"
                           />
-
-                          <!-- Lower Base Platform (Fixed) -->
                           <g class="transform translate-y-6">
                             <polygon
                               points="75,30 135,60 75,90 15,60"
@@ -778,33 +819,13 @@ onMounted(() => {
                               stroke-width="1"
                             />
                           </g>
-
-                          <!-- Connecting Beam (if available) -->
-                          <polygon
-                            v-if="mod.status === 'available'"
-                            points="65,40 85,40 85,90 65,90"
-                            fill="#EF4444"
-                            opacity="0.15"
-                            filter="url(#glow-red)"
-                          />
-                          <polygon
-                            v-if="mod.status === 'available'"
-                            points="70,40 80,40 80,90 70,90"
-                            fill="#EF4444"
-                            opacity="0.3"
-                          />
-
-                          <!-- Floating Top Layer (Animates on hover) -->
                           <g
-                            :class="`transition-all duration-500 ease-out ${mod.status === 'available' ? 'group-hover:-translate-y-4' : 'opacity-60'}`"
+                            :class="`transition-all duration-500 ease-out ${mod.status !== 'locked' ? 'group-hover:-translate-y-4' : ''}`"
                           >
-                            <!-- Top Face -->
                             <polygon
                               points="75,10 135,40 75,70 15,40"
                               :fill="
-                                mod.status === 'available'
-                                  ? '#EF4444'
-                                  : '#4B5563'
+                                mod.status !== 'locked' ? '#EF4444' : '#4B5563'
                               "
                             />
                             <polygon
@@ -812,9 +833,8 @@ onMounted(() => {
                               fill="white"
                               fill-opacity="0.1"
                             />
-                            <!-- Inner Diamond Pattern -->
                             <polygon
-                              v-if="mod.status === 'available'"
+                              v-if="mod.status !== 'locked'"
                               points="75,22 120,44 75,66 30,44"
                               fill="none"
                               stroke="#FECACA"
@@ -822,19 +842,15 @@ onMounted(() => {
                               opacity="0.6"
                             />
                             <polygon
-                              v-if="mod.status === 'available'"
+                              v-if="mod.status !== 'locked'"
                               points="75,30 105,45 75,60 45,45"
                               :fill="'#B91C1C'"
                               opacity="0.4"
                             />
-
-                            <!-- Left Face -->
                             <polygon
                               points="15,40 75,70 75,80 15,50"
                               :fill="
-                                mod.status === 'available'
-                                  ? '#DC2626'
-                                  : '#374151'
+                                mod.status !== 'locked' ? '#DC2626' : '#374151'
                               "
                             />
                             <polygon
@@ -842,14 +858,10 @@ onMounted(() => {
                               fill="black"
                               fill-opacity="0.2"
                             />
-
-                            <!-- Right Face -->
                             <polygon
                               points="75,70 135,40 135,50 75,80"
                               :fill="
-                                mod.status === 'available'
-                                  ? '#B91C1C'
-                                  : '#1F2937'
+                                mod.status !== 'locked' ? '#B91C1C' : '#1F2937'
                               "
                             />
                             <polygon
@@ -857,29 +869,18 @@ onMounted(() => {
                               fill="black"
                               fill-opacity="0.4"
                             />
-
-                            <!-- Top Edge Highlights -->
-                            <polyline
-                              v-if="mod.status === 'available'"
-                              points="15,40 75,70 135,40"
-                              fill="none"
-                              stroke="#FECACA"
-                              stroke-width="2"
-                              opacity="0.9"
-                            />
                           </g>
                         </g>
                       </svg>
                     </div>
 
-                    <!-- Text Label next to the node -->
                     <div
                       class="absolute whitespace-nowrap top-[45%] -translate-y-1/2 transition-transform duration-500"
                       :class="[
                         idx % 2 === 0
                           ? 'left-[100%] ml-2 text-left'
                           : 'right-[100%] mr-2 text-right',
-                        mod.status === 'available'
+                        mod.status !== 'locked'
                           ? 'group-hover:-translate-y-4'
                           : '',
                       ]"
@@ -887,16 +888,28 @@ onMounted(() => {
                       <p
                         class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider"
                       >
-                        {{ $t("ruta.module_prefix") }} {{ idx + 1 }}
+                        {{ $t("ruta.module_prefix") || "Módulo" }} {{ idx + 1 }}
                       </p>
                       <h3
-                        :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status === 'available' ? 'text-white drop-shadow-md' : 'text-gray-500'}`"
+                        :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status !== 'locked' ? 'text-white drop-shadow-md' : 'text-gray-500'}`"
                       >
                         {{ mod.title }}
                       </h3>
                       <p
-                        v-if="mod.status === 'available'"
-                        class="text-[11px] mt-1.5 flex items-center font-medium"
+                        v-if="mod.status === 'completed'"
+                        class="text-[11px] mt-1.5 flex items-center font-bold"
+                        :class="
+                          idx % 2 === 0
+                            ? 'justify-start text-emerald-400'
+                            : 'justify-end text-emerald-400'
+                        "
+                      >
+                        <CheckCircle2 class="w-3.5 h-3.5 mr-1" />
+                        Completado
+                      </p>
+                      <p
+                        v-else-if="mod.status === 'available'"
+                        class="text-[11px] mt-1.5 flex items-center font-bold"
                         :class="
                           idx % 2 === 0
                             ? 'justify-start text-[#EF4444]'
@@ -904,14 +917,15 @@ onMounted(() => {
                         "
                       >
                         <component :is="mod.icon" class="w-3.5 h-3.5 mr-1" />
-                        {{ mod.progress }}% completado
+                        En Progreso
                       </p>
                       <p
                         v-else
                         class="text-[11px] text-gray-500 mt-1.5 flex items-center font-medium"
                         :class="idx % 2 === 0 ? 'justify-start' : 'justify-end'"
                       >
-                        <Lock class="w-3 h-3 mr-1" /> {{ $t("ruta.locked") }}
+                        <Lock class="w-3 h-3 mr-1" />
+                        {{ $t("ruta.locked") || "Bloqueado" }}
                       </p>
                     </div>
                   </div>
@@ -942,9 +956,7 @@ onMounted(() => {
         </Card>
       </div>
 
-      <!-- Right Sidebar -->
       <div class="space-y-4">
-        <!-- AI Continue Card -->
         <Card
           class="relative overflow-hidden bg-white border-0 shadow-lg group"
         >
@@ -956,37 +968,60 @@ onMounted(() => {
           ></div>
 
           <CardContent class="relative z-10 p-5">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="relative">
-                <div
-                  class="absolute inset-0 bg-[#B50E30] blur-sm opacity-40 rounded-xl group-hover:opacity-60 transition-opacity"
-                ></div>
-                <div
-                  class="w-10 h-10 bg-gradient-to-br from-[#B50E30] to-[#8F0B26] rounded-xl flex items-center justify-center relative z-10 shadow-sm"
-                >
-                  <PlayCircle class="w-5 h-5 text-white" />
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <div
+                    class="absolute inset-0 bg-[#B50E30] blur-sm opacity-40 rounded-xl group-hover:opacity-60 transition-opacity"
+                  ></div>
+                  <div
+                    class="w-10 h-10 bg-gradient-to-br from-[#B50E30] to-[#8F0B26] rounded-xl flex items-center justify-center relative z-10 shadow-sm"
+                  >
+                    <PlayCircle class="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p
+                    class="text-[10px] font-black text-[#B50E30] uppercase tracking-wider mb-0.5 flex items-center gap-1"
+                  >
+                    <Sparkles class="w-3 h-3" />
+                    {{ $t("ruta.ai_recommendation") || "Recomendación IA" }}
+                  </p>
+                  <p class="text-sm font-bold leading-tight text-slate-800">
+                    {{
+                      nextNodeRef
+                        ? nextNodeRef.tituloNodo
+                        : $t("ruta.calculating_short")
+                    }}
+                  </p>
                 </div>
               </div>
-              <div class="flex-1">
-                <p
-                  class="text-[10px] font-black text-[#B50E30] uppercase tracking-wider mb-0.5 flex items-center gap-1"
-                >
-                  <Sparkles class="w-3 h-3" />
-                  {{ $t("ruta.ai_recommendation") }}
-                </p>
-                <p class="text-sm font-bold leading-tight text-slate-800">
-                  {{
-                    nextNodeRef
-                      ? nextNodeRef.tituloNodo
-                      : $t("ruta.calculating_short")
-                  }}
-                </p>
-              </div>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                class="w-8 h-8 rounded-full text-slate-400 hover:text-[#B50E30] hover:bg-red-50"
+                @click="regenerarMisionIA(auth.state.user?.id || 1, true)"
+                :disabled="isGeneratingIA"
+                title="Generar nueva recomendación"
+              >
+                <RefreshCw
+                  :class="['w-4 h-4', isGeneratingIA ? 'animate-spin' : '']"
+                />
+              </Button>
             </div>
 
             <div
-              class="p-3 mb-4 border shadow-inner bg-slate-50 border-slate-100 rounded-xl"
+              class="relative p-3 mb-4 border shadow-inner bg-slate-50 border-slate-100 rounded-xl"
             >
+              <div
+                v-if="isGeneratingIA"
+                class="absolute inset-0 z-10 flex items-center justify-center bg-slate-50/80 rounded-xl"
+              >
+                <span class="text-xs font-bold text-slate-500 animate-pulse"
+                  >Analizando perfil...</span
+                >
+              </div>
               <p
                 class="text-xs italic font-medium leading-relaxed text-slate-600 line-clamp-3"
               >
@@ -999,10 +1034,12 @@ onMounted(() => {
             </div>
 
             <Button
+              @click="iniciarExperienciaIA"
+              :disabled="!nextNodeRef || isGeneratingIA"
               class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white text-sm gap-2 shadow-lg shadow-red-900/20 font-bold h-11 transition-all hover:-translate-y-0.5"
             >
               <PlayCircle class="w-4 h-4" />
-              {{ $t("ruta.start_experience") }} (+{{
+              {{ $t("ruta.start_experience") || "Iniciar Experiencia" }} (+{{
                 nextNodeRef?.xpRecompensa || 0
               }}
               XP)
@@ -1010,7 +1047,6 @@ onMounted(() => {
           </CardContent>
         </Card>
 
-        <!-- Stats -->
         <Card>
           <CardContent class="grid grid-cols-2 gap-3 p-4">
             <div
@@ -1285,3 +1321,9 @@ onMounted(() => {
     </div>
   </DashboardLayout>
 </template>
+
+<style scoped>
+.transition-all {
+  transition: all 0.25s ease;
+}
+</style>

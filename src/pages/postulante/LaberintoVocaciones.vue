@@ -67,6 +67,7 @@ const userStreak = ref(0);
 
 const isLoading = ref(true);
 const isAiGeneratingInitial = ref(false);
+const needsVocationalTest = ref(false);
 
 const badges = computed(() => [
   {
@@ -227,29 +228,9 @@ const loadJourneyData = async () => {
         processJourneyData(journeyRes.data.data);
       }
     } catch (e: any) {
-      // 2. MAGIA AQUÍ: Si da error 404 (No existe ruta), le decimos a la IA que cree una única para él
       if (e.response?.status === 404 || e.response?.status === 400) {
-        try {
-          isLoading.value = false;
-          isAiGeneratingInitial.value = true; // Mostramos pantalla de análisis IA
-
-          await api.post(
-            `/api/v1/ai/ruta/generar-completa?usuarioId=${usuarioId}`,
-          );
-
-          // Una vez creada, la volvemos a buscar
-          const newJourneyRes = await api.get(
-            `/api/journeys/usuario/${usuarioId}/activo`,
-          );
-          if (newJourneyRes.data && newJourneyRes.data.success) {
-            processJourneyData(newJourneyRes.data.data);
-          }
-        } catch (aiError) {
-          console.error("Fallo la IA al generar la ruta", aiError);
-          applyMockData();
-        } finally {
-          isAiGeneratingInitial.value = false;
-        }
+        isLoading.value = false;
+        needsVocationalTest.value = true;
       } else {
         applyMockData();
       }
@@ -292,7 +273,34 @@ onMounted(() => {
     />
   </DashboardLayout>
 
-  <!-- VISTA 2: MAPA PRINCIPAL (Se muestra por defecto) -->
+  <!-- VISTA 2: BLOQUEO POR FALTA DE TEST VOCACIONAL -->
+  <DashboardLayout
+    v-else-if="needsVocationalTest"
+    :sidebarItems="sidebarItems"
+    :title="$t('postulante.title')"
+    subtitle="Descubre tu vocación primero"
+    :breadcrumbs="[
+      { label: $t('nav.home'), href: '/postulante' },
+      { label: $t('laberinto.title') || 'Laberinto' },
+    ]"
+    moduleColor="#082065"
+  >
+    <div class="flex flex-col items-center justify-center w-full min-h-[60vh] text-center">
+      <div class="p-6 mb-6 bg-red-100 rounded-full">
+        <Lock class="w-16 h-16 text-red-600" />
+      </div>
+      <h2 class="mb-4 text-3xl font-black text-slate-900">Aún no tienes un destino</h2>
+      <p class="max-w-md mb-8 font-medium text-slate-500">
+        Para poder armar tu Laberinto de Vocaciones y darte las misiones correctas, primero necesitamos conocerte. Por favor completa el Test Vocacional.
+      </p>
+      <Button @click="$router.push('/postulante/test')" size="lg" class="px-8 text-white transition-transform shadow-lg bg-blue-600 hover:bg-blue-700 font-bold h-14 rounded-xl shadow-blue-500/30 hover:scale-105">
+        <Brain class="w-5 h-5 mr-2" />
+        Ir al Test Vocacional
+      </Button>
+    </div>
+  </DashboardLayout>
+
+  <!-- VISTA 3: MAPA PRINCIPAL (Se muestra por defecto) -->
   <DashboardLayout
     v-else
     :sidebarItems="sidebarItems"

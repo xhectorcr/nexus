@@ -385,13 +385,7 @@ const runAiScanning = async () => {
 
       try {
         const usuarioId = auth.state.user?.id || 1;
-        let postulanteId = usuarioId;
-        const profRes = await api
-          .get(`/api/postulantes/by-usuario/${usuarioId}`)
-          .catch(() => null);
-        if (profRes && profRes.data?.data?.id)
-          postulanteId = profRes.data.data.id;
-        await api.post(`/api/journeys/postulante/${postulanteId}/generar`);
+        await api.post(`/api/journeys/usuario/${usuarioId}/generar`);
       } catch (e) {}
 
       currentStep.value = totalQuestions.value + 2;
