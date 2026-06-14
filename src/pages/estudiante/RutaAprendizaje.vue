@@ -30,8 +30,10 @@ import {
 import ModuleDetail from '@/components/ruta/ModuleDetail.vue'
 import { useAuth } from '@/lib/auth'
 import { api } from '@/lib/api'
+import { useI18n } from 'vue-i18n'
 
 const auth = useAuth()
+const { t } = useI18n()
 
 const modules = ref<any[]>([])
 
@@ -42,10 +44,10 @@ const badges = [
   { name: "Visionario", icon: "👁️", earned: false },
 ]
 
-const sidebarItems = [
-  { icon: markRaw(Home), label: "Inicio", href: "/estudiante" },
-  { icon: markRaw(MapIcon), label: "Ruta de Aprendizaje", href: "/estudiante/ruta" },
-]
+const sidebarItems = computed(() => [
+  { icon: markRaw(Home), label: t('nav.home'), href: "/estudiante" },
+  { icon: markRaw(MapIcon), label: t('nav.learning_path'), href: "/estudiante/ruta" },
+])
 
 const selectedModule = ref<any>(null)
 const totalProgress = ref(20)
@@ -119,10 +121,10 @@ onMounted(() => {
     v-if="selectedModule"
     :sidebarItems="sidebarItems"
     title="NEXUS Estudiante"
-    subtitle="Ruta de Aprendizaje"
+    :subtitle="$t('nav.learning_path')"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/estudiante' },
-      { label: 'Ruta de Aprendizaje', href: '/estudiante/ruta' },
+      { label: $t('nav.home'), href: '/estudiante' },
+      { label: $t('nav.learning_path'), href: '/estudiante/ruta' },
       { label: selectedModule.title },
     ]"
     moduleColor="#B50E30"
@@ -134,7 +136,7 @@ onMounted(() => {
         class="flex items-center gap-2 text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft class="w-4 h-4" />
-        Volver a la Ruta
+        {{ $t('nav.learning_path') }}
       </Button>
     </div>
     <ModuleDetail :module="selectedModule" />
@@ -144,10 +146,10 @@ onMounted(() => {
     v-else
     :sidebarItems="sidebarItems"
     title="NEXUS Estudiante"
-    subtitle="Tu Ruta Dinámica generada por Inteligencia Artificial"
+    :subtitle="$t('ruta.title_dynamic')"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/estudiante' },
-      { label: 'Tu Camino NEXUS' },
+      { label: $t('nav.home'), href: '/estudiante' },
+      { label: $t('ruta.breadcrumb_path') },
     ]"
     moduleColor="#B50E30"
   >
@@ -171,7 +173,7 @@ onMounted(() => {
                 </div>
               </div>
               <div class="flex-1 text-white">
-                <p class="text-[11px] font-bold text-red-200 tracking-widest uppercase mb-1">Bienvenido de vuelta</p>
+                <p class="text-[11px] font-bold text-red-200 tracking-widest uppercase mb-1">{{ $t('ruta.welcome_back') }}</p>
                 <h2 class="text-2xl font-black leading-tight tracking-tight">{{ auth.state.user?.name || 'Alejandro Lastra' }}</h2>
                 <div class="flex items-center gap-1.5 mt-2 bg-white/10 w-fit px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/10">
                   <GraduationCap class="w-4 h-4 text-amber-300" />
@@ -180,18 +182,18 @@ onMounted(() => {
               </div>
               <div class="text-left sm:text-right text-white mt-4 sm:mt-0 bg-black/20 p-3 rounded-xl border border-white/10 backdrop-blur-md">
                 <div class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-red-200">{{ Math.round(totalProgress) }}%</div>
-                <div class="text-[10px] uppercase tracking-wider text-red-200 font-bold mb-1">Completado</div>
+                <div class="text-[10px] uppercase tracking-wider text-red-200 font-bold mb-1">{{ $t('ruta.completed') }}</div>
                 <div class="flex items-center justify-start sm:justify-end gap-1.5 mt-2">
                   <Flame class="w-4 h-4 text-orange-400 animate-pulse" />
-                  <span class="text-xs font-bold text-orange-200">12 días en racha</span>
+                  <span class="text-xs font-bold text-orange-200">{{ $t('ruta.streak', { days: 12 }) }}</span>
                 </div>
               </div>
             </div>
 
             <div class="mt-6">
               <div class="flex justify-between text-[11px] font-bold text-red-100 uppercase tracking-wider mb-2">
-                <span>Tu Progreso en NEXUS</span>
-                <span>{{ Math.round(totalProgress) }}% TOTAL</span>
+                <span>{{ $t('ruta.progress_nexus') }}</span>
+                <span>{{ Math.round(totalProgress) }}% {{ $t('ruta.total') }}</span>
               </div>
               <div class="w-full h-2.5 rounded-full bg-black/30 shadow-inner overflow-hidden border border-white/5">
                 <div
@@ -233,9 +235,9 @@ onMounted(() => {
               <div>
                 <CardTitle class="flex items-center gap-2 text-white">
                   <MapIcon class="w-5 h-5 text-[#B50E30]" />
-                  Tu Camino de Experiencias NEXUS
+                  {{ $t('ruta.path_title') }}
                 </CardTitle>
-                <p class="text-sm text-white/50 mt-0.5 font-mono">El siguiente nodo es dinámico y se adapta a tu perfil actual.</p>
+                <p class="text-sm text-white/50 mt-0.5 font-mono">{{ $t('ruta.dynamic_node') }}</p>
               </div>
               <div class="flex gap-2">
                 <Button 
@@ -246,11 +248,11 @@ onMounted(() => {
                   :disabled="isGenerating"
                 >
                   <Sparkles v-if="!isGenerating" class="w-4 h-4 mr-2 text-yellow-400" />
-                  <span v-if="isGenerating">Calculando con NEXUS...</span>
-                  <span v-else>Generar Nueva Ruta IA</span>
+                  <span v-if="isGenerating">{{ $t('ruta.calculating') }}</span>
+                  <span v-else>{{ $t('ruta.generate_ia') }}</span>
                 </Button>
                 <Badge variant="outline" class="text-white border-white/20 bg-white/5">
-                  1 / 6 módulos
+                  {{ $t('ruta.modules_count') }}
                 </Badge>
               </div>
             </div>
@@ -304,7 +306,7 @@ onMounted(() => {
                   >
                     <!-- Current Module Indicator -->
                     <div v-if="mod.status === 'available' && mod.progress > 0 && mod.progress < 100" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-[#EF4444] text-white text-[11px] font-bold px-3 py-1.5 rounded shadow-lg shadow-red-500/30 whitespace-nowrap z-30 tracking-wide uppercase transition-transform group-hover:-translate-y-2">
-                      Continuar Ruta
+                      {{ $t('ruta.continue_route') }}
                       <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#EF4444]"></div>
                     </div>
 
@@ -359,7 +361,7 @@ onMounted(() => {
                         mod.status === 'available' ? 'group-hover:-translate-y-4' : ''
                       ]"
                     >
-                      <p class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider">Módulo {{ idx + 1 }}</p>
+                      <p class="text-xs text-white/40 font-mono mb-0.5 uppercase tracking-wider">{{ $t('ruta.module_prefix') }} {{ idx + 1 }}</p>
                       <h3 :class="`text-sm font-bold w-48 whitespace-normal leading-tight ${mod.status === 'available' ? 'text-white drop-shadow-md' : 'text-gray-500'}`">
                         {{ mod.title }}
                       </h3>
@@ -368,7 +370,7 @@ onMounted(() => {
                         {{ mod.progress }}% completado
                       </p>
                       <p v-else class="text-[11px] text-gray-500 mt-1.5 flex items-center font-medium" :class="idx % 2 === 0 ? 'justify-start' : 'justify-end'">
-                        <Lock class="w-3 h-3 mr-1" /> Bloqueado
+                        <Lock class="w-3 h-3 mr-1" /> {{ $t('ruta.locked') }}
                       </p>
                     </div>
                   </div>
@@ -396,21 +398,21 @@ onMounted(() => {
               </div>
               <div class="flex-1">
                 <p class="text-[10px] font-black text-[#B50E30] uppercase tracking-wider mb-0.5 flex items-center gap-1">
-                  <Sparkles class="w-3 h-3" /> Recomendación IA
+                  <Sparkles class="w-3 h-3" /> {{ $t('ruta.ai_recommendation') }}
                 </p>
-                <p class="text-sm font-bold text-slate-800 leading-tight">{{ nextNodeRef ? nextNodeRef.tituloNodo : 'Calculando...' }}</p>
+                <p class="text-sm font-bold text-slate-800 leading-tight">{{ nextNodeRef ? nextNodeRef.tituloNodo : $t('ruta.calculating_short') }}</p>
               </div>
             </div>
             
             <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-4 shadow-inner">
               <p class="text-xs text-slate-600 font-medium italic line-clamp-3 leading-relaxed">
-                "{{ nextNodeRef ? nextNodeRef.justificacionIA : 'NEXUS está evaluando tu Perfil Inteligente...' }}"
+                "{{ nextNodeRef ? nextNodeRef.justificacionIA : $t('ruta.evaluating_profile') }}"
               </p>
             </div>
             
             <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white text-sm gap-2 shadow-lg shadow-red-900/20 font-bold h-11 transition-all hover:-translate-y-0.5">
               <PlayCircle class="w-4 h-4" />
-              Iniciar Experiencia (+{{ nextNodeRef?.xpRecompensa || 0 }} XP)
+              {{ $t('ruta.start_experience') }} (+{{ nextNodeRef?.xpRecompensa || 0 }} XP)
             </Button>
           </CardContent>
         </Card>
@@ -419,10 +421,10 @@ onMounted(() => {
         <Card>
           <CardContent class="grid grid-cols-2 gap-3 p-4">
             <div v-for="s in [
-              { label: 'Horas estudiadas', value: '8.5h', icon: Clock, color: '#082065' },
-              { label: 'Módulos completados', value: '1', icon: CheckCircle2, color: '#2E7D32' },
-              { label: 'Actividades pendientes', value: '2', icon: Circle, color: '#F9A825' },
-              { label: 'Promedio evaluaciones', value: '8.4', icon: Star, color: '#D4A017' },
+              { label: $t('ruta.studied_hours'), value: '8.5h', icon: Clock, color: '#082065' },
+              { label: $t('ruta.completed_modules'), value: '1', icon: CheckCircle2, color: '#2E7D32' },
+              { label: $t('ruta.pending_activities'), value: '2', icon: Circle, color: '#F9A825' },
+              { label: $t('ruta.average_score'), value: '8.4', icon: Star, color: '#D4A017' },
             ]" :key="s.label" class="p-3 bg-secondary/50 rounded-xl">
               <component :is="s.icon" class="w-4 h-4 mb-1.5" :style="{ color: s.color }" />
               <div class="text-lg font-bold leading-none">{{ s.value }}</div>
@@ -434,7 +436,7 @@ onMounted(() => {
         <!-- Module Overview -->
         <Card>
           <CardHeader class="px-4 pt-4 pb-2">
-            <CardTitle class="text-sm">Estado de Módulos</CardTitle>
+            <CardTitle class="text-sm">{{ $t('ruta.module_status') }}</CardTitle>
           </CardHeader>
           <CardContent class="px-4 pb-4 space-y-2">
             <div v-for="m in modules" :key="m.id" class="flex items-center gap-2.5">
@@ -469,7 +471,7 @@ onMounted(() => {
                 <Target class="w-4 h-4 text-white" />
               </div>
               <div>
-                <p class="text-xs text-muted-foreground">Completado ayer</p>
+                <p class="text-xs text-muted-foreground">{{ $t('ruta.completed_yesterday') }}</p>
                 <p class="text-sm font-medium mt-0.5">Completar el Laboratorio de Programación</p>
                 <p class="mt-1 text-xs text-muted-foreground">+50 XP al completar</p>
               </div>
@@ -484,7 +486,7 @@ onMounted(() => {
               <Award class="w-4 h-4 text-[#082065]" />
             </div>
             <div>
-              <p class="text-xs text-muted-foreground">Fecha estimada de finalización</p>
+              <p class="text-xs text-muted-foreground">{{ $t('ruta.estimated_date') }}</p>
               <p class="text-sm font-semibold">15 de Agosto, 2026</p>
             </div>
           </CardContent>

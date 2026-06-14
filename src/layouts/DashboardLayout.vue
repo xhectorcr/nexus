@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
+import LanguageSelector from '@/components/LanguageSelector.vue'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -132,7 +133,7 @@ const logoImage = computed(() => {
       >
         <X v-if="sidebarOpen" class="w-4 h-4" />
         <Menu v-else class="w-4 h-4" />
-        <span v-if="sidebarOpen" class="text-sm">Contraer</span>
+        <span v-if="sidebarOpen" class="text-sm">{{ $t('layout.collapse') }}</span>
       </button>
     </aside>
 
@@ -150,7 +151,7 @@ const logoImage = computed(() => {
             <div class="relative">
               <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5F6368]" />
               <Input
-                placeholder="Buscar en NEXUS..."
+                :placeholder="$t('layout.search')"
                 class="pl-10 bg-[#F1F1F1] border-transparent focus:bg-white"
               />
             </div>
@@ -158,6 +159,9 @@ const logoImage = computed(() => {
 
           <!-- Right Actions -->
           <div class="flex items-center gap-4">
+            
+            <LanguageSelector />
+
             <!-- Notifications -->
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
@@ -167,18 +171,18 @@ const logoImage = computed(() => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" class="w-80">
-                <DropdownMenuLabel>Notificaciones</DropdownMenuLabel>
+                <DropdownMenuLabel>{{ $t('layout.notifications') }}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <div class="flex flex-col gap-1">
-                    <span class="font-medium text-sm">Nuevo mensaje</span>
-                    <span class="text-xs text-[#5F6368]">Tienes un nuevo mentor disponible</span>
+                    <span class="font-medium text-sm">{{ $t('layout.new_message') }}</span>
+                    <span class="text-xs text-[#5F6368]">{{ $t('layout.new_message_desc') }}</span>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <div class="flex flex-col gap-1">
-                    <span class="font-medium text-sm">Progreso actualizado</span>
-                    <span class="text-xs text-[#5F6368]">Has completado el 75% de tu evaluación</span>
+                    <span class="font-medium text-sm">{{ $t('layout.progress_updated') }}</span>
+                    <span class="text-xs text-[#5F6368]">{{ $t('layout.progress_updated_desc') }}</span>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -198,20 +202,20 @@ const logoImage = computed(() => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                <DropdownMenuLabel>{{ $t('layout.my_account') }}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem @click="router.push('/')" class="cursor-pointer">
                   <Home class="w-4 h-4 mr-2" />
-                  Página Inicio
+                  {{ $t('layout.home_page') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem class="cursor-pointer">
                   <Settings class="w-4 h-4 mr-2" />
-                  Configuración
+                  {{ $t('layout.settings') }}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem @click="handleLogout" class="cursor-pointer text-red-600 focus:text-red-700">
                   <LogOut class="w-4 h-4 mr-2" />
-                  Cerrar Sesión
+                  {{ $t('layout.logout') }}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

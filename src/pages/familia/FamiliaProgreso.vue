@@ -22,8 +22,11 @@ import {
 } from 'lucide-vue-next'
 
 import { useAuth } from '@/lib/auth'
+import { useI18n } from 'vue-i18n'
+
 const auth = useAuth()
 const router = useRouter()
+const { t } = useI18n()
 
 onMounted(() => {
   // if (!auth.state.user?.linkedStudentCode) {
@@ -55,43 +58,43 @@ const hablar = (texto: string) => {
 const moduleProgress = computed(() => {
   return [
     { 
-      name: "1. Autoconocimiento", 
-      desc: "Ayuda a tu hijo a descubrir qué le gusta, qué valora y qué se le da bien.",
+      name: t('familia.progreso.modules.m1_name'), 
+      desc: t('familia.progreso.modules.m1_desc'),
       pct: 80, 
       status: "completed", 
       color: "#2E7D32" 
     },
     { 
-      name: "2. Intereses Profesionales", 
-      desc: "Explora qué trabajos y profesiones del mundo real le llaman más la atención.",
+      name: t('familia.progreso.modules.m2_name'), 
+      desc: t('familia.progreso.modules.m2_desc'),
       pct: 60, 
       status: "in_progress", 
       color: "#D4A017" 
     },
     { 
-      name: "3. Inteligencias Múltiples", 
-      desc: "Prueba para saber en qué destaca (números, palabras, arte, lógica, etc.).",
+      name: t('familia.progreso.modules.m3_name'), 
+      desc: t('familia.progreso.modules.m3_desc'),
       pct: 100, 
       status: "completed", 
       color: "#2E7D32" 
     },
     { 
-      name: "4. Personalidad y Aptitudes", 
-      desc: "Analiza cómo se comporta y resuelve problemas en el día a día.",
+      name: t('familia.progreso.modules.m4_name'), 
+      desc: t('familia.progreso.modules.m4_desc'),
       pct: 50, 
       status: "in_progress", 
       color: "#D4A017" 
     },
     { 
-      name: "5. Simulador de Carreras", 
-      desc: "Permite a tu hijo 'probar' virtualmente cómo es un día de trabajo en cada profesión.",
+      name: t('familia.progreso.modules.m5_name'), 
+      desc: t('familia.progreso.modules.m5_desc'),
       pct: 0, 
       status: "pending", 
       color: "#9ca3af" 
     },
     { 
-      name: "6. Proyecto Final de Vocación", 
-      desc: "El resumen de todo su camino donde elige su carrera definitiva.",
+      name: t('familia.progreso.modules.m6_name'), 
+      desc: t('familia.progreso.modules.m6_desc'),
       pct: 20, 
       status: "in_progress", 
       color: "#D4A017" 
@@ -99,34 +102,34 @@ const moduleProgress = computed(() => {
   ]
 })
 
-const statusConfig: Record<string, any> = {
-  completed: { label: "¡Terminado!", bg: "bg-emerald-100", text: "text-emerald-800 font-bold", dot: "#2E7D32" },
-  in_progress: { label: "En progreso (Avanzando)", bg: "bg-amber-100", text: "text-amber-800 font-bold", dot: "#D4A017" },
-  pending: { label: "Por empezar", bg: "bg-gray-100", text: "text-gray-600", dot: "#9ca3af" },
-}
+const statusConfig = computed<Record<string, any>>(() => ({
+  completed: { label: t('familia.progreso.status.completed'), bg: "bg-emerald-100", text: "text-emerald-800 font-bold", dot: "#2E7D32" },
+  in_progress: { label: t('familia.progreso.status.in_progress'), bg: "bg-amber-100", text: "text-amber-800 font-bold", dot: "#D4A017" },
+  pending: { label: t('familia.progreso.status.pending'), bg: "bg-gray-100", text: "text-gray-600", dot: "#9ca3af" },
+}))
 
 const stats = computed(() => {
   return [
-    { label: "Horas dedicadas a estudiar", value: "8 horas y media", icon: markRaw(Clock), color: "#082065" },
-    { label: "Temas completados", value: "2 de 6 listos", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-    { label: "Tareas para hacer hoy", value: "5 pendientes", icon: markRaw(Target), color: "#F9A825" },
-    { label: "Calificación promedio", value: "8.4 (Muy buena)", icon: markRaw(Star), color: "#D4A017" },
+    { label: t('familia.progreso.studied_hours'), value: t('familia.progreso.hours_value'), icon: markRaw(Clock), color: "#082065" },
+    { label: t('familia.progreso.completed_topics'), value: t('familia.progreso.topics_value'), icon: markRaw(CheckCircle2), color: "#2E7D32" },
+    { label: t('familia.progreso.tasks_today'), value: t('familia.progreso.tasks_value'), icon: markRaw(Target), color: "#F9A825" },
+    { label: t('familia.progreso.avg_score'), value: t('familia.progreso.score_value'), icon: markRaw(Star), color: "#D4A017" },
   ]
 })
 
 const timeline = computed(() => {
   return [
-    { event: "Completó el test de Intereses Profesionales", time: "hace 2 horas", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-    { event: "Vio el video explicativo de Personalidad", time: "hace 5 horas", icon: markRaw(Clock), color: "#082065" },
-    { event: "Ganó la medalla virtual 'Explorador'", time: "ayer", icon: markRaw(Star), color: "#D4A017" },
-    { event: "Completó el tema de Inteligencias Múltiples", time: "hace 3 días", icon: markRaw(CheckCircle2), color: "#2E7D32" },
+    { event: t('familia.progreso.timeline.e1'), time: t('familia.progreso.timeline.e1_t'), icon: markRaw(CheckCircle2), color: "#2E7D32" },
+    { event: t('familia.progreso.timeline.e2'), time: t('familia.progreso.timeline.e2_t'), icon: markRaw(Clock), color: "#082065" },
+    { event: t('familia.progreso.timeline.e3'), time: t('familia.progreso.timeline.e3_t'), icon: markRaw(Star), color: "#D4A017" },
+    { event: t('familia.progreso.timeline.e4'), time: t('familia.progreso.timeline.e4_t'), icon: markRaw(CheckCircle2), color: "#2E7D32" },
   ]
 })
 
-const sidebarItems = [
-  { icon: markRaw(Home), label: "Inicio", href: "/familia" },
-  { icon: markRaw(TrendingUp), label: "Progreso de tu hijo", href: "/familia/progreso" },
-]
+const sidebarItems = computed(() => [
+  { icon: markRaw(Home), label: t('nav.home'), href: "/familia" },
+  { icon: markRaw(TrendingUp), label: t('nav.child_progress'), href: "/familia/progreso" },
+])
 
 const overallPct = computed(() => {
   return Math.round(moduleProgress.value.reduce((s, m) => s + m.pct, 0) / moduleProgress.value.length)
@@ -140,11 +143,11 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
 <template>
   <DashboardLayout
     :sidebarItems="sidebarItems"
-    title="Notas y Progreso"
-    subtitle="Mira en detalle lo que tu hijo ha avanzado en NEXUS"
+    :title="$t('familia.progreso.title')"
+    :subtitle="$t('familia.progreso.subtitle')"
     :breadcrumbs="[
-      { label: 'Inicio', href: '/familia' },
-      { label: 'Progreso' },
+      { label: $t('nav.home'), href: '/familia' },
+      { label: $t('nav.child_progress') },
     ]"
     moduleColor="#D4A017"
   >
@@ -157,8 +160,8 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
             <Sparkles class="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <h3 class="font-bold text-gray-800 text-lg">Asistente de Progreso</h3>
-            <p class="text-xs text-gray-600">Te explicamos todo paso a paso, con letra grande y audio-lectura.</p>
+            <h3 class="font-bold text-gray-800 text-lg">{{ $t('familia.progreso.assistant') }}</h3>
+            <p class="text-xs text-gray-600">{{ $t('familia.progreso.assistant_desc') }}</p>
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -168,7 +171,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
             :class="vistaFacil ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'"
           >
             <span class="w-2.5 h-2.5 rounded-full bg-green-400" v-if="vistaFacil"></span>
-            {{ vistaFacil ? 'Vista Fácil: Activada' : 'Activar Vista Fácil' }}
+            {{ vistaFacil ? $t('familia.progreso.easy_view_on') : $t('familia.progreso.easy_view_off') }}
           </button>
           
           <Button 
@@ -176,7 +179,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
             class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold gap-1.5 shadow-sm"
           >
             <Sparkles class="w-4 h-4 fill-white" />
-            {{ mostrarExplicacionIA ? 'Cerrar Explicación IA' : 'Explicación Sencilla con IA' }}
+            {{ mostrarExplicacionIA ? $t('familia.progreso.close_ai') : $t('familia.progreso.ai_explanation') }}
           </Button>
         </div>
       </div>
@@ -193,7 +196,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
           </div>
           <div class="space-y-4">
             <h3 class="font-extrabold text-blue-900 text-xl flex items-center gap-2">
-              Explicación Sencilla de NEXUS Inteligencia Artificial
+              {{ $t('familia.progreso.ai_title') }}
             </h3>
             <p class="text-gray-800 leading-relaxed font-medium" :class="vistaFacil ? 'text-lg' : 'text-base'">
               "{{ textoExplicacionIA }}"
@@ -204,14 +207,14 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
                 class="bg-blue-700 hover:bg-blue-800 text-white gap-2 rounded-xl font-bold text-sm h-10 px-5"
               >
                 <component :is="reproduciendoText === textoExplicacionIA ? VolumeX : Volume2" class="w-4.5 h-4.5" />
-                {{ reproduciendoText === textoExplicacionIA ? 'Detener Voz' : 'Escuchar Explicación en Voz Alta' }}
+                {{ reproduciendoText === textoExplicacionIA ? $t('familia.progreso.stop_voice') : $t('familia.progreso.listen_voice') }}
               </Button>
               <Button 
                 variant="ghost" 
                 class="text-blue-700 hover:text-blue-900 font-bold hover:bg-blue-100/50" 
                 @click="mostrarExplicacionIA = false"
               >
-                Entendido, gracias
+                {{ $t('familia.progreso.got_it') }}
               </Button>
             </div>
           </div>
@@ -228,10 +231,10 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
                 <AvatarFallback class="bg-white/20 text-white text-xl font-bold">AL</AvatarFallback>
               </Avatar>
               <div class="text-white space-y-1">
-                <span class="text-white/70 text-xs font-semibold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded">Hijo Registrado</span>
+                <span class="text-white/70 text-xs font-semibold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded">{{ $t('familia.progreso.registered_child') }}</span>
                 <h1 class="text-2xl font-black">{{ auth.state.user?.studentName || 'Alejandro Lastra Torres' }}</h1>
                 <p class="text-sm font-semibold text-white/90">
-                  Carrera recomendada por IA: <span class="bg-white text-[#D4A017] px-2 py-0.5 rounded ml-1 font-extrabold text-xs">{{ auth.state.user?.careerSuggestion || 'Ingeniería de Sistemas' }}</span>
+                  {{ $t('familia.progreso.recommended_career') }} <span class="bg-white text-[#D4A017] px-2 py-0.5 rounded ml-1 font-extrabold text-xs">{{ auth.state.user?.careerSuggestion || 'Ingeniería de Sistemas' }}</span>
                 </p>
               </div>
             </div>
@@ -239,10 +242,10 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
             <div class="text-right text-white self-stretch md:self-auto flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 border-white/10 pt-4 md:pt-0">
               <div>
                 <div class="text-4xl md:text-5xl font-black">{{ overallPct }}%</div>
-                <p class="text-white/70 text-xs font-bold uppercase">Progreso en total</p>
+                <p class="text-white/70 text-xs font-bold uppercase">{{ $t('familia.progreso.total_progress') }}</p>
               </div>
               <Badge class="mt-2 bg-emerald-500 text-white border-0 font-bold px-3 py-1 text-xs shadow-sm">
-                🔥 12 días seguidos de estudio
+                🔥 {{ $t('familia.progreso.streak') }}
               </Badge>
             </div>
           </div>
@@ -250,8 +253,8 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
           <!-- Barra de Progreso Grande -->
           <div class="mt-6 border-t border-white/10 pt-5">
             <div class="flex justify-between text-sm text-white/90 mb-2">
-              <span class="font-bold">Barra de avance general:</span>
-              <span class="font-extrabold">{{ overallPct }}% completado</span>
+              <span class="font-bold">{{ $t('familia.progreso.general_progress') }}</span>
+              <span class="font-extrabold">{{ overallPct }}% {{ $t('familia.progreso.completed') }}</span>
             </div>
             <div class="w-full bg-white/20 rounded-full h-4.5 overflow-hidden p-0.5">
               <div
@@ -295,15 +298,15 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
               <div>
                 <CardTitle class="text-lg font-bold text-gray-900 flex items-center gap-2">
                   <BarChart3 class="w-5 h-5 text-amber-600" />
-                  ¿Qué temas está estudiando mi hijo?
+                  {{ $t('familia.progreso.what_studying') }}
                 </CardTitle>
                 <CardDescription class="text-gray-600" :class="vistaFacil ? 'text-base' : 'text-sm'">
-                  NEXUS divide el camino en 6 temas. A continuación ves el detalle de cada uno de ellos.
+                  {{ $t('familia.progreso.studying_desc') }}
                 </CardDescription>
               </div>
               <div class="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-bold">
                 <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
-                Actualizado en tiempo real
+                {{ $t('familia.progreso.real_time') }}
               </div>
             </div>
           </CardHeader>
@@ -345,7 +348,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
 
             <!-- Leyenda de colores -->
             <div class="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-100 text-xs">
-              <span class="font-bold text-gray-500">Significado de los colores:</span>
+              <span class="font-bold text-gray-500">{{ $t('familia.progreso.color_meaning') }}</span>
               <div v-for="s in ['completed', 'in_progress', 'pending']" :key="s" class="flex items-center gap-1.5">
                 <div class="w-3 h-3 rounded-full border" :style="{ backgroundColor: statusConfig[s].dot }" />
                 <span class="font-semibold text-gray-600">{{ statusConfig[s].label }}</span>
@@ -363,15 +366,15 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
             <CardHeader class="p-4 pb-2">
               <CardTitle class="text-sm font-bold flex items-center gap-1.5 text-amber-900">
                 <Target class="w-4 h-4 text-amber-700" />
-                Siguiente tarea de Alejandro:
+                {{ $t('familia.progreso.next_task', { name: studentNameShort }) }}
               </CardTitle>
             </CardHeader>
             <CardContent class="p-4 pt-0 space-y-1">
               <p class="font-bold text-gray-950 text-sm">
-                Completar la actividad práctica sobre "Personalidad".
+                {{ $t('familia.progreso.task_desc') }}
               </p>
               <p class="text-xs text-amber-800 font-semibold">
-                Estimado: Le tomará 30 minutos terminarlo.
+                {{ $t('familia.progreso.estimated_time') }}
               </p>
             </CardContent>
           </Card>
@@ -383,7 +386,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
                 <Calendar class="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p class="text-[10px] text-gray-500 font-bold uppercase leading-none">Fecha estimada de finalización</p>
+                <p class="text-[10px] text-gray-500 font-bold uppercase leading-none">{{ $t('familia.progreso.estimated_date') }}</p>
                 <p class="text-sm font-black text-gray-900 mt-1">15 de Agosto, 2026</p>
               </div>
             </CardContent>
@@ -394,7 +397,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
             <CardHeader class="p-4 pb-2 border-b border-gray-100">
               <CardTitle class="text-sm font-bold text-gray-900 flex items-center gap-1.5">
                 <Bell class="w-4 h-4 text-gray-500" />
-                Historial reciente de Alejandro
+                {{ $t('familia.progreso.recent_history', { name: studentNameShort }) }}
               </CardTitle>
             </CardHeader>
             <CardContent class="p-4 space-y-3">
@@ -416,7 +419,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
           <!-- Botón Volver -->
           <a href="/familia" class="block w-full">
             <Button variant="outline" class="w-full gap-1.5 font-bold rounded-xl text-sm h-11 border-gray-300">
-              Volver al inicio del Portal
+              {{ $t('familia.progreso.back_home') }}
             </Button>
           </a>
 
