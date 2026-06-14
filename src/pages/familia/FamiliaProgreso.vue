@@ -34,7 +34,7 @@ import { useI18n } from "vue-i18n";
 
 const auth = useAuth();
 const router = useRouter();
-const { t } = useI18n();
+const { t, te } = useI18n();
 
 const vistaFacil = ref(true);
 const reproduciendoText = ref("");
@@ -193,7 +193,11 @@ const stats = computed(() => {
 });
 
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: t("nav.home") || "Inicio", href: "/familia" },
+  {
+    icon: markRaw(Home),
+    label: te("nav.home") ? t("nav.home") : "Inicio",
+    href: "/familia",
+  },
   {
     icon: markRaw(TrendingUp),
     label: t("Ruta de Aprendizaje") || "Ruta de Aprendizaje",
@@ -346,8 +350,8 @@ const sidebarItems = computed(() => [
         style="
           background: linear-gradient(
             135deg,
-            #ffd54f 0%,
-            #ffb20d 50%,
+            #ffb20d 0%,
+            #d4a017 80%,
             #b8870f 100%
           );
         "
