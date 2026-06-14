@@ -586,8 +586,6 @@ onUnmounted(() => {
                   stroke-linecap="round"
                 />
 
-                <!-- Glowing Animated Paths -->
-                <!-- Glowing Animated Paths -->
                 <path
                   v-for="i in modules.length - 1"
                   :key="'path-' + i"

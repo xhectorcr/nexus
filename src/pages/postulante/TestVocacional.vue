@@ -70,10 +70,46 @@ const sidebarItems = computed(() => [
 ]);
 
 const currentStep = ref(0);
-const isUploadingPdf = ref(false);
-const selectedPdf = ref<File | null>(null);
-const pdfAnalysisResult = ref<string>("");
+const isProfileComplete = ref<boolean | null>(null);
 const aiReaction = ref<string>("");
+
+import { onMounted } from "vue";
+
+onMounted(async () => {
+  try {
+    const userId = auth.state.user?.id;
+    if (!userId) return;
+
+    const [informeRes, postulanteRes] = await Promise.all([
+      api.get(`/api/informes-vocacionales/by-usuario/${userId}`),
+      api.get(`/api/postulantes/by-usuario/${userId}`)
+    ]);
+
+    const informe = informeRes.data?.data;
+    const postulante = postulanteRes.data?.data;
+
+    // Verificar que todos los campos del perfil estén llenos
+    if (
+      informe &&
+      informe.intereses &&
+      informe.inteligenciasMultiples &&
+      informe.inteligenciaEmocional &&
+      informe.personalidad &&
+      informe.razonamientoAbstracto &&
+      informe.perseverancia &&
+      postulante &&
+      postulante.carrerasInteres &&
+      postulante.carrerasInteres.length > 0
+    ) {
+      isProfileComplete.value = true;
+    } else {
+      isProfileComplete.value = false;
+    }
+  } catch (error) {
+    console.error("Error validando el perfil:", error);
+    isProfileComplete.value = false;
+  }
+});
 
 // ==========================================
 // PREGUNTAS SITUACIONALES (NIVEL AVANZADO)
@@ -287,46 +323,6 @@ const handleSelect = (questionId: number, category: string) => {
 };
 
 // ----------------------------------------------------
-// PDF UPLOAD LOGIC
-// ----------------------------------------------------
-const handleFileChange = async (e: Event) => {
-  const file = (e.target as HTMLInputElement).files?.[0];
-  if (!file || file.type !== "application/pdf") {
-    alert("Sube un archivo PDF válido.");
-    return;
-  }
-  selectedPdf.value = file;
-  await processPdfToAi(file);
-};
-
-const processPdfToAi = async (file: File) => {
-  try {
-    isUploadingPdf.value = true;
-    const formData = new FormData();
-    formData.append("file", file);
-    const response = await api.post(
-      "/api/v1/ai/documento/intereses",
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } },
-    );
-    pdfAnalysisResult.value =
-      typeof response.data === "string"
-        ? response.data
-        : response.data.message || "Datos extraídos.";
-  } catch (error) {
-    alert("Error procesando PDF. Usa el test manual.");
-    selectedPdf.value = null;
-  } finally {
-    isUploadingPdf.value = false;
-  }
-};
-
-const skipTestAndGenerate = () => {
-  currentStep.value = totalQuestions.value + 1;
-  runAiScanning();
-};
-
-// ----------------------------------------------------
 // AI SCANNING LOGIC & CALCULATION
 // ----------------------------------------------------
 const runAiScanning = async () => {
@@ -347,12 +343,9 @@ const runAiScanning = async () => {
   try {
     const categories = Object.values(selectedOptions.value);
     let gustos =
-      categories.length > 0 ? categories.join(", ") : "Ninguno (Vía PDF)";
+      categories.length > 0 ? categories.join(", ") : "Ninguno";
     let habilidades = "Razonamiento lógico, trabajo bajo presión";
     let miedos = "rutina, estancamiento";
-
-    if (pdfAnalysisResult.value)
-      gustos += `. Contexto PDF: ${pdfAnalysisResult.value}`;
 
     const response = await api.get("/api/v1/ai/perfilar", {
       params: { gustos, habilidades, miedos },
@@ -365,7 +358,6 @@ const runAiScanning = async () => {
         resData.data && resData.data.length > 0 ? resData.data[0] : null;
 
       if (firstCareer) {
-        // Asignamos stats artificiales (gamificados) basados en la carrera detectada para que se vea PRO
         let aiStats = generateStats(firstCareer.nombre.toLowerCase());
 
         computedResult.value = {
@@ -427,7 +419,6 @@ const generateStats = (careerStr: string) => {
       { label: "Liderazgo Directivo", value: 95, color: "bg-amber-500" },
     ];
   } else {
-    // Psicologia o afines
     return [
       { label: "Pensamiento Lógico", value: 65, color: "bg-blue-600" },
       { label: "Innovación Técnica", value: 50, color: "bg-indigo-500" },
@@ -499,12 +490,11 @@ const saveAndRedirect = () => {
     <div
       class="flex flex-col items-center justify-center flex-1 w-full max-w-5xl mx-auto"
     >
-      <!-- STEP 0: WELCOME & PDF UPLOAD -->
+      <!-- STEP 0: WELCOME -->
       <Card
         v-if="currentStep === 0"
         class="relative w-full p-4 overflow-hidden border-0 shadow-[0_0_50px_-12px_rgba(59,130,246,0.25)] sm:p-10 bg-white/95 rounded-3xl"
       >
-        <!-- Background animated blobs -->
         <div class="absolute top-0 right-0 w-96 h-96 -mt-32 -mr-32 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-[pulse_7s_infinite]" />
         <div class="absolute bottom-0 left-0 w-96 h-96 -mb-32 -ml-32 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-[pulse_7s_infinite_2s]" />
 
@@ -532,115 +522,47 @@ const saveAndRedirect = () => {
             </p>
           </div>
 
-          <!-- SECCIÓN DE SUBIDA DE PDF -->
-          <div
-            class="max-w-xl p-6 mx-auto mt-8 border shadow-sm bg-slate-50 border-slate-200 rounded-2xl"
-          >
-            <h3
-              class="flex items-center justify-center gap-2 mb-2 text-sm font-black text-slate-800"
-            >
-              <FileText class="w-4 h-4 text-blue-600" />
-              Ingreso de Datos Externos (Opcional)
-            </h3>
-            <p class="mb-4 text-xs font-medium text-slate-500">
-              Sube un documento con tus inteligencias múltiples o historial
-              previo. La IA lo integrará a la evaluación.
-            </p>
-
-            <div
-              v-if="!selectedPdf"
-              class="relative flex flex-col items-center justify-center p-8 transition-all bg-white border-2 border-dashed cursor-pointer border-slate-300 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 group"
-            >
-              <input
-                type="file"
-                accept="application/pdf"
-                @change="handleFileChange"
-                class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
-              />
-              <div
-                class="p-3 mb-3 transition-transform rounded-full bg-slate-100 group-hover:bg-blue-100 group-hover:scale-110"
-              >
-                <UploadCloud
-                  class="w-6 h-6 text-slate-500 group-hover:text-blue-600"
-                />
-              </div>
-              <span
-                class="text-sm font-bold text-slate-700 group-hover:text-blue-700"
-                >Arrastra tu PDF aquí o examina</span
-              >
-            </div>
-
-            <div v-else class="flex flex-col items-center gap-3 mt-4">
-              <div
-                class="flex items-center justify-between w-full p-4 bg-white border shadow-sm border-emerald-200 rounded-xl"
-              >
-                <div class="flex items-center gap-3 overflow-hidden">
-                  <div class="p-2 rounded-lg bg-emerald-100">
-                    <FileText class="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <span class="text-sm font-bold truncate text-slate-700">{{
-                    selectedPdf.name
-                  }}</span>
-                </div>
-                <button
-                  v-if="!isUploadingPdf"
-                  @click="
-                    selectedPdf = null;
-                    pdfAnalysisResult = '';
-                  "
-                  class="transition-colors text-slate-400 hover:text-red-500"
-                >
-                  <XCircle class="w-5 h-5" />
-                </button>
-              </div>
-
-              <div
-                v-if="isUploadingPdf"
-                class="flex items-center px-4 py-2 text-xs font-bold text-blue-600 rounded-full bg-blue-50"
-              >
-                <Loader2 class="w-4 h-4 mr-2 animate-spin" /> Escaneando datos
-                cognitivos...
-              </div>
-              <div
-                v-else-if="pdfAnalysisResult"
-                class="flex items-center px-4 py-2 text-xs font-bold border rounded-full text-emerald-700 bg-emerald-50 border-emerald-200"
-              >
-                <Check class="w-4 h-4 mr-1.5" /> Metadatos asimilados
-                correctamente.
-              </div>
-            </div>
+          <!-- ESTADO CARGANDO PERFIL -->
+          <div v-if="isProfileComplete === null" class="py-12">
+            <Loader2 class="w-12 h-12 mx-auto text-blue-600 animate-spin" />
+            <p class="mt-4 text-sm font-bold text-slate-500">Validando configuración de perfil...</p>
           </div>
 
-          <!-- BOTONES -->
-          <div
-            class="flex flex-col items-center justify-center gap-4 pt-6 sm:flex-row"
-          >
+          <!-- BLOQUEO SI FALTA CONFIGURACIÓN -->
+          <div v-else-if="isProfileComplete === false" class="max-w-xl p-8 mx-auto mt-8 border shadow-sm bg-red-50/50 border-red-200 rounded-2xl">
+            <ShieldAlert class="w-12 h-12 mx-auto mb-4 text-red-500" />
+            <h3 class="mb-2 text-xl font-black text-slate-800">
+              Perfil Incompleto
+            </h3>
+            <p class="mb-6 text-sm font-medium text-slate-600">
+              Para generar un laberinto vocacional preciso, necesitamos que respondas las 6 preguntas principales y selecciones tus carreras de interés en la configuración de tu perfil.
+            </p>
             <Button
-              v-if="selectedPdf && !isUploadingPdf"
-              @click="skipTestAndGenerate"
-              class="w-full px-8 font-black text-white transition-transform shadow-lg sm:w-auto h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 rounded-xl shadow-emerald-500/30 hover:-translate-y-1"
-            >
-              <Sparkles class="w-5 h-5 mr-2" /> Generar Perfil Directamente
-            </Button>
-
-            <Button
+              @click="router.push('/configuracion')"
               size="lg"
-              :disabled="isUploadingPdf"
-              :variant="selectedPdf ? 'outline' : 'default'"
-              class="w-full px-8 font-black transition-transform shadow-md sm:w-auto h-14 rounded-xl hover:-translate-y-1"
-              :class="
-                !selectedPdf
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/30'
-                  : 'border-slate-300 text-slate-600 hover:bg-slate-50'
-              "
-              @click="nextStep"
+              class="w-full text-white shadow-lg bg-blue-600 hover:bg-blue-700 font-bold h-14 rounded-xl hover:scale-105 transition-transform"
             >
-              {{
-                selectedPdf
-                  ? "Continuar Assessment Completo"
-                  : "Iniciar Assessment Interactivo"
-              }}
-              <ArrowRight class="w-5 h-5 ml-2" />
+              Completar Configuración
+            </Button>
+          </div>
+
+          <!-- BOTÓN INICIAR TEST -->
+          <div v-else class="max-w-xl p-6 mx-auto mt-8 border shadow-sm bg-slate-50 border-slate-200 rounded-2xl">
+            <h3 class="flex items-center justify-center gap-2 mb-2 text-sm font-black text-slate-800">
+              <Sparkles class="w-4 h-4 text-blue-600" />
+              Perfil validado exitosamente
+            </h3>
+            <p class="mb-6 text-xs font-medium text-slate-500">
+              Todos tus datos previos han sido cargados. Estás listo para comenzar el assessment de crisis y toma de decisiones.
+            </p>
+            
+            <Button
+              @click="nextStep"
+              size="lg"
+              class="w-full text-white shadow-lg bg-blue-600 hover:bg-blue-700 shadow-blue-500/30 group font-bold h-14 rounded-xl hover:scale-105 transition-transform"
+            >
+              Iniciar Assessment Interactivo
+              <ArrowRight class="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
         </CardContent>
