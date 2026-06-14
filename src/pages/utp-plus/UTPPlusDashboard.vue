@@ -52,32 +52,19 @@ const careers = computed(() => [
     name: t('utpplus.data.careers.c3'),
     match: 75,
     salary: "S/ 3,000 - S/ 5,500",
-<<<<<<< HEAD
-    duration: "5 años",
-    field: "Ingeniería",
-    color: "#FFB20D",
-=======
     duration: t('utpplus.data.careers.years'),
     field: t('utpplus.data.careers.f2'),
     color: "#D4A017",
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
   },
 ])
 
 const matchmakingNodes = computed(() => [
   { type: "student", label: t('utpplus.you'), color: "#B50E30" },
   { type: "mentor", label: "Ana García", color: "#082065" },
-<<<<<<< HEAD
-  { type: "course", label: "Intro a Programación", color: "#FFB20D" },
-  { type: "club", label: "Club de Robótica", color: "#2E7D32" },
-  { type: "resource", label: "Taller IA", color: "#F9A825" },
-]
-=======
   { type: "course", label: t('utpplus.data.nodes.n1'), color: "#D4A017" },
   { type: "club", label: t('utpplus.data.nodes.n2'), color: "#2E7D32" },
   { type: "resource", label: t('utpplus.data.nodes.n3'), color: "#F9A825" },
 ])
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
 
 const insights = computed(() => [
   {
@@ -112,15 +99,9 @@ const actions = computed(() => [
   },
   {
     icon: markRaw(Target),
-<<<<<<< HEAD
-    title: "Completar evaluación vocacional",
-    description: "Mejora tu perfil en un 20%",
-    color: "#FFB20D",
-=======
     title: t('utpplus.data.actions.a3_t'),
     description: t('utpplus.data.actions.a3_d'),
     color: "#D4A017",
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
   },
 ])
 

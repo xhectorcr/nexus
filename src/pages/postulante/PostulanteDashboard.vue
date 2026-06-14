@@ -34,25 +34,17 @@ const { t } = useI18n()
 
 const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
-  { icon: markRaw(Brain), label: t('nav.vocational_test'), href: "/postulante/test" },
+  { icon: markRaw(Brain), label: t('nav.vocational_tests'), href: "/postulante/test" },
 ])
 
 const mentors = ref<{name: string, career: string, online: boolean}[]>([])
 const entries = ref<any[]>([])
 
-<<<<<<< HEAD
-const stats = ref([
-  { label: "Laberinto completado", value: "40%", color: "#B50E30" },
-  { label: "Entradas en bitácora", value: "0", color: "#FFB20D" },
-  { label: "Conversaciones", value: "0", color: "#082065" },
-  { label: "Experiencia (XP)", value: "0 XP", color: "#2E7D32" },
-=======
 const stats = computed(() => [
-  { label: t('postulante.labyrinth_completed'), value: "40%", color: "#B50E30" },
-  { label: t('postulante.log_entries_count'), value: "0", color: "#D4A017" },
+  { label: t('postulante.labyrinth_completed'), value: "40%", color: "#082065" },
+  { label: t('postulante.log_entries_count'), value: "0", color: "#082065" },
   { label: t('postulante.conversations'), value: "0", color: "#082065" },
-  { label: t('postulante.experience'), value: "0 XP", color: "#2E7D32" },
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
+  { label: t('postulante.experience'), value: "0 XP", color: "#082065" },
 ])
 
 const fetchDashboardData = async () => {
@@ -152,7 +144,7 @@ onMounted(() => {
         <CardHeader class="relative z-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-2">
           <div>
             <div class="flex items-center gap-2 mb-2">
-              <Badge class="bg-green-500 text-white border-0 font-bold px-2.5 py-0.5 text-[11px] rounded-full">
+              <Badge class="bg-blue-500 text-white border-0 font-bold px-2.5 py-0.5 text-[11px] rounded-full">
                 {{ $t('postulante.test_completed') }}
               </Badge>
               <span class="text-xs text-blue-200 font-semibold">{{ $t('postulante.ai_recommendation') }}</span>
@@ -171,7 +163,7 @@ onMounted(() => {
           </div>
         </CardHeader>
         <CardContent class="relative z-10 flex flex-wrap gap-3 pt-4">
-          <Button class="bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-extrabold rounded-xl px-5 h-11 shadow-sm">
+          <Button class="bg-white hover:bg-gray-100 text-[#082065] font-extrabold rounded-xl px-5 h-11 shadow-sm">
             {{ $t('postulante.view_curriculum') }}
           </Button>
           <Button variant="outline" class="text-white border-white/20 hover:bg-white/10 font-bold rounded-xl h-11 px-5" @click="router.push('/postulante/test')">
@@ -185,7 +177,7 @@ onMounted(() => {
         <!-- Minijuego: Laberinto de Vocaciones -->
         <Card class="hover:shadow-lg transition-shadow">
           <CardHeader>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#B50E30] to-[#D13C5B] flex items-center justify-center mb-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3">
               <Gamepad2 class="w-6 h-6 text-white" />
             </div>
             <CardTitle>{{ $t('postulante.labyrinth') }}</CardTitle>
@@ -203,18 +195,18 @@ onMounted(() => {
                     :key="i"
                     class="rounded-lg bg-white/50 backdrop-blur-sm flex items-center justify-center"
                   >
-                    <Target v-if="i === 5" class="w-6 h-6 text-[#B50E30]" />
+                    <Target v-if="i === 5" class="w-6 h-6 text-[#082065]" />
                   </div>
                 </div>
               </div>
 
               <!-- Tags -->
               <div class="flex flex-wrap gap-2">
-                <Badge variant="secondary" class="bg-[#B50E30]/10 text-[#B50E30] border-[#B50E30]/20">
+                <Badge variant="secondary" class="bg-[#082065]/10 text-[#082065] border-[#082065]/20">
                   <Brain class="w-3 h-3 mr-1" />
                   {{ $t('postulante.interests') }}
                 </Badge>
-                <Badge variant="secondary" class="bg-[#FFB20D]/10 text-[#FFB20D] border-[#FFB20D]/20">
+                <Badge variant="secondary" class="bg-[#082065]/10 text-[#082065] border-[#082065]/20">
                   <Lightbulb class="w-3 h-3 mr-1" />
                   {{ $t('postulante.intelligences') }}
                 </Badge>
@@ -224,7 +216,7 @@ onMounted(() => {
                 </Badge>
               </div>
 
-              <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26]" @click="router.push('/postulante/laberinto')">
+              <Button class="w-full bg-[#082065] hover:bg-[#0D47A1]" @click="router.push('/postulante/laberinto')">
                 {{ $t('postulante.explore_labyrinth') }}
               </Button>
             </div>
@@ -234,7 +226,7 @@ onMounted(() => {
         <!-- Bitácora Digital -->
         <Card class="hover:shadow-lg transition-shadow">
           <CardHeader>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FFB20D] to-[#B8870F] flex items-center justify-center mb-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3">
               <BookOpen class="w-6 h-6 text-white" />
             </div>
             <CardTitle>{{ $t('postulante.digital_log') }}</CardTitle>
@@ -259,13 +251,8 @@ onMounted(() => {
                     <Plus class="w-4 h-4 mr-1" />
                     {{ $t('postulante.add_tag') }}
                   </Button>
-<<<<<<< HEAD
-                  <Button size="sm" class="bg-[#FFB20D] hover:bg-[#B8870F]">
-                    Guardar
-=======
-                  <Button size="sm" class="bg-[#D4A017] hover:bg-[#B8870F]">
+                  <Button size="sm" class="bg-[#082065] hover:bg-[#0D47A1]">
                     {{ $t('postulante.save') }}
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
                   </Button>
                 </div>
               </TabsContent>

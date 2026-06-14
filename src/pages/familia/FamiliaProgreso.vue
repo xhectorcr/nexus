@@ -102,20 +102,6 @@ const moduleProgress = computed(() => {
   ]
 })
 
-<<<<<<< HEAD
-const statusConfig: Record<string, any> = {
-  completed: { label: "¡Terminado!", bg: "bg-emerald-100", text: "text-emerald-800 font-bold", dot: "#2E7D32" },
-  in_progress: { label: "En progreso (Avanzando)", bg: "bg-amber-100", text: "text-amber-800 font-bold", dot: "#FFB20D" },
-  pending: { label: "Por empezar", bg: "bg-gray-100", text: "text-gray-600", dot: "#9ca3af" },
-}
-
-const stats = computed(() => {
-  return [
-    { label: "Horas dedicadas a estudiar", value: "8 horas y media", icon: markRaw(Clock), color: "#FFB20D" },
-    { label: "Temas completados", value: "2 de 6 listos", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-    { label: "Tareas para hacer hoy", value: "5 pendientes", icon: markRaw(Target), color: "#F9A825" },
-    { label: "Calificación promedio", value: "8.4 (Muy buena)", icon: markRaw(Star), color: "#FFB20D" },
-=======
 const statusConfig = computed<Record<string, any>>(() => ({
   completed: { label: t('familia.progreso.status.completed'), bg: "bg-emerald-100", text: "text-emerald-800 font-bold", dot: "#2E7D32" },
   in_progress: { label: t('familia.progreso.status.in_progress'), bg: "bg-amber-100", text: "text-amber-800 font-bold", dot: "#D4A017" },
@@ -128,23 +114,15 @@ const stats = computed(() => {
     { label: t('familia.progreso.completed_topics'), value: t('familia.progreso.topics_value'), icon: markRaw(CheckCircle2), color: "#2E7D32" },
     { label: t('familia.progreso.tasks_today'), value: t('familia.progreso.tasks_value'), icon: markRaw(Target), color: "#F9A825" },
     { label: t('familia.progreso.avg_score'), value: t('familia.progreso.score_value'), icon: markRaw(Star), color: "#D4A017" },
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
   ]
 })
 
 const timeline = computed(() => {
   return [
-<<<<<<< HEAD
-    { event: "Completó el test de Intereses Profesionales", time: "hace 2 horas", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-    { event: "Vio el video explicativo de Personalidad", time: "hace 5 horas", icon: markRaw(Clock), color: "#FFB20D" },
-    { event: "Ganó la medalla virtual 'Explorador'", time: "ayer", icon: markRaw(Star), color: "#FFB20D" },
-    { event: "Completó el tema de Inteligencias Múltiples", time: "hace 3 días", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-=======
     { event: t('familia.progreso.timeline.e1'), time: t('familia.progreso.timeline.e1_t'), icon: markRaw(CheckCircle2), color: "#2E7D32" },
     { event: t('familia.progreso.timeline.e2'), time: t('familia.progreso.timeline.e2_t'), icon: markRaw(Clock), color: "#082065" },
     { event: t('familia.progreso.timeline.e3'), time: t('familia.progreso.timeline.e3_t'), icon: markRaw(Star), color: "#D4A017" },
     { event: t('familia.progreso.timeline.e4'), time: t('familia.progreso.timeline.e4_t'), icon: markRaw(CheckCircle2), color: "#2E7D32" },
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
   ]
 })
 
@@ -217,13 +195,8 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
             <Sparkles class="w-6 h-6 fill-white" />
           </div>
           <div class="space-y-4">
-<<<<<<< HEAD
-            <h3 class="font-extrabold text-amber-900 text-xl flex items-center gap-2">
-              Explicación Sencilla de NEXUS Inteligencia Artificial
-=======
             <h3 class="font-extrabold text-blue-900 text-xl flex items-center gap-2">
               {{ $t('familia.progreso.ai_title') }}
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
             </h3>
             <p class="text-gray-800 leading-relaxed font-medium" :class="vistaFacil ? 'text-lg' : 'text-base'">
               "{{ textoExplicacionIA }}"
@@ -261,11 +234,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
                 <span class="text-white/70 text-xs font-semibold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded">{{ $t('familia.progreso.registered_child') }}</span>
                 <h1 class="text-2xl font-black">{{ auth.state.user?.studentName || 'Alejandro Lastra Torres' }}</h1>
                 <p class="text-sm font-semibold text-white/90">
-<<<<<<< HEAD
-                  Carrera recomendada por IA: <span class="bg-white text-[#FFB20D] px-2 py-0.5 rounded ml-1 font-extrabold text-xs">{{ auth.state.user?.careerSuggestion || 'Ingeniería de Sistemas' }}</span>
-=======
                   {{ $t('familia.progreso.recommended_career') }} <span class="bg-white text-[#D4A017] px-2 py-0.5 rounded ml-1 font-extrabold text-xs">{{ auth.state.user?.careerSuggestion || 'Ingeniería de Sistemas' }}</span>
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
                 </p>
               </div>
             </div>

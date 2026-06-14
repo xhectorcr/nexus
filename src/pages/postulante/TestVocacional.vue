@@ -339,15 +339,9 @@ const calculateResults = () => {
     computedResult.value = {
       career: t('testVocacional.careers.administracion'),
       percentage: basePercentage,
-<<<<<<< HEAD
-      description: 'Tus decisiones reflejan visión estratégica, habilidades de liderazgo y un alto sentido para la gestión comercial. Estás preparado/a para dirigir proyectos, optimizar recursos empresariales y fundar startups innovadoras.',
-      skills: ['Liderazgo y trabajo en equipo', 'Visión estratégica y comercial', 'Optimización de recursos financieros', 'Gestión de proyectos y negocios'],
-      color: '#FFB20D',
-=======
       description: t('testVocacional.careers.administracion_desc'),
       skills: [t('testVocacional.careers.administracion_s1'), t('testVocacional.careers.administracion_s2'), t('testVocacional.careers.administracion_s3'), t('testVocacional.careers.administracion_s4')],
       color: '#D4A017',
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
       colorBg: 'bg-amber-50 border-amber-200 text-amber-900',
       icon: Users2
     }

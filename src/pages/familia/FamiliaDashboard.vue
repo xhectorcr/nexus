@@ -234,14 +234,14 @@ const resources = computed(() => [
     description: t('familia.resources.r1_d'),
     downloads: 1243,
     icon: markRaw(FileText),
-    color: "#B50E30",
+    color: "#D4A017",
   },
   {
     title: t('familia.resources.r2_t'),
     description: t('familia.resources.r2_d'),
     downloads: 1567,
     icon: markRaw(TrendingUp),
-    color: "#082065",
+    color: "#D4A017",
   },
 ]);
 
@@ -263,17 +263,10 @@ const sidebarItems = computed(() => [
 <template>
   <DashboardLayout
     :sidebarItems="sidebarItems"
-<<<<<<< HEAD
-    title="Portal para Padres"
-    subtitle="Acompaña a tu hijo en su camino profesional de forma fácil y accesible"
-    :breadcrumbs="[{ label: 'Inicio' }]"
-    moduleColor="#FFB20D"
-=======
     :title="$t('familia.title')"
     :subtitle="$t('familia.subtitle')"
     :breadcrumbs="[{ label: $t('nav.home') }]"
     moduleColor="#D4A017"
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
   >
     <div class="space-y-6">
       
@@ -341,8 +334,8 @@ const sidebarItems = computed(() => [
           </CardHeader>
           
           <CardContent class="p-8 pt-6 space-y-6">
-            <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex gap-3 text-sm text-blue-800">
-              <Info class="w-5 h-5 shrink-0 text-blue-500" />
+            <div class="bg-amber-50/50 border border-amber-100 rounded-xl p-4 flex gap-3 text-sm text-amber-800">
+              <Info class="w-5 h-5 shrink-0 text-amber-500" />
               <p>
                 <strong>{{ $t('familia.where_code') }}</strong><br/>
                 {{ $t('familia.where_code_desc') }}
@@ -419,15 +412,15 @@ const sidebarItems = computed(() => [
             
             <!-- TARJETA: ESTADO PRINCIPAL (Semáforo) -->
             <Card class="p-6 md:p-8 border-2 shadow-sm rounded-2xl bg-white relative overflow-hidden"
-              :class="isStudentLinked ? 'border-emerald-300 bg-emerald-50/10' : 'border-blue-300 bg-blue-50/10'">
+              :class="isStudentLinked ? 'border-amber-300 bg-amber-50/10' : 'border-amber-300 bg-amber-50/10'">
               
               <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full blur-3xl opacity-50"
-                :class="isStudentLinked ? 'bg-emerald-300' : 'bg-blue-300'"></div>
+                :class="isStudentLinked ? 'bg-amber-300' : 'bg-amber-300'"></div>
 
               <div class="relative z-10">
                 <div class="flex items-center gap-3 mb-4">
-                  <span class="w-4 h-4 rounded-full animate-pulse" :class="isStudentLinked ? 'bg-emerald-500' : 'bg-blue-500'"></span>
-                  <span class="text-sm font-black tracking-wider uppercase" :class="isStudentLinked ? 'text-emerald-800' : 'text-blue-800'">
+                  <span class="w-4 h-4 rounded-full animate-pulse" :class="isStudentLinked ? 'bg-amber-500' : 'bg-amber-500'"></span>
+                  <span class="text-sm font-black tracking-wider uppercase" :class="isStudentLinked ? 'text-amber-800' : 'text-amber-800'">
                     {{ $t('familia.status_ok') }}
                   </span>
                 </div>
@@ -456,7 +449,7 @@ const sidebarItems = computed(() => [
 
                 <!-- CALL TO ACTION / NEXT STEP -->
                 <div class="mt-6 p-5 rounded-xl border flex items-start gap-4 shadow-sm bg-white"
-                     :class="isStudentLinked ? 'border-emerald-200' : 'border-blue-200'">
+                     :class="isStudentLinked ? 'border-amber-200' : 'border-amber-200'">
                   <div class="p-2 rounded-lg bg-gray-100 shrink-0">
                     <ArrowRight class="w-6 h-6 text-gray-700" />
                   </div>
@@ -505,7 +498,7 @@ const sidebarItems = computed(() => [
                       </p>
                       
                       <div class="mt-2">
-                        <Badge v-if="m.completed" class="bg-emerald-100 text-emerald-800 border-emerald-200 font-extrabold px-2.5 py-0.5">
+                        <Badge v-if="m.completed" class="bg-amber-100 text-amber-800 border-amber-200 font-extrabold px-2.5 py-0.5">
                           ✓ {{ $t('familia.completed') }}
                         </Badge>
                         <Badge v-else class="bg-gray-100 text-gray-600 border-gray-200 font-extrabold px-2.5 py-0.5">

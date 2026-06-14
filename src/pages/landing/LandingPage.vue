@@ -118,22 +118,6 @@ const router = useRouter()
             <CardContent>
               <ul class="space-y-2 text-sm text-[#5F6368]">
                 <li class="flex items-center gap-2">
-<<<<<<< HEAD
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#FFB20D]" />
-                  Panel de Progreso
-                </li>
-                <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#FFB20D]" />
-                  Recursos y Guías
-                </li>
-                <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#FFB20D]" />
-                  Foro Moderado
-                </li>
-              </ul>
-              <Button variant="ghost" class="w-full mt-6 text-[#FFB20D] group-hover:bg-[#FFB20D]/10">
-                Explorar módulo
-=======
                   <div class="w-1.5 h-1.5 rounded-full bg-[#D4A017]" />
                   {{ $t('landing.module2_f1') }}
                 </li>
@@ -148,7 +132,6 @@ const router = useRouter()
               </ul>
               <Button variant="ghost" class="w-full mt-6 text-[#D4A017] group-hover:bg-[#D4A017]/10">
                 {{ $t('landing.explore') }}
->>>>>>> 9e9480f0ebfe4d84286064d4259a62bd87af7fed
                 <ArrowRight class="w-4 h-4 ml-2" />
               </Button>
             </CardContent>
