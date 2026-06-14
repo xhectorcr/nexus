@@ -17,14 +17,13 @@ let rightBook: THREE.Group
 let particles: THREE.Points
 let animationFrameId: number
 
-// Texture Generator for the Cover
+// Texture Generators for PBR Materials
 const createCoverTexture = () => {
   const canvas = document.createElement('canvas')
   canvas.width = 1024
   canvas.height = 1024
   const ctx = canvas.getContext('2d')!
   
-  // Elegant dark red gradient, no noise
   const gradient = ctx.createLinearGradient(0, 0, 1024, 1024)
   gradient.addColorStop(0, '#B50E30')
   gradient.addColorStop(0.5, '#7A0A20')
@@ -32,14 +31,12 @@ const createCoverTexture = () => {
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, 1024, 1024)
 
-  // Minimalist border decorations
   ctx.strokeStyle = '#D4A017' // Gold
   ctx.lineWidth = 12
   ctx.strokeRect(50, 50, 924, 924)
   ctx.lineWidth = 2
   ctx.strokeRect(70, 70, 884, 884)
 
-  // Logo text
   ctx.fillStyle = '#D4A017' 
   ctx.font = 'bold 130px sans-serif'
   ctx.textAlign = 'center'
@@ -52,12 +49,114 @@ const createCoverTexture = () => {
   ctx.shadowBlur = 0
   ctx.fillText('by UTP', 512, 560)
 
-  // Spine line
   ctx.fillStyle = 'rgba(0,0,0,0.4)'
   ctx.fillRect(0, 0, 80, 1024)
 
   const texture = new THREE.CanvasTexture(canvas)
   texture.anisotropy = 16
+  return texture
+}
+
+const createMetalnessTexture = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1024
+  canvas.height = 1024
+  const ctx = canvas.getContext('2d')!
+  
+  // Fondo negro (No metálico)
+  ctx.fillStyle = '#000000'
+  ctx.fillRect(0, 0, 1024, 1024)
+
+  // Zonas Doradas blancas (Metálico)
+  ctx.strokeStyle = '#ffffff' 
+  ctx.lineWidth = 12
+  ctx.strokeRect(50, 50, 924, 924)
+  ctx.lineWidth = 2
+  ctx.strokeRect(70, 70, 884, 884)
+
+  ctx.fillStyle = '#ffffff' 
+  ctx.font = 'bold 130px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('NEXUS', 512, 480)
+  
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.anisotropy = 16
+  return texture
+}
+
+const createRoughnessTexture = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1024
+  canvas.height = 1024
+  const ctx = canvas.getContext('2d')!
+  
+  // Fondo gris claro (Cuero opaco, alta rugosidad)
+  ctx.fillStyle = 'rgb(200, 200, 200)'
+  ctx.fillRect(0, 0, 1024, 1024)
+
+  // Zonas Doradas gris oscuro (Metal liso y reflectante)
+  ctx.strokeStyle = 'rgb(40, 40, 40)' 
+  ctx.lineWidth = 12
+  ctx.strokeRect(50, 50, 924, 924)
+  ctx.lineWidth = 2
+  ctx.strokeRect(70, 70, 884, 884)
+
+  ctx.fillStyle = 'rgb(40, 40, 40)' 
+  ctx.font = 'bold 130px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('NEXUS', 512, 480)
+  
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.anisotropy = 16
+  return texture
+}
+
+const createBumpTexture = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 512
+  const ctx = canvas.getContext('2d')!
+  
+  ctx.fillStyle = '#808080'
+  ctx.fillRect(0, 0, 512, 512)
+  
+  // Ruido granulado fino para poros del cuero
+  const imgData = ctx.getImageData(0, 0, 512, 512)
+  const data = imgData.data
+  for (let i = 0; i < data.length; i += 4) {
+    const noise = 128 + (Math.random() - 0.5) * 30
+    data[i] = noise
+    data[i+1] = noise
+    data[i+2] = noise
+    data[i+3] = 255
+  }
+  ctx.putImageData(imgData, 0, 0)
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.wrapS = THREE.RepeatWrapping
+  texture.wrapT = THREE.RepeatWrapping
+  texture.repeat.set(4, 4)
+  return texture
+}
+
+const createPageEdgeTexture = () => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 256
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')!
+  
+  ctx.fillStyle = '#fdfdfd'
+  ctx.fillRect(0, 0, 256, 256)
+  
+  // Líneas finas simulando hojas apiladas
+  ctx.fillStyle = '#e0e0e0'
+  for(let y=0; y<256; y+=3) {
+    ctx.fillRect(0, y, 256, 1)
+  }
+  
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.wrapS = THREE.RepeatWrapping
+  texture.wrapT = THREE.RepeatWrapping
   return texture
 }
 
@@ -76,26 +175,44 @@ const initThree = () => {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap
   canvasContainer.value.appendChild(renderer.domElement)
 
-  // --- BOOK ---
   bookGroup = new THREE.Group()
   leftBook = new THREE.Group()
   rightBook = new THREE.Group()
   bookGroup.add(leftBook)
   bookGroup.add(rightBook)
 
-  // Dimensiones masivas
   const bookW = 5.0
   const bookH = 6.8
   const bookD = 0.6
   const coverThickness = 0.12
 
-  const coverTex = createCoverTexture()
-  const coverMatFront = new THREE.MeshStandardMaterial({ map: coverTex, roughness: 0.7, metalness: 0.2 })
-  const coverMatBack = new THREE.MeshStandardMaterial({ color: 0x8F0B26, roughness: 0.8 })
-  const pageMat = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.9 })
+  // Texturas PBR
+  const bumpTex = createBumpTexture()
+  const coverMatFront = new THREE.MeshStandardMaterial({ 
+    map: createCoverTexture(),
+    bumpMap: bumpTex,
+    bumpScale: 0.003,
+    metalnessMap: createMetalnessTexture(),
+    roughnessMap: createRoughnessTexture()
+  })
 
-  // LADO DERECHO (Base + Páginas)
-  // Lo posicionamos para que su borde izquierdo esté en x=0
+  const coverMatBack = new THREE.MeshStandardMaterial({ 
+    color: 0x660519, 
+    bumpMap: bumpTex,
+    bumpScale: 0.003,
+    roughness: 0.85,
+    metalness: 0.1
+  })
+
+  // Material de las páginas
+  const pageMatFace = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.9 })
+  const pageMatEdge = new THREE.MeshStandardMaterial({ map: createPageEdgeTexture(), roughness: 0.9 })
+
+  // BoxGeometry caras: 0:Right, 1:Left, 2:Top, 3:Bottom, 4:Front, 5:Back
+  const rightPagesMaterials = [ pageMatEdge, pageMatFace, pageMatEdge, pageMatEdge, pageMatFace, pageMatFace ]
+  const leftPagesMaterials = [ pageMatFace, pageMatEdge, pageMatEdge, pageMatEdge, pageMatFace, pageMatFace ]
+
+  // LADO DERECHO
   const rightCoverGeo = new THREE.BoxGeometry(bookW, bookH, coverThickness)
   rightCoverGeo.translate(bookW / 2, 0, -bookD/2 + coverThickness/2)
   const rightCoverMesh = new THREE.Mesh(rightCoverGeo, coverMatBack)
@@ -105,33 +222,28 @@ const initThree = () => {
 
   const pagesRightGeo = new THREE.BoxGeometry(bookW - 0.2, bookH - 0.3, bookD - coverThickness)
   pagesRightGeo.translate((bookW - 0.2) / 2 + 0.1, 0, 0)
-  const pagesRightMesh = new THREE.Mesh(pagesRightGeo, pageMat)
+  const pagesRightMesh = new THREE.Mesh(pagesRightGeo, rightPagesMaterials)
   pagesRightMesh.castShadow = true
   pagesRightMesh.receiveShadow = true
   rightBook.add(pagesRightMesh)
 
-  // LADO IZQUIERDO (Portada que se abre)
-  // Lo posicionamos en el MISMO LUGAR que el derecho (cerrado encima de las páginas)
+  // LADO IZQUIERDO
   const leftCoverGeo = new THREE.BoxGeometry(bookW, bookH, coverThickness)
   leftCoverGeo.translate(bookW / 2, 0, bookD/2 - coverThickness/2)
   
-  // Materials: 0:Right, 1:Left, 2:Top, 3:Bottom, 4:Front(+Z), 5:Back(-Z)
-  const materials = [
-    coverMatBack, coverMatBack, coverMatBack, coverMatBack, coverMatFront, coverMatBack
-  ]
-  const leftCoverMesh = new THREE.Mesh(leftCoverGeo, materials)
+  const coverMaterials = [ coverMatBack, coverMatBack, coverMatBack, coverMatBack, coverMatFront, coverMatBack ]
+  const leftCoverMesh = new THREE.Mesh(leftCoverGeo, coverMaterials)
   leftCoverMesh.castShadow = true
   leftCoverMesh.receiveShadow = true
   leftBook.add(leftCoverMesh)
 
   const pagesLeftGeo = new THREE.BoxGeometry(bookW - 0.2, bookH - 0.3, 0.05)
   pagesLeftGeo.translate((bookW - 0.2) / 2 + 0.1, 0, bookD/2 - coverThickness - 0.025)
-  const pagesLeftMesh = new THREE.Mesh(pagesLeftGeo, pageMat)
+  const pagesLeftMesh = new THREE.Mesh(pagesLeftGeo, leftPagesMaterials)
   pagesLeftMesh.receiveShadow = true
   leftBook.add(pagesLeftMesh)
 
   // LOMO (Spine)
-  // Ubicado exactamente en x=0 para hacer de bisagra
   const spineGeo = new THREE.BoxGeometry(coverThickness, bookH, bookD)
   spineGeo.translate(-coverThickness/2, 0, 0)
   const spineMesh = new THREE.Mesh(spineGeo, coverMatBack)
@@ -220,7 +332,6 @@ const animate = () => {
   let targetHinge = 0
 
   if (scrollProgress < 0.25) {
-    // FASE 1: Cerrado, flotando a la derecha
     const p = scrollProgress / 0.25
     targetX = window.innerWidth > 768 ? 4 : 0
     targetY = Math.sin(Date.now() * 0.002) * 0.2
@@ -229,7 +340,6 @@ const animate = () => {
     targetRotY = -0.5 + p * 0.2
     targetHinge = 0 
   } else if (scrollProgress < 0.55) {
-    // FASE 2: Viaje al centro
     const p = (scrollProgress - 0.25) / 0.30
     const ease = 1 - Math.pow(1 - p, 3) 
     targetX = (window.innerWidth > 768 ? 4 : 0) * (1 - ease)
@@ -239,18 +349,16 @@ const animate = () => {
     targetRotY = (-0.3) * (1 - ease) + 0 * ease 
     targetHinge = 0
   } else {
-    // FASE 3: Apertura real desde el lomo y perspectiva plana
     const p = Math.min((scrollProgress - 0.55) / 0.25, 1)
     const ease = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2
     targetX = 0
     targetY = 0
-    targetZ = 1 + ease * 8.5 // Acercamiento gigante hacia la cámara (zoom inmersivo)
-    targetRotX = 0.5 * (1 - ease) // Regresa a 0 para que la cara quede perfectamente plana 2D
+    targetZ = 1 + ease * 8.5 
+    targetRotX = 0.5 * (1 - ease) 
     targetRotY = 0
-    targetHinge = ease * (-Math.PI + 0.1) // Cae a la izquierda usando la bisagra matemática
+    targetHinge = ease * (-Math.PI + 0.1)
   }
 
-  // Interpolar físicamente
   currentBookX += (targetX - currentBookX) * 0.05
   currentBookY += (targetY - currentBookY) * 0.05
   currentBookZ += (targetZ - currentBookZ) * 0.05
@@ -271,7 +379,6 @@ const animate = () => {
     }
   }
 
-  // Partículas
   if (particles) {
     particles.rotation.y += 0.0005
     const positions = particles.geometry.attributes.position.array as Float32Array

@@ -3,11 +3,17 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { GraduationCap, Users, Sparkles, ArrowRight } from 'lucide-vue-next'
+import { GraduationCap, Users, Sparkles, ArrowRight, Menu, X } from 'lucide-vue-next'
 import LanguageSelector from '@/components/LanguageSelector.vue'
 import ThreeBook from '@/components/ThreeBook.vue'
 
 const router = useRouter()
+
+// Mobile menu state
+const isMobileMenuOpen = ref(false)
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
 
 // Scroll tracking for Scrollytelling
 const scrollProgress = ref(0)
@@ -38,7 +44,13 @@ const modulesPointerEvents = computed(() => scrollProgress.value > 0.8 ? 'auto' 
 </script>
 
 <template>
-  <div class="h-[400vh] relative">
+  <div class="h-[400vh] relative bg-transparent">
+    <!-- Premium Vibrant Mesh Gradient Background -->
+    <div class="fixed inset-0 pointer-events-none z-[-20] overflow-hidden bg-[#FAFAFA]">
+      <div class="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-br from-rose-200/40 to-orange-100/40 blur-[100px]"></div>
+      <div class="absolute top-[20%] right-[-20%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-bl from-violet-200/40 to-fuchsia-200/40 blur-[120px]"></div>
+      <div class="absolute bottom-[-10%] left-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-tr from-blue-200/30 to-cyan-100/30 blur-[130px]"></div>
+    </div>
     <ThreeBook />
     <!-- Header -->
     <header class="fixed inset-x-0 border-b border-[#D9D9D9] bg-white/80 backdrop-blur-md top-0 z-50 transition-opacity duration-500" :style="{ opacity: Math.max(0.7, heroOpacity) }">
@@ -49,13 +61,41 @@ const modulesPointerEvents = computed(() => scrollProgress.value > 0.8 ? 'auto' 
           </div>
           <span class="font-semibold text-xl text-[#1F1F1F]">NEXUS</span>
         </div>
-        <nav class="flex items-center gap-4">
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-4">
           <LanguageSelector />
-          <Button variant="ghost">{{ $t('landing.about') }}</Button>
           <Button variant="ghost" @click="router.push('/login')">{{ $t('landing.login') }}</Button>
           <Button class="bg-[#B50E30] hover:bg-[#8F0B26] text-white" @click="router.push('/register')">{{ $t('landing.register') }}</Button>
         </nav>
+
+        <!-- Mobile Nav Toggle -->
+        <div class="md:hidden flex items-center gap-2">
+          <LanguageSelector />
+          <button @click="toggleMobileMenu" class="text-[#1F1F1F] p-2 focus:outline-none">
+            <Menu v-if="!isMobileMenuOpen" class="w-6 h-6" />
+            <X v-else class="w-6 h-6" />
+          </button>
+        </div>
       </div>
+
+      <!-- Mobile Dropdown -->
+      <transition 
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="transform -translate-y-4 opacity-0"
+        enter-to-class="transform translate-y-0 opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="transform translate-y-0 opacity-100"
+        leave-to-class="transform -translate-y-4 opacity-0"
+      >
+        <div v-if="isMobileMenuOpen" class="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md border-b border-[#D9D9D9] shadow-lg p-4 flex flex-col gap-2">
+          <Button variant="ghost" class="w-full justify-center" @click="router.push('/login'); isMobileMenuOpen = false">
+            {{ $t('landing.login') }}
+          </Button>
+          <Button class="w-full bg-[#B50E30] hover:bg-[#8F0B26] text-white justify-center" @click="router.push('/register'); isMobileMenuOpen = false">
+            {{ $t('landing.register') }}
+          </Button>
+        </div>
+      </transition>
     </header>
 
     <!-- Fixed Overlay for Scroll Narrative -->
