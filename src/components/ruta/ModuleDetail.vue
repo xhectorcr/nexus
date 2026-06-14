@@ -162,7 +162,7 @@ const toggle = (id: string) => {
 
             <div class="flex items-center gap-3 flex-shrink-0">
               <span class="text-xs text-muted-foreground hidden sm:block">{{ activity.duration }}</span>
-              <span class="text-xs font-medium" :style="{ color: activity.completed ? '#16a34a' : '#D4A017' }">
+              <span class="text-xs font-medium" :style="{ color: activity.completed ? '#16a34a' : '#FFB20D' }">
                 +{{ activity.xp }} XP
               </span>
               <CheckCircle2 v-if="activity.completed" class="w-5 h-5 text-green-500" />

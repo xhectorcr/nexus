@@ -50,14 +50,14 @@ const careers = [
     salary: "S/ 3,000 - S/ 5,500",
     duration: "5 años",
     field: "Ingeniería",
-    color: "#D4A017",
+    color: "#FFB20D",
   },
 ]
 
 const matchmakingNodes = [
   { type: "student", label: "Tú", color: "#B50E30" },
   { type: "mentor", label: "Ana García", color: "#082065" },
-  { type: "course", label: "Intro a Programación", color: "#D4A017" },
+  { type: "course", label: "Intro a Programación", color: "#FFB20D" },
   { type: "club", label: "Club de Robótica", color: "#2E7D32" },
   { type: "resource", label: "Taller IA", color: "#F9A825" },
 ]
@@ -97,7 +97,7 @@ const actions = [
     icon: markRaw(Target),
     title: "Completar evaluación vocacional",
     description: "Mejora tu perfil en un 20%",
-    color: "#D4A017",
+    color: "#FFB20D",
   },
 ]
 

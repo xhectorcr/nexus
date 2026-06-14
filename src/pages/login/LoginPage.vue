@@ -169,12 +169,12 @@ const themeColors = computed(() => {
       };
     case "familia":
       return {
-        primary: "#D4A017",
+        primary: "#FFB20D",
         hover: "#B8870F",
-        bgLight: "bg-[#D4A017]/5",
-        border: "border-[#D4A017]/20",
-        gradient: "from-[#D4A017] to-[#B8870F]",
-        text: "text-[#D4A017]",
+        bgLight: "bg-[#FFB20D]/5",
+        border: "border-[#FFB20D]/20",
+        gradient: "from-[#FFB20D] to-[#B8870F]",
+        text: "text-[#FFB20D]",
       };
     case "postulante":
       return {

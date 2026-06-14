@@ -44,7 +44,7 @@ const stats = [
     label: "Promedio Acumulado",
     value: "16.5",
     icon: markRaw(Star),
-    color: "#D4A017",
+    color: "#FFB20D",
   },
   {
     label: "Créditos Aprobados",
@@ -144,7 +144,7 @@ onMounted(() => {
               <div class="w-20 h-20 bg-gradient-to-tr from-white to-red-50 rounded-2xl p-1 relative z-10 shadow-xl overflow-hidden flex items-center justify-center">
                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop" class="w-full h-full object-cover rounded-xl" alt="Avatar" />
               </div>
-              <div class="absolute -bottom-2 -right-2 bg-[#D4A017] text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg z-20 border-2 border-[#8F0B26]">
+              <div class="absolute -bottom-2 -right-2 bg-[#FFB20D] text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg z-20 border-2 border-[#8F0B26]">
                 NIVEL 3
               </div>
             </div>

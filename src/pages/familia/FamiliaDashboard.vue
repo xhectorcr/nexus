@@ -264,7 +264,7 @@ const sidebarItems = [
     title="Portal para Padres"
     subtitle="Acompaña a tu hijo en su camino profesional de forma fácil y accesible"
     :breadcrumbs="[{ label: 'Inicio' }]"
-    moduleColor="#D4A017"
+    moduleColor="#FFB20D"
   >
     <div class="space-y-6">
       

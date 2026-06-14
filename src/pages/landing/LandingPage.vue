@@ -106,7 +106,7 @@ const router = useRouter()
         <router-link to="/familia">
           <Card class="h-full hover:shadow-xl transition-all duration-300 border-[#D9D9D9] group cursor-pointer">
             <CardHeader>
-              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#D4A017] to-[#B8870F] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FFB20D] to-[#B8870F] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Users class="w-7 h-7 text-white" />
               </div>
               <CardTitle class="text-[#1F1F1F]">NEXUS Familia</CardTitle>
@@ -117,19 +117,19 @@ const router = useRouter()
             <CardContent>
               <ul class="space-y-2 text-sm text-[#5F6368]">
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#D4A017]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#FFB20D]" />
                   Panel de Progreso
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#D4A017]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#FFB20D]" />
                   Recursos y Guías
                 </li>
                 <li class="flex items-center gap-2">
-                  <div class="w-1.5 h-1.5 rounded-full bg-[#D4A017]" />
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#FFB20D]" />
                   Foro Moderado
                 </li>
               </ul>
-              <Button variant="ghost" class="w-full mt-6 text-[#D4A017] group-hover:bg-[#D4A017]/10">
+              <Button variant="ghost" class="w-full mt-6 text-[#FFB20D] group-hover:bg-[#FFB20D]/10">
                 Explorar módulo
                 <ArrowRight class="w-4 h-4 ml-2" />
               </Button>

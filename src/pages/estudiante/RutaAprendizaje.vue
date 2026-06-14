@@ -66,7 +66,7 @@ const fetchNextIntelligentNode = async () => {
         modules.value = journey.nodos.map((nodo: any, i: number) => {
           let color = "#082065"
           let icon = Target
-          if (nodo.tipo === 'FORO') { color = "#D4A017"; icon = MapIcon }
+          if (nodo.tipo === 'FORO') { color = "#FFB20D"; icon = MapIcon }
           if (nodo.tipo === 'LABERINTO') { color = "#B50E30"; icon = Gamepad2 }
           if (nodo.tipo === 'MENTORIA') { color = "#2E7D32"; icon = Star }
           
@@ -422,7 +422,7 @@ onMounted(() => {
               { label: 'Horas estudiadas', value: '8.5h', icon: Clock, color: '#082065' },
               { label: 'Módulos completados', value: '1', icon: CheckCircle2, color: '#2E7D32' },
               { label: 'Actividades pendientes', value: '2', icon: Circle, color: '#F9A825' },
-              { label: 'Promedio evaluaciones', value: '8.4', icon: Star, color: '#D4A017' },
+              { label: 'Promedio evaluaciones', value: '8.4', icon: Star, color: '#FFB20D' },
             ]" :key="s.label" class="p-3 bg-secondary/50 rounded-xl">
               <component :is="s.icon" class="w-4 h-4 mb-1.5" :style="{ color: s.color }" />
               <div class="text-lg font-bold leading-none">{{ s.value }}</div>
@@ -462,10 +462,10 @@ onMounted(() => {
         </Card>
 
         <!-- Next objective -->
-        <Card class="border-[#D4A017]/30 bg-amber-50/50">
+        <Card class="border-[#FFB20D]/30 bg-amber-50/50">
           <CardContent class="p-4">
             <div class="flex items-start gap-3">
-              <div class="w-8 h-8 bg-[#D4A017] rounded-lg flex items-center justify-center flex-shrink-0">
+              <div class="w-8 h-8 bg-[#FFB20D] rounded-lg flex items-center justify-center flex-shrink-0">
                 <Target class="w-4 h-4 text-white" />
               </div>
               <div>

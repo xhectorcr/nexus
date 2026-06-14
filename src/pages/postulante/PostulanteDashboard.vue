@@ -40,7 +40,7 @@ const entries = ref<any[]>([])
 
 const stats = ref([
   { label: "Laberinto completado", value: "40%", color: "#B50E30" },
-  { label: "Entradas en bitácora", value: "0", color: "#D4A017" },
+  { label: "Entradas en bitácora", value: "0", color: "#FFB20D" },
   { label: "Conversaciones", value: "0", color: "#082065" },
   { label: "Experiencia (XP)", value: "0 XP", color: "#2E7D32" },
 ])
@@ -201,7 +201,7 @@ onMounted(() => {
                   <Brain class="w-3 h-3 mr-1" />
                   Intereses
                 </Badge>
-                <Badge variant="secondary" class="bg-[#D4A017]/10 text-[#D4A017] border-[#D4A017]/20">
+                <Badge variant="secondary" class="bg-[#FFB20D]/10 text-[#FFB20D] border-[#FFB20D]/20">
                   <Lightbulb class="w-3 h-3 mr-1" />
                   Inteligencias
                 </Badge>
@@ -221,7 +221,7 @@ onMounted(() => {
         <!-- Bitácora Digital -->
         <Card class="hover:shadow-lg transition-shadow">
           <CardHeader>
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#D4A017] to-[#B8870F] flex items-center justify-center mb-3">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FFB20D] to-[#B8870F] flex items-center justify-center mb-3">
               <BookOpen class="w-6 h-6 text-white" />
             </div>
             <CardTitle>Bitácora Digital</CardTitle>
@@ -246,7 +246,7 @@ onMounted(() => {
                     <Plus class="w-4 h-4 mr-1" />
                     Agregar etiqueta
                   </Button>
-                  <Button size="sm" class="bg-[#D4A017] hover:bg-[#B8870F]">
+                  <Button size="sm" class="bg-[#FFB20D] hover:bg-[#B8870F]">
                     Guardar
                   </Button>
                 </div>

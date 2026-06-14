@@ -61,7 +61,7 @@ const modules = [
     title: "Test de Personalidad y Valores",
     description: "Conoce tu perfil psicológico y ético.",
     icon: Heart,
-    color: "#D4A017",
+    color: "#FFB20D",
     status: "locked",
     progress: 0,
     xp: 150,
@@ -138,7 +138,7 @@ const selectedModule = ref<any>(null)
                   <AvatarImage src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop" />
                   <AvatarFallback class="bg-white/20 text-white">CP</AvatarFallback>
                 </Avatar>
-                <div class="absolute -bottom-1 -right-1 bg-[#D4A017] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                <div class="absolute -bottom-1 -right-1 bg-[#FFB20D] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   Nv.1
                 </div>
               </div>
@@ -146,8 +146,8 @@ const selectedModule = ref<any>(null)
                 <p class="text-white/70 text-xs">Explorador de Vocaciones</p>
                 <h2 class="font-semibold text-lg leading-tight">{{ auth.state.user?.name || 'Camila Postulante' }}</h2>
                 <div class="flex items-center gap-1.5 mt-1">
-                  <Target class="w-3.5 h-3.5 text-[#D4A017]" />
-                  <span class="text-[#D4A017] text-xs font-medium">Buscando su camino</span>
+                  <Target class="w-3.5 h-3.5 text-[#FFB20D]" />
+                  <span class="text-[#FFB20D] text-xs font-medium">Buscando su camino</span>
                 </div>
               </div>
               <div class="text-right text-white">
@@ -168,7 +168,7 @@ const selectedModule = ref<any>(null)
               <div class="w-full bg-white/20 rounded-full h-2">
                 <div
                   class="h-2 rounded-full transition-all duration-700"
-                  :style="{ width: `${totalProgress}%`, background: 'linear-gradient(90deg, #D4A017, #F0C040)' }"
+                  :style="{ width: `${totalProgress}%`, background: 'linear-gradient(90deg, #FFB20D, #F0C040)' }"
                 />
               </div>
             </div>

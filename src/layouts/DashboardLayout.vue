@@ -66,7 +66,7 @@ const logoImage = computed(() => {
   const color = props.moduleColor.toUpperCase()
   if (color === '#B50E30') return '/image/UTP-rojo.webp'
   if (color === '#082065') return '/image/UTP-azul.png'
-  if (color === '#D4A017') return '/image/UTP-dorado.png'
+  if (color === '#FFB20D') return '/image/UTP-dorado.png'
   return '/image/UTP-rojo.webp'
 })
 </script>

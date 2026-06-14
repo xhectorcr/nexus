@@ -66,7 +66,7 @@ const moduleProgress = computed(() => {
       desc: "Explora qué trabajos y profesiones del mundo real le llaman más la atención.",
       pct: 60, 
       status: "in_progress", 
-      color: "#D4A017" 
+      color: "#FFB20D" 
     },
     { 
       name: "3. Inteligencias Múltiples", 
@@ -80,7 +80,7 @@ const moduleProgress = computed(() => {
       desc: "Analiza cómo se comporta y resuelve problemas en el día a día.",
       pct: 50, 
       status: "in_progress", 
-      color: "#D4A017" 
+      color: "#FFB20D" 
     },
     { 
       name: "5. Simulador de Carreras", 
@@ -94,31 +94,31 @@ const moduleProgress = computed(() => {
       desc: "El resumen de todo su camino donde elige su carrera definitiva.",
       pct: 20, 
       status: "in_progress", 
-      color: "#D4A017" 
+      color: "#FFB20D" 
     },
   ]
 })
 
 const statusConfig: Record<string, any> = {
   completed: { label: "¡Terminado!", bg: "bg-emerald-100", text: "text-emerald-800 font-bold", dot: "#2E7D32" },
-  in_progress: { label: "En progreso (Avanzando)", bg: "bg-amber-100", text: "text-amber-800 font-bold", dot: "#D4A017" },
+  in_progress: { label: "En progreso (Avanzando)", bg: "bg-amber-100", text: "text-amber-800 font-bold", dot: "#FFB20D" },
   pending: { label: "Por empezar", bg: "bg-gray-100", text: "text-gray-600", dot: "#9ca3af" },
 }
 
 const stats = computed(() => {
   return [
-    { label: "Horas dedicadas a estudiar", value: "8 horas y media", icon: markRaw(Clock), color: "#082065" },
+    { label: "Horas dedicadas a estudiar", value: "8 horas y media", icon: markRaw(Clock), color: "#FFB20D" },
     { label: "Temas completados", value: "2 de 6 listos", icon: markRaw(CheckCircle2), color: "#2E7D32" },
     { label: "Tareas para hacer hoy", value: "5 pendientes", icon: markRaw(Target), color: "#F9A825" },
-    { label: "Calificación promedio", value: "8.4 (Muy buena)", icon: markRaw(Star), color: "#D4A017" },
+    { label: "Calificación promedio", value: "8.4 (Muy buena)", icon: markRaw(Star), color: "#FFB20D" },
   ]
 })
 
 const timeline = computed(() => {
   return [
     { event: "Completó el test de Intereses Profesionales", time: "hace 2 horas", icon: markRaw(CheckCircle2), color: "#2E7D32" },
-    { event: "Vio el video explicativo de Personalidad", time: "hace 5 horas", icon: markRaw(Clock), color: "#082065" },
-    { event: "Ganó la medalla virtual 'Explorador'", time: "ayer", icon: markRaw(Star), color: "#D4A017" },
+    { event: "Vio el video explicativo de Personalidad", time: "hace 5 horas", icon: markRaw(Clock), color: "#FFB20D" },
+    { event: "Ganó la medalla virtual 'Explorador'", time: "ayer", icon: markRaw(Star), color: "#FFB20D" },
     { event: "Completó el tema de Inteligencias Múltiples", time: "hace 3 días", icon: markRaw(CheckCircle2), color: "#2E7D32" },
   ]
 })
@@ -146,7 +146,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
       { label: 'Inicio', href: '/familia' },
       { label: 'Progreso' },
     ]"
-    moduleColor="#D4A017"
+    moduleColor="#FFB20D"
   >
     <div class="space-y-6">
 
@@ -173,7 +173,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
           
           <Button 
             @click="mostrarExplicacionIA = !mostrarExplicacionIA"
-            class="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold gap-1.5 shadow-sm"
+            class="bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-semibold gap-1.5 shadow-sm"
           >
             <Sparkles class="w-4 h-4 fill-white" />
             {{ mostrarExplicacionIA ? 'Cerrar Explicación IA' : 'Explicación Sencilla con IA' }}
@@ -184,15 +184,15 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
       <!-- Cuadro de Explicación de la IA (Interactivo) -->
       <Card 
         v-if="mostrarExplicacionIA" 
-        class="border-blue-400 bg-blue-50/50 shadow-md p-6 rounded-2xl relative overflow-hidden transition-all"
+        class="border-amber-400 bg-amber-50/50 shadow-md p-6 rounded-2xl relative overflow-hidden transition-all"
       >
-        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -mr-12 -mt-12 opacity-30"></div>
+        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-full -mr-12 -mt-12 opacity-30"></div>
         <div class="flex flex-col md:flex-row gap-5 items-start">
-          <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-lg">
+          <div class="w-12 h-12 rounded-2xl bg-amber-600 text-white flex items-center justify-center shrink-0 shadow-lg">
             <Sparkles class="w-6 h-6 fill-white" />
           </div>
           <div class="space-y-4">
-            <h3 class="font-extrabold text-blue-900 text-xl flex items-center gap-2">
+            <h3 class="font-extrabold text-amber-900 text-xl flex items-center gap-2">
               Explicación Sencilla de NEXUS Inteligencia Artificial
             </h3>
             <p class="text-gray-800 leading-relaxed font-medium" :class="vistaFacil ? 'text-lg' : 'text-base'">
@@ -201,14 +201,14 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
             <div class="flex flex-wrap items-center gap-3 pt-2">
               <Button 
                 @click="hablar(textoExplicacionIA)"
-                class="bg-blue-700 hover:bg-blue-800 text-white gap-2 rounded-xl font-bold text-sm h-10 px-5"
+                class="bg-amber-700 hover:bg-amber-800 text-white gap-2 rounded-xl font-bold text-sm h-10 px-5"
               >
                 <component :is="reproduciendoText === textoExplicacionIA ? VolumeX : Volume2" class="w-4.5 h-4.5" />
                 {{ reproduciendoText === textoExplicacionIA ? 'Detener Voz' : 'Escuchar Explicación en Voz Alta' }}
               </Button>
               <Button 
                 variant="ghost" 
-                class="text-blue-700 hover:text-blue-900 font-bold hover:bg-blue-100/50" 
+                class="text-amber-700 hover:text-amber-900 font-bold hover:bg-amber-100/50" 
                 @click="mostrarExplicacionIA = false"
               >
                 Entendido, gracias
@@ -219,7 +219,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
       </Card>
 
       <!-- Tarjeta Resumen del Alumno -->
-      <Card class="border-0 overflow-hidden shadow-lg" style="background: linear-gradient(135deg, #D4A017 0%, #B8870F 50%, #082065 100%)">
+      <Card class="border-0 overflow-hidden shadow-lg" style="background: linear-gradient(135deg, #FFD54F 0%, #FFB20D 50%, #B8870F 100%)">
         <CardContent class="p-6">
           <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div class="flex items-center gap-4">
@@ -231,7 +231,7 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
                 <span class="text-white/70 text-xs font-semibold uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded">Hijo Registrado</span>
                 <h1 class="text-2xl font-black">{{ auth.state.user?.studentName || 'Alejandro Lastra Torres' }}</h1>
                 <p class="text-sm font-semibold text-white/90">
-                  Carrera recomendada por IA: <span class="bg-white text-[#D4A017] px-2 py-0.5 rounded ml-1 font-extrabold text-xs">{{ auth.state.user?.careerSuggestion || 'Ingeniería de Sistemas' }}</span>
+                  Carrera recomendada por IA: <span class="bg-white text-[#FFB20D] px-2 py-0.5 rounded ml-1 font-extrabold text-xs">{{ auth.state.user?.careerSuggestion || 'Ingeniería de Sistemas' }}</span>
                 </p>
               </div>
             </div>
@@ -379,8 +379,8 @@ const textoExplicacionIA = computed(() => `Hola. Te explico el avance de ${stude
           <!-- Fecha de entrega estimada -->
           <Card class="border-gray-200 shadow-sm">
             <CardContent class="p-4 flex items-center gap-3">
-              <div class="w-10 h-10 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center shrink-0">
-                <Calendar class="w-5 h-5 text-blue-600" />
+              <div class="w-10 h-10 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-center shrink-0">
+                <Calendar class="w-5 h-5 text-amber-600" />
               </div>
               <div>
                 <p class="text-[10px] text-gray-500 font-bold uppercase leading-none">Fecha estimada de finalización</p>

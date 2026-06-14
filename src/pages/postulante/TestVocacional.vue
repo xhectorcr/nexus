@@ -339,7 +339,7 @@ const calculateResults = () => {
       percentage: basePercentage,
       description: 'Tus decisiones reflejan visión estratégica, habilidades de liderazgo y un alto sentido para la gestión comercial. Estás preparado/a para dirigir proyectos, optimizar recursos empresariales y fundar startups innovadoras.',
       skills: ['Liderazgo y trabajo en equipo', 'Visión estratégica y comercial', 'Optimización de recursos financieros', 'Gestión de proyectos y negocios'],
-      color: '#D4A017',
+      color: '#FFB20D',
       colorBg: 'bg-amber-50 border-amber-200 text-amber-900',
       icon: Users2
     }
