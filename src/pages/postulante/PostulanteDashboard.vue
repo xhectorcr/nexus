@@ -45,6 +45,8 @@ const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
   { icon: markRaw(Brain), label: t('nav.vocational_tests'), href: "/postulante/test" },
   { icon: markRaw(Gamepad2), label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
+  { icon: markRaw(BookOpen), label: t('postulante.digital_log'), href: "/postulante/bitacora" },
+  { icon: markRaw(MessageCircle), label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
 ])
 
 const mentors = ref<{ name: string; career: string; online: boolean }[]>([]);
@@ -299,7 +301,7 @@ onMounted(() => {
       </Card>
 
       <!-- Main Features Grid -->
-      <div class="grid gap-6 md:grid-cols-3">
+      <div class="grid gap-6 md:grid-cols-2">
         <!-- Minijuego: Laberinto de Vocaciones -->
         <Card class="transition-shadow hover:shadow-lg">
           <CardHeader>
@@ -414,7 +416,7 @@ onMounted(() => {
         </Card>
 
         <!-- Conexión P2P -->
-        <Card class="transition-shadow hover:shadow-lg">
+        <Card class="transition-shadow hover:shadow-lg md:col-span-2">
           <CardHeader>
             <div
               class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3"
