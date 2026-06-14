@@ -8,6 +8,9 @@ import FamiliaProgreso from "@/pages/familia/FamiliaProgreso.vue";
 import LandingPage from "@/pages/landing/LandingPage.vue";
 import LoginPage from "@/pages/login/LoginPage.vue";
 import Bitacora from "@/pages/postulante/Bitacora.vue";
+import BitacoraEstudiante from "@/pages/estudiante/Bitacora.vue";
+import ForoEstudiante from "@/pages/estudiante/Foro.vue";
+import ForoPostulante from "@/pages/postulante/Foro.vue";
 import LaberintoVocaciones from "@/pages/postulante/LaberintoVocaciones.vue";
 import P2P from "@/pages/postulante/P2P.vue";
 import PostulanteDashboard from "@/pages/postulante/PostulanteDashboard.vue";
@@ -76,6 +79,13 @@ const router = createRouter({
           meta: { requiresAuth: true, role: "postulante" },
         },
         {
+          // Postulante Foro
+          path: "postulante/foro",
+          name: "postulante-foro",
+          component: ForoPostulante,
+          meta: { requiresAuth: true, role: "postulante" },
+        },
+        {
           // Estudiante Dashboard
           path: "estudiante",
           name: "estudiante",
@@ -87,6 +97,20 @@ const router = createRouter({
           path: "estudiante/ruta",
           name: "estudiante-ruta",
           component: RutaAprendizaje,
+          meta: { requiresAuth: true, role: "estudiante" },
+        },
+        {
+          // Estudiante Bitacora
+          path: "estudiante/bitacora",
+          name: "estudiante-bitacora",
+          component: BitacoraEstudiante,
+          meta: { requiresAuth: true, role: "estudiante" },
+        },
+        {
+          // Estudiante Foro
+          path: "estudiante/foro",
+          name: "estudiante-foro",
+          component: ForoEstudiante,
           meta: { requiresAuth: true, role: "estudiante" },
         },
         {

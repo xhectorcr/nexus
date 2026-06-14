@@ -9,20 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
-import {
-  ArrowRight,
-  Award,
-  Bell,
-  BookOpen,
-  Check,
-  ChevronRight,
-  Clock,
-  Copy,
-  Home,
-  Map as MapIcon,
-  Star,
-  TrendingUp,
-} from "lucide-vue-next";
+import { ArrowRight, Award, Bell, BookOpen, Check, ChevronRight, Clock, Copy, Home, Map as MapIcon, Star, TrendingUp, MessageSquare } from "lucide-vue-next";
 import { computed, markRaw, onMounted, ref } from "vue";
 
 import { api } from "@/lib/api";
@@ -69,6 +56,16 @@ const sidebarItems = computed(() => [
     icon: markRaw(MapIcon),
     label: t("nav.learning_path"),
     href: "/estudiante/ruta",
+  },
+  {
+    icon: markRaw(BookOpen),
+    label: t("postulante.digital_log") || "Bitácora",
+    href: "/estudiante/bitacora",
+  },
+  {
+    icon: markRaw(MessageSquare),
+    label: "Foro UTP+",
+    href: "/estudiante/foro",
   },
 ]);
 

@@ -17,25 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import {
-  ArrowLeft,
-  Award,
-  BookOpen,
-  CheckCircle2,
-  Circle,
-  Clock,
-  Flame,
-  Gamepad2,
-  Home,
-  Info,
-  Lock,
-  Map as MapIcon,
-  PlayCircle,
-  Sparkles,
-  Star,
-  Target,
-  TrendingUp,
-} from "lucide-vue-next";
+import { ArrowLeft, Award, BookOpen, CheckCircle2, Circle, Clock, Flame, Gamepad2, Home, Info, Lock, Map as MapIcon, PlayCircle, Sparkles, Star, Target, TrendingUp, MessageSquare } from "lucide-vue-next";
 import { computed, markRaw, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -61,6 +43,16 @@ const sidebarItems = computed(() => [
     icon: markRaw(MapIcon),
     label: t("nav.learning_path") || "Ruta Inteligente",
     href: "/estudiante/ruta",
+  },
+  {
+    icon: markRaw(BookOpen),
+    label: t("postulante.digital_log") || "Bitácora",
+    href: "/estudiante/bitacora",
+  },
+  {
+    icon: markRaw(MessageSquare),
+    label: "Foro UTP+",
+    href: "/estudiante/foro",
   },
 ]);
 

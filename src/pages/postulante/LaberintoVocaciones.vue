@@ -7,21 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import {
-  ArrowLeft,
-  BookOpen,
-  Brain,
-  CheckCircle2,
-  Flame,
-  Gamepad2,
-  Home,
-  Lightbulb,
-  Lock,
-  MessageCircle,
-  PlayCircle,
-  Target,
-  TrendingUp,
-} from "lucide-vue-next";
+import { ArrowLeft, BookOpen, Brain, CheckCircle2, Flame, Gamepad2, Home, Lightbulb, Lock, MessageCircle, PlayCircle, Target, TrendingUp, MessageSquare } from "lucide-vue-next";
 import { computed, markRaw, onMounted, onUnmounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -55,6 +41,11 @@ const sidebarItems = computed(() => [
     icon: markRaw(MessageCircle),
     label: t("postulante.p2p_connection") || "Conexión P2P",
     href: "/postulante/p2p",
+  },
+  {
+    icon: markRaw(MessageSquare),
+    label: "Foro UTP+",
+    href: "/postulante/foro",
   },
 ]);
 

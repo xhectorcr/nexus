@@ -6,33 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import {
-  Activity,
-  ArrowLeft,
-  ArrowRight,
-  Bot,
-  Brain,
-  BookOpen,
-  Building2,
-  Check,
-  Compass,
-  Cpu,
-  FileText,
-  Gamepad2,
-  Heart,
-  Home,
-  Lightbulb,
-  Loader2,
-  MessageCircle,
-  Network,
-  ShieldAlert,
-  Sparkles,
-  TrendingUp,
-  UploadCloud,
-  Users2,
-  XCircle,
-  Zap,
-} from "lucide-vue-next";
+import { Activity, ArrowLeft, ArrowRight, Bot, Brain, BookOpen, Building2, Check, Compass, Cpu, FileText, Gamepad2, Heart, Home, Lightbulb, Loader2, MessageCircle, Network, ShieldAlert, Sparkles, TrendingUp, UploadCloud, Users2, XCircle, Zap, MessageSquare } from "lucide-vue-next";
 import { computed, markRaw, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
@@ -66,6 +40,11 @@ const sidebarItems = computed(() => [
     icon: markRaw(MessageCircle),
     label: t("postulante.p2p_connection") || "Conexión P2P",
     href: "/postulante/p2p",
+  },
+  {
+    icon: markRaw(MessageSquare),
+    label: "Foro UTP+",
+    href: "/postulante/foro",
   },
 ]);
 
