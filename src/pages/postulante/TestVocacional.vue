@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Bot,
   Brain,
+  BookOpen,
   Building2,
   Check,
   Compass,
@@ -34,17 +35,37 @@ import {
 } from "lucide-vue-next";
 import { computed, markRaw, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 
 const router = useRouter();
 const auth = useAuth();
+const { t } = useI18n();
 
 const sidebarItems = computed(() => [
-  { icon: markRaw(Home), label: "Inicio", href: "/postulante" },
-  { icon: markRaw(Brain), label: "Assessment IA", href: "/postulante/test" },
+  {
+    icon: markRaw(Home),
+    label: t("nav.home") || "Inicio",
+    href: "/postulante",
+  },
+  {
+    icon: markRaw(Brain),
+    label: t("nav.vocational_tests") || "Tests",
+    href: "/postulante/test",
+  },
   {
     icon: markRaw(Gamepad2),
-    label: "Laberinto",
+    label: t("postulante.labyrinth") || "Laberinto",
     href: "/postulante/laberinto",
+  },
+  {
+    icon: markRaw(BookOpen),
+    label: t("postulante.digital_log") || "Bitácora",
+    href: "/postulante/bitacora",
+  },
+  {
+    icon: markRaw(MessageCircle),
+    label: t("postulante.p2p_connection") || "Conexión P2P",
+    href: "/postulante/p2p",
   },
 ]);
 

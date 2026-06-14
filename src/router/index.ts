@@ -10,6 +10,8 @@ import UTPPlusDashboard from '@/pages/utp-plus/UTPPlusDashboard.vue'
 import LoginPage from '@/pages/login/LoginPage.vue'
 import TestVocacional from '@/pages/postulante/TestVocacional.vue'
 import LaberintoVocaciones from '@/pages/postulante/LaberintoVocaciones.vue'
+import Bitacora from '@/pages/postulante/Bitacora.vue'
+import P2P from '@/pages/postulante/P2P.vue'
 import ChatEstudiantes from '@/pages/postulante/ChatEstudiantes.vue'
 import ContactoMentores from '@/pages/postulante/ContactoMentores.vue'
 import ConfiguracionPage from '@/pages/configuracion/ConfiguracionPage.vue'
@@ -62,17 +64,17 @@ const router = createRouter({
           meta: { requiresAuth: true, role: 'postulante' }
         },
         {
-          // Postulante Chat Estudiantes
-          path: 'postulante/chat-estudiantes',
-          name: 'postulante-chat-estudiantes',
-          component: ChatEstudiantes,
+          // Postulante Bitácora
+          path: 'postulante/bitacora',
+          name: 'postulante-bitacora',
+          component: Bitacora,
           meta: { requiresAuth: true, role: 'postulante' }
         },
         {
-          // Postulante Contacto Mentores
-          path: 'postulante/contacto-mentores',
-          name: 'postulante-contacto-mentores',
-          component: ContactoMentores,
+          // Postulante P2P
+          path: 'postulante/p2p',
+          name: 'postulante-p2p',
+          component: P2P,
           meta: { requiresAuth: true, role: 'postulante' }
         },
         {
