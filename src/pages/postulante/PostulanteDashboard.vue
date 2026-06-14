@@ -49,8 +49,6 @@ const sidebarItems = computed(() => [
   { icon: markRaw(Home), label: t('nav.home'), href: "/postulante" },
   { icon: markRaw(Brain), label: t('nav.vocational_tests'), href: "/postulante/test" },
   { icon: markRaw(Gamepad2), label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
-  { icon: markRaw(BookOpen), label: t('postulante.digital_log'), href: "/postulante/bitacora" },
-  { icon: markRaw(MessageCircle), label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
 ])
 
 const mentors = ref<{ name: string; career: string; online: boolean }[]>([]);
@@ -371,19 +369,11 @@ onMounted(() => {
           </CardHeader>
           <CardContent>
             <div class="space-y-4">
-              <!-- Isometric Illustration Placeholder -->
+              <!-- Isometric Illustration -->
               <div
-                class="aspect-square rounded-xl bg-gradient-to-br from-[#F1F1F1] to-[#D9D9D9] flex items-center justify-center relative overflow-hidden"
+                class="aspect-square rounded-xl bg-white border border-gray-100 flex items-center justify-center relative overflow-hidden shadow-sm p-4"
               >
-                <div class="absolute inset-0 grid grid-cols-3 gap-2 p-4">
-                  <div
-                    v-for="i in 9"
-                    :key="i"
-                    class="flex items-center justify-center rounded-lg bg-white/50 backdrop-blur-sm"
-                  >
-                    <Target v-if="i === 5" class="w-6 h-6 text-[#082065]" />
-                  </div>
-                </div>
+                <img src="/image/img-.png" alt="Laberinto de Vocaciones" class="w-full h-full object-contain drop-shadow-md hover:scale-105 transition-transform duration-300" />
               </div>
 
               <!-- Tags -->
@@ -411,7 +401,62 @@ onMounted(() => {
             </div>
           </CardContent>
         </Card>
+        <!-- Conexión P2P -->
+        <Card class="transition-shadow hover:shadow-lg flex flex-col border-gray-200">
+          <CardHeader>
+            <div
+              class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3 shadow-sm"
+            >
+              <MessageCircle class="w-6 h-6 text-white" />
+            </div>
+            <CardTitle>{{ $t("postulante.p2p_connection") }}</CardTitle>
+            <CardDescription>
+              {{ $t("postulante.chat_mentors") }}
+            </CardDescription>
+          </CardHeader>
+          <CardContent class="flex-1 flex flex-col justify-between">
+            <div class="space-y-3 mb-4">
+              <p class="text-sm font-medium text-[#1F1F1F] flex items-center justify-between">
+                <span>{{ $t("postulante.available_mentors") }}</span>
+                <Badge variant="secondary" class="bg-blue-50 text-[#082065]">{{ mentors.length }}</Badge>
+              </p>
+              <div
+                v-for="(mentor, i) in mentors"
+                :key="i"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+              >
+                <div class="relative">
+                  <Avatar class="w-10 h-10 ring-2 ring-white shadow-sm">
+                    <AvatarImage src="" />
+                    <AvatarFallback class="bg-[#082065] text-white font-bold">
+                      {{ mentor.name[0] }}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Circle
+                    v-if="mentor.online"
+                    class="absolute bottom-0 right-0 w-3 h-3 fill-emerald-500 text-emerald-500 border-2 border-white rounded-full"
+                  />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-gray-800 truncate">
+                    {{ mentor.name }}
+                  </p>
+                  <p class="text-xs text-gray-500 font-medium truncate">
+                    {{ mentor.career }}
+                  </p>
+                </div>
+                <Button size="sm" variant="ghost" class="text-[#082065] hover:bg-blue-50 hover:text-[#0D47A1] shrink-0 h-8 w-8 p-0 rounded-full">
+                  <Send class="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <Button variant="outline" class="w-full border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold shadow-sm" @click="router.push('/postulante/p2p')">
+              Ver comunidad estudiantil
+            </Button>
+          </CardContent>
+        </Card>
       </div>
+
 
       <!-- Bitácora Digital (Expanded) -->
       <Card id="bitacora" class="w-full border-t-4 border-t-[#082065] shadow-lg">
@@ -538,53 +583,7 @@ onMounted(() => {
           </CardContent>
         </Card>
 
-        <!-- Conexión P2P -->
-        <Card class="transition-shadow hover:shadow-lg md:col-span-2">
-          <CardHeader>
-            <div
-              class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#082065] to-[#0D47A1] flex items-center justify-center mb-3"
-            >
-              <MessageCircle class="w-6 h-6 text-white" />
-            </div>
-            <CardTitle>{{ $t("postulante.p2p_connection") }}</CardTitle>
-            <CardDescription>
-              {{ $t("postulante.chat_mentors") }}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div class="space-y-3">
-              <p class="text-sm font-medium text-[#1F1F1F]">
-                {{ $t("postulante.available_mentors") }}
-              </p>
-              <div
-                v-for="(mentor, i) in mentors"
-                :key="i"
-                class="flex items-center gap-3 p-3 rounded-lg hover:bg-[#F1F1F1] transition-colors cursor-pointer"
-              >
-                <div class="relative">
-                  <Avatar class="w-10 h-10">
-                    <AvatarImage src="" />
-                    <AvatarFallback class="bg-[#082065] text-white">
-                      {{ mentor.name[0] }}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Circle
-                    v-if="mentor.online"
-                    class="absolute bottom-0 right-0 w-3 h-3 fill-[#2E7D32] text-[#2E7D32] border-2 border-white rounded-full"
-                  />
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-[#1F1F1F] truncate">
-                    {{ mentor.name }}
-                  </p>
-                  <p class="text-xs text-[#5F6368] truncate">
-                    {{ mentor.career }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-      </Card>
+
 
       <!-- Progress Section -->
       <Card>

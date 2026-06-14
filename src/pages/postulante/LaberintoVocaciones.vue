@@ -37,8 +37,6 @@ const sidebarItems = computed(() => [
   { icon: Home, label: t('nav.home'), href: "/postulante" },
   { icon: Brain, label: t('nav.vocational_tests'), href: "/postulante/test" },
   { icon: Gamepad2, label: t('postulante.labyrinth'), href: "/postulante/laberinto" },
-  { icon: BookOpen, label: t('postulante.digital_log'), href: "/postulante/bitacora" },
-  { icon: MessageCircle, label: t('postulante.p2p_connection'), href: "/postulante/p2p" },
 ])
 
 const modules = computed(() => [
