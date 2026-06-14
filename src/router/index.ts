@@ -10,6 +10,8 @@ import UTPPlusDashboard from '@/pages/utp-plus/UTPPlusDashboard.vue'
 import LoginPage from '@/pages/login/LoginPage.vue'
 import TestVocacional from '@/pages/postulante/TestVocacional.vue'
 import LaberintoVocaciones from '@/pages/postulante/LaberintoVocaciones.vue'
+import ChatEstudiantes from '@/pages/postulante/ChatEstudiantes.vue'
+import ContactoMentores from '@/pages/postulante/ContactoMentores.vue'
 import { useAuth } from '@/lib/auth'
 
 const router = createRouter({
@@ -56,6 +58,20 @@ const router = createRouter({
           path: 'postulante/laberinto',
           name: 'postulante-laberinto',
           component: LaberintoVocaciones,
+          meta: { requiresAuth: true, role: 'postulante' }
+        },
+        {
+          // Postulante Chat Estudiantes
+          path: 'postulante/chat-estudiantes',
+          name: 'postulante-chat-estudiantes',
+          component: ChatEstudiantes,
+          meta: { requiresAuth: true, role: 'postulante' }
+        },
+        {
+          // Postulante Contacto Mentores
+          path: 'postulante/contacto-mentores',
+          name: 'postulante-contacto-mentores',
+          component: ContactoMentores,
           meta: { requiresAuth: true, role: 'postulante' }
         },
         {
